@@ -4,6 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 // ✅ All possible status values
 export type LeadStatus =
@@ -88,7 +89,7 @@ export interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class LeadsService {
-  private apiUrl = 'http://localhost:3000/lead';
+  private apiUrl = `${environment.apiBaseUrl}/lead`;
   public leadsUpdated = new Subject<void>();
   public leadsUpdated$ = this.leadsUpdated.asObservable();
 

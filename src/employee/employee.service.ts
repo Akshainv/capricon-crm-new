@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AuthService } from '../app/services/auth.service';
+import { environment } from '../environments/environment';
 
 export interface Employee {
   _id: string;
@@ -35,7 +36,7 @@ interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class EmployeeService {
-  private apiUrl = 'http://localhost:3000/employee';
+  private apiUrl = `${environment.apiBaseUrl}/employee`;
 
   constructor(
     private http: HttpClient,

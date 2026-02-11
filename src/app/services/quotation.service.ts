@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export interface QuotationItem {
   product: {
@@ -157,7 +158,7 @@ export interface QuotationStats {
   providedIn: 'root'
 })
 export class QuotationService {
-  private apiUrl = 'http://localhost:3000/api/quotation';
+  private apiUrl = `${environment.apiBaseUrl}/api/quotation`;
 
   constructor(
     private http: HttpClient,

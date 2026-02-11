@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export interface Project {
   _id?: string;
@@ -58,7 +59,7 @@ export interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class ProjectService {
-  private apiUrl = 'http://localhost:3000/project';
+  private apiUrl = `${environment.apiBaseUrl}/project`;
 
   constructor(
     private http: HttpClient,

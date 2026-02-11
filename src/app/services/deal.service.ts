@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export interface Deal {
   _id?: string;
@@ -58,7 +59,7 @@ export interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class DealService {
-  private apiUrl = 'http://localhost:3000/deal';
+  private apiUrl = `${environment.apiBaseUrl}/deal`;
 
   constructor(
     private http: HttpClient,

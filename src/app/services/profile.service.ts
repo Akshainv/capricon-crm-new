@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 // ============================================
 // INTERFACES & MODELS
@@ -71,7 +72,7 @@ export interface ApiResponse<T = any> {
 })
 export class ProfileService {
   // Direct API URL - Change this to match your backend
-  private apiUrl = 'http://localhost:3000/profile-settings';
+  private apiUrl = `${environment.apiBaseUrl}/profile-settings`;
 
   // BehaviorSubject to share user data across components
   private userSubject = new BehaviorSubject<User | null>(null);

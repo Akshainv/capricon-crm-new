@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 // ✅ NEW: Interfaces for top performers
 export interface TopPerformer {
@@ -27,7 +28,7 @@ export interface TopPerformersResponse {
   providedIn: 'root'
 })
 export class ReportService {
-  private apiUrl = 'http://localhost:3000/reports';
+  private apiUrl = `${environment.apiBaseUrl}/reports`;
 
   constructor(
     private http: HttpClient,

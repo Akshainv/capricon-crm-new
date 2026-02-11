@@ -4,6 +4,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject } from 'rxjs';
 import { catchError, map, tap, delay, switchMap } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { environment } from '../environments/environment';
 
 export interface Lead {
   _id: string;
@@ -74,7 +75,7 @@ export interface ApiResponse<T> {
   providedIn: 'root'
 })
 export class LeadsService {
-  private apiUrl = 'http://localhost:3000/lead';  // ✅ CORRECT
+  private apiUrl = `${environment.apiBaseUrl}/lead`;
   public leadsUpdated = new Subject<void>();
   public leadsUpdated$ = this.leadsUpdated.asObservable();
 
