@@ -1,0 +1,113 @@
+<!-- src/app/sales-add-leads/sales-add-leads.component.html -->
+<div class="add-lead-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to My Leads</span>
+      </button>
+      <div class="header-title">
+        <h1>{{ isEditMode ? 'Edit Lead' : 'Add New Lead' }}</h1>
+        <p>{{ isEditMode ? 'Update lead information' : 'Fill in the details to create a new lead' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-cancel" (click)="cancel()">
+        <i class="fas fa-times"></i>
+        <span>Cancel</span>
+      </button>
+      <button *ngIf="!isEditMode && lastSaved" class="btn-secondary" (click)="clearDraft()">
+        <i class="fas fa-trash"></i>
+        <span>Clear Draft</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Auto-save indicator -->
+  <div *ngIf="!isEditMode && lastSaved" class="auto-save-indicator">
+    <i class="fas fa-check-circle"></i>
+    <span>Draft saved at {{ lastSaved | date:'short' }}</span>
+  </div>
+
+  <!-- Form Container -->
+  <div class="form-card">
+    <div class="form-step">
+      <h2 class="step-title">
+        <i class="fas fa-user-circle"></i>
+        Lead Details
+      </h2>
+
+      <div class="form-grid">
+        <!-- Lead Name -->
+        <div class="form-group">
+          <label class="required">Lead Name</label>
+          <input type="text" [(ngModel)]="leadDraft.name" placeholder="Enter full name"
+            [ngClass]="{'error': errors.name}" />
+          <span *ngIf="errors.name" class="error-message">
+            {{ errors.name }}
+          </span>
+        </div>
+
+        <!-- Email Address -->
+        <div class="form-group">
+          <label class="required">Email Address</label>
+          <input type="email" [(ngModel)]="leadDraft.email" placeholder="email@example.com"
+            [ngClass]="{'error': errors.email}" />
+          <span *ngIf="errors.email" class="error-message">
+            {{ errors.email }}
+          </span>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="form-group">
+          <label class="required">Phone Number</label>
+          <input type="tel" [(ngModel)]="leadDraft.phone" placeholder="+91 9876543210"
+            [ngClass]="{'error': errors.phone}" />
+          <span *ngIf="errors.phone" class="error-message">
+            {{ errors.phone }}
+          </span>
+        </div>
+
+        <!-- Lead Source -->
+        <div class="form-group">
+          <label class="required">Lead Source</label>
+          <select [(ngModel)]="leadDraft.source" [ngClass]="{'error': errors.source}">
+            <option value="">Select source</option>
+            <option *ngFor="let source of sourceOptions" [value]="source">
+              {{ source }}
+            </option>
+          </select>
+          <span *ngIf="errors.source" class="error-message">
+            {{ errors.source }}
+          </span>
+        </div>
+
+        <!-- Priority Level -->
+        <div class="form-group full-width">
+          <label>Priority Level</label>
+          <div class="priority-options">
+            <label *ngFor="let option of priorityOptions" class="priority-option"
+              [ngClass]="'priority-' + option.value">
+              <input type="radio" name="priority" [value]="option.value" [(ngModel)]="leadDraft.priority" />
+              <span class="priority-label">
+                <i class="fas fa-flag"></i>
+                {{ option.label }}
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="form-actions">
+      <div class="spacer"></div>
+
+      <button class="btn-success" (click)="saveLead()" [disabled]="isSaving">
+        <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Lead' : 'Create Lead') }}
+      </button>
+    </div>
+  </div>
+</div>

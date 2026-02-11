@@ -1,0 +1,306 @@
+<!-- src/app/sales-import-leads/sales-import-leads.component.html -->
+<div class="import-leads-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Import Leads</h1>
+      <p>Upload CSV file to bulk import leads into your account</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="downloadTemplate()">
+        <i class="fas fa-download"></i>
+        <span>Download Template</span>
+      </button>
+      <button class="btn-cancel" (click)="goToLeads()">
+        <i class="fas fa-times"></i>
+        <span>Cancel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Import Section -->
+  <div *ngIf="!showImportResult" class="import-section">
+    <div class="upload-card">
+      <h2 class="section-title">
+        <i class="fas fa-cloud-upload-alt"></i>
+        Upload CSV File
+      </h2>
+
+      <!-- File Upload Area -->
+      <div *ngIf="!selectedFile" class="upload-area">
+        <input 
+          #fileInput
+          type="file" 
+          id="fileInput" 
+          accept=".csv,.xlsx,.xls"
+          (change)="onFileSelect($event)"
+          style="display: none;"
+        />
+        <div class="upload-label" (click)="fileInput.click()">
+          <i class="fas fa-file-excel upload-icon"></i>
+          <h3>Click to upload or drag and drop</h3>
+          <p>Supported formats: CSV, Excel (.xlsx, .xls)</p>
+          <p class="file-limit">Maximum file size: 5MB | Maximum records: 1000</p>
+          <button type="button" class="btn-upload" (click)="$event.stopPropagation(); fileInput.click()">
+            <i class="fas fa-folder-open"></i>
+            Browse Files
+          </button>
+        </div>
+      </div>
+
+      <!-- Selected File Info -->
+      <div *ngIf="selectedFile && !isProcessing" class="file-selected">
+        <div class="file-info">
+          <i class="fas fa-file-csv file-icon"></i>
+          <div class="file-details">
+            <h4>{{ selectedFile.name }}</h4>
+            <p>{{ formatFileSize(selectedFile.size) }} • {{ fullData.length }} rows</p>
+          </div>
+          <button class="btn-remove" (click)="removeFile()" title="Remove file">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Processing Indicator -->
+      <div *ngIf="isProcessing" class="processing-indicator">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Processing file...</span>
+      </div>
+
+      <!-- Validation Errors -->
+      <div *ngIf="validationErrors.length > 0" class="validation-errors">
+        <h3><i class="fas fa-exclamation-circle"></i> Validation Errors</h3>
+        <ul>
+          <li *ngFor="let error of validationErrors">{{ error }}</li>
+        </ul>
+      </div>
+
+      <!-- Data Preview -->
+      <div *ngIf="selectedFile && !isProcessing && previewData.length > 0" class="preview-section">
+        <h3><i class="fas fa-eye"></i> Data Preview (First 10 Rows)</h3>
+        <div class="preview-info">
+          <div class="info-item">
+            <i class="fas fa-list"></i>
+            <span><strong>Total Rows:</strong> {{ fullData.length }}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-columns"></i>
+            <span><strong>Columns:</strong> {{ fileColumns.length }}</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-check-circle"></i>
+            <span class="status-ready">Ready to Import</span>
+          </div>
+        </div>
+        <div class="preview-table-container">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th class="row-header">#</th>
+                <th *ngFor="let col of fileColumns">{{ col }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of previewData; let i = index">
+                <td class="row-number">{{ i + 1 }}</td>
+                <td *ngFor="let col of fileColumns">
+                  <span class="cell-content" [title]="row[col]">
+                    {{ row[col] || '-' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="preview-note">
+          <i class="fas fa-info-circle"></i>
+          Showing first 10 rows. All {{ fullData.length }} rows will be imported.
+        </p>
+      </div>
+
+      <!-- Import Button -->
+      <div *ngIf="selectedFile && !isProcessing && previewData.length > 0" class="import-action">
+        <button 
+          class="btn-import" 
+          (click)="importLeads()"
+          [disabled]="isImporting"
+        >
+          <i class="fas" [ngClass]="isImporting ? 'fa-spinner fa-spin' : 'fa-upload'"></i>
+          <span *ngIf="!isImporting">Import {{ fullData.length }} Lead(s)</span>
+          <span *ngIf="isImporting">Importing... Please wait</span>
+        </button>
+        <p class="import-warning" *ngIf="!isImporting">
+          <i class="fas fa-exclamation-triangle"></i>
+          All leads will be assigned to you automatically
+        </p>
+      </div>
+
+      <!-- Upload Instructions -->
+      <div class="upload-instructions">
+        <h3><i class="fas fa-info-circle"></i> Import Guidelines</h3>
+        <div class="instructions-grid">
+          <div class="instruction-item">
+            <i class="fas fa-check-circle"></i>
+            <div>
+              <strong>Required Columns</strong>
+              <p>Name, Email, Phone Number</p>
+            </div>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-file-alt"></i>
+            <div>
+              <strong>Optional Columns</strong>
+              <p>Company, Source, Notes</p>
+            </div>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-list-ul"></i>
+            <div>
+              <strong>Valid Sources</strong>
+              <p>Walk-in, Website, Reference, Phone Call, Email, Social Media, Other</p>
+            </div>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <strong>Email Format</strong>
+              <p>Must be valid email (e.g., user&#64;example.com)</p>
+            </div>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-phone"></i>
+            <div>
+              <strong>Phone Format</strong>
+              <p>Minimum 10 digits (e.g., +91 9876543210)</p>
+            </div>
+          </div>
+          <div class="instruction-item">
+            <i class="fas fa-layer-group"></i>
+            <div>
+              <strong>Record Limit</strong>
+              <p>Maximum 1000 records per import</p>
+            </div>
+          </div>
+        </div>
+        <div class="template-tip">
+          <i class="fas fa-lightbulb"></i>
+          <span>Tip: Download the template file above to ensure correct formatting</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Result -->
+  <div *ngIf="showImportResult && importResult" class="result-section">
+    <div class="result-card">
+      <div class="success-icon" [ngClass]="{
+        'success': importResult.successfulImports > 0,
+        'warning': importResult.failedImports > 0 && importResult.successfulImports > 0,
+        'error': importResult.successfulImports === 0
+      }">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': importResult.successfulImports > 0 && importResult.failedImports === 0,
+          'fa-exclamation-triangle': importResult.failedImports > 0 && importResult.successfulImports > 0,
+          'fa-times-circle': importResult.successfulImports === 0
+        }"></i>
+      </div>
+      
+      <h2 class="section-title">
+        <span *ngIf="importResult.successfulImports > 0 && importResult.failedImports === 0">
+          Import Completed Successfully!
+        </span>
+        <span *ngIf="importResult.failedImports > 0 && importResult.successfulImports > 0">
+          Import Completed with Errors
+        </span>
+        <span *ngIf="importResult.successfulImports === 0">
+          Import Failed
+        </span>
+      </h2>
+
+      <p class="result-message">
+        <span *ngIf="importResult.successfulImports > 0">
+          {{ importResult.successfulImports }} lead(s) have been imported and assigned to you.
+        </span>
+        <span *ngIf="importResult.failedImports > 0">
+          {{ importResult.failedImports }} row(s) could not be imported due to errors.
+        </span>
+      </p>
+
+      <div class="result-stats">
+        <div class="stat-box stat-total">
+          <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ importResult.totalRows }}</h3>
+            <p>Total Records</p>
+          </div>
+        </div>
+
+        <div class="stat-box stat-success">
+          <div class="stat-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ importResult.successfulImports }}</h3>
+            <p>Successfully Imported</p>
+          </div>
+        </div>
+
+        <div class="stat-box stat-failed">
+          <div class="stat-icon">
+            <i class="fas fa-times"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ importResult.failedImports }}</h3>
+            <p>Failed</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error List -->
+      <div *ngIf="importResult.errors.length > 0" class="error-section">
+        <div class="error-header">
+          <h3><i class="fas fa-exclamation-triangle"></i> Error Details ({{ importResult.errors.length }})</h3>
+          <button class="btn-export-errors" (click)="exportErrors()">
+            <i class="fas fa-download"></i>
+            Export Errors
+          </button>
+        </div>
+        <div class="error-list">
+          <div *ngFor="let error of importResult.errors.slice(0, 20)" class="error-item">
+            <i class="fas fa-times-circle"></i>
+            <span>{{ error }}</span>
+          </div>
+          <p *ngIf="importResult.errors.length > 20" class="more-errors">
+            <i class="fas fa-ellipsis-h"></i>
+            ... and {{ importResult.errors.length - 20 }} more errors. Click "Export Errors" to see all.
+          </p>
+        </div>
+      </div>
+
+      <!-- Warnings -->
+      <div *ngIf="importResult.warnings && importResult.warnings.length > 0" class="warning-section">
+        <h3><i class="fas fa-exclamation-circle"></i> Warnings ({{ importResult.warnings.length }})</h3>
+        <div class="warning-list">
+          <div *ngFor="let warning of importResult.warnings.slice(0, 10)" class="warning-item">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ warning }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-secondary" (click)="startNewImport()">
+          <i class="fas fa-plus"></i>
+          Import More Leads
+        </button>
+        <button class="btn-primary" (click)="goToLeads()">
+          <i class="fas fa-list"></i>
+          View All Leads
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

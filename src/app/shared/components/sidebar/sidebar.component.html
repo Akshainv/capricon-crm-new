@@ -1,0 +1,60 @@
+<!-- Mobile Hamburger Toggle (CSS controls visibility based on screen size) -->
+<button class="mobile-toggle" (click)="toggleSidebar()" [class.menu-open]="mobileMenuOpen" aria-label="Toggle menu">
+  <span class="hamburger-line"></span>
+  <span class="hamburger-line"></span>
+  <span class="hamburger-line"></span>
+</button>
+
+<!-- Sidebar Container -->
+<aside class="sidebar" [class.collapsed]="collapsed && !isMobile" [class.mobile-open]="mobileMenuOpen">
+
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <div class="logo-area">
+      <div class="logo-container">
+        <img [src]="currentLogo" alt="Capricorn CRM Logo" class="sidebar-logo"
+          (error)="currentLogo = 'assets/images/logo1.png'">
+      </div>
+      <h3 class="brand-name" *ngIf="!collapsed || isMobile">Capricorn CRM</h3>
+      <p class="brand-subtitle" *ngIf="!collapsed || isMobile">Business Management</p>
+    </div>
+
+    <!-- Desktop Toggle Button (visible only on desktop) -->
+    <button class="desktop-toggle" (click)="toggleSidebar()" *ngIf="!isMobile" aria-label="Toggle sidebar">
+      <i class="fas" [ngClass]="collapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+    </button>
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar-nav">
+    <div *ngFor="let section of menuSections" class="nav-section">
+      <h4 class="section-title" *ngIf="!collapsed || isMobile">{{ section.title }}</h4>
+      <a *ngFor="let item of section.items" [routerLink]="item.route" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin-dashboard'}" class="nav-item" [title]="item.label"
+        (click)="onMenuItemClick()">
+        <i class="fas {{ item.icon }} nav-icon"></i>
+        <span class="nav-label" *ngIf="!collapsed || isMobile">{{ item.label }}</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-details" *ngIf="!collapsed || isMobile">
+        <p class="user-name">Admin User</p>
+        <p class="user-role">Administrator</p>
+      </div>
+    </div>
+    <button class="logout-btn" (click)="logout()" title="Logout">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </div>
+</aside>
+
+<!-- Mobile Backdrop Overlay -->
+<div class="sidebar-backdrop" [class.show]="mobileMenuOpen && isMobile" (click)="closeMobileMenu()" *ngIf="isMobile">
+</div>

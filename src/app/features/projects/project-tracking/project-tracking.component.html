@@ -1,0 +1,391 @@
+<!-- src/app/features/projects/project-tracking/project-tracking.component.html -->
+<div class="tracking-container">
+  
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading project details...</p>
+  </div>
+
+  <!-- Project Content -->
+  <div *ngIf="!loading && project">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div>
+          <h1>{{ project.projectName }}</h1>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <!-- ✅ NEW: Refresh Button -->
+        <button class="btn-refresh" (click)="refreshProject()" title="Refresh project data">
+          <i class="fas fa-sync-alt"></i>
+          <span>Refresh</span>
+        </button>
+        
+        <span 
+          class="status-badge" 
+          [style.background]="getStatusColor(project.projectStatus) + '33'"
+          [style.border-color]="getStatusColor(project.projectStatus)"
+          [style.color]="getStatusColor(project.projectStatus)"
+        >
+          <i class="fas" [ngClass]="getStatusIcon(project.projectStatus)"></i>
+          <span>{{ project.projectStatus | titlecase }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Sales Executive Update Banner -->
+    <div class="update-banner" *ngIf="isSalesExecutive">
+      <i class="fas fa-info-circle"></i>
+      <span>Click on the current milestone (highlighted in yellow) to mark it as completed. Updates are visible to all users.</span>
+    </div>
+
+    <!-- Project Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon customer">
+          <i class="fas fa-building"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Customer</div>
+          <div class="stat-value">{{ project.clientName }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon value">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Project Value</div>
+          <div class="stat-value">{{ formatCurrency(project.projectValue) }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon date">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Expected Completion</div>
+          <div class="stat-value">{{ formatDate(project.expectedCompletionDate) }}</div>
+          <div class="stat-sublabel">{{ getDaysRemaining() }} days remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      
+      <!-- Left Column -->
+      <div class="left-column">
+        
+        <!-- Progress Card -->
+        <div class="progress-card">
+          <h3 class="card-title">
+            <i class="fas fa-chart-line"></i>
+            <span>Installation Progress</span>
+          </h3>
+          
+          <div class="progress-circle">
+            <svg viewBox="0 0 100 100">
+              <circle 
+                cx="50" 
+                cy="50" 
+                r="45" 
+                fill="none" 
+                stroke="rgba(255,255,255,0.1)" 
+                stroke-width="8"
+              />
+              <circle 
+                cx="50" 
+                cy="50" 
+                r="45" 
+                fill="none" 
+                [attr.stroke]="getProgressColor()"
+                stroke-width="8"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="2 * Math.PI * 45"
+                [attr.stroke-dashoffset]="2 * Math.PI * 45 * (1 - project.progressPercentage / 100)"
+                transform="rotate(-90 50 50)"
+              />
+            </svg>
+            <div class="progress-text">
+              <div class="progress-percentage">{{ project.progressPercentage }}%</div>
+              <div class="progress-label">Complete</div>
+            </div>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-bar-bg">
+              <div 
+                class="progress-bar-fill"
+                [style.width.%]="project.progressPercentage"
+                [style.background]="getProgressColor()"
+              ></div>
+            </div>
+          </div>
+
+          <div class="milestones-summary">
+            <i class="fas fa-tasks"></i>
+            <span>{{ getCompletedMilestones() }} of {{ getTotalMilestones() }} milestones completed</span>
+          </div>
+        </div>
+
+        <!-- Milestones Card -->
+        <div class="milestones-card">
+          <h3 class="card-title">
+            <i class="fas fa-flag-checkered"></i>
+            <span>Project Milestones</span>
+          </h3>
+          
+          <div class="milestones-timeline">
+            <div 
+              *ngFor="let milestone of milestones; let last = last"
+              class="milestone-item"
+              [class.completed]="milestone.status === 'completed'"
+              [class.in-progress]="milestone.status === 'in-progress'"
+              [class.pending]="milestone.status === 'pending'"
+           [class.clickable]="isSalesExecutive && milestone.status !== 'completed'"
+              (click)="onMilestoneClick(milestone)"
+              [title]="isSalesExecutive && milestone.status === 'in-progress' ? 'Click to mark as completed' : ''"
+            >
+              <div class="milestone-connector" *ngIf="!last"></div>
+              
+              <div class="milestone-icon">
+                <i class="fas" [ngClass]="milestone.icon"></i>
+              </div>
+              
+              <div class="milestone-content">
+                <div class="milestone-header">
+                  <h4 class="milestone-title">{{ milestone.title }}</h4>
+                  <div class="milestone-status-icon" [style.color]="getMilestoneStatusColor(milestone.status)">
+                    <i class="fas" [ngClass]="getMilestoneIcon(milestone.status)"></i>
+                  </div>
+                </div>
+                
+                <div class="milestone-date" *ngIf="milestone.status === 'completed'">
+                  <i class="fas fa-check"></i>
+                  <span>Completed on {{ formatDate(milestone.completedDate!) }}</span>
+                </div>
+                
+                <div class="milestone-date" *ngIf="milestone.status === 'in-progress'">
+                  <i class="fas fa-clock"></i>
+                  <span>In Progress - Expected: {{ formatDate(milestone.expectedDate) }}</span>
+                </div>
+                
+                <div class="milestone-date" *ngIf="milestone.status === 'pending'">
+                  <i class="fas fa-hourglass-half"></i>
+                  <span>Pending - Expected: {{ formatDate(milestone.expectedDate) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="right-column">
+        
+        <!-- Project Details Card -->
+        <div class="details-card">
+          <h3 class="card-title">
+            <i class="fas fa-info-circle"></i>
+            <span>Project Details</span>
+          </h3>
+          
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Elevator Type</div>
+              <div class="detail-value">
+                <i class="fas fa-elevator"></i>
+                <span>{{ project.elevatorType }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Start Date</div>
+              <div class="detail-value">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ formatDate(project.startDate) }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item" *ngIf="project.numberOfFloors">
+              <div class="detail-label">Number of Floors</div>
+              <div class="detail-value">
+                <i class="fas fa-building"></i>
+                <span>{{ project.numberOfFloors }} Floors</span>
+              </div>
+            </div>
+
+            <div class="detail-item" *ngIf="project.quantity">
+              <div class="detail-label">Quantity</div>
+              <div class="detail-value">
+                <i class="fas fa-boxes"></i>
+                <span>{{ project.quantity }} Unit(s)</span>
+              </div>
+            </div>
+
+            <div class="detail-item full-width">
+              <div class="detail-label">Site Address</div>
+              <div class="detail-value">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ project.siteAddress }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item full-width" *ngIf="project.contactPerson">
+              <div class="detail-label">Contact Person</div>
+              <div class="detail-value">
+                <i class="fas fa-user"></i>
+                <span>{{ project.contactPerson }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item" *ngIf="project.contactPhone">
+              <div class="detail-label">Contact Phone</div>
+              <div class="detail-value">
+                <i class="fas fa-phone"></i>
+                <span>{{ project.contactPhone }}</span>
+              </div>
+            </div>
+
+            <div class="detail-item" *ngIf="project.contactEmail">
+              <div class="detail-label">Contact Email</div>
+              <div class="detail-value">
+                <i class="fas fa-envelope"></i>
+                <span>{{ project.contactEmail }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="additional-info" *ngIf="project.projectDescription">
+            <div class="info-section">
+              <div class="info-label">
+                <i class="fas fa-align-left"></i>
+                <span>Project Description</span>
+              </div>
+              <p class="info-text">{{ project.projectDescription }}</p>
+            </div>
+          </div>
+
+          <div class="additional-info" *ngIf="project.technicalSpecifications">
+            <div class="info-section">
+              <div class="info-label">
+                <i class="fas fa-cogs"></i>
+                <span>Technical Specifications</span>
+              </div>
+              <p class="info-text">{{ project.technicalSpecifications }}</p>
+            </div>
+          </div>
+
+          <div class="additional-info" *ngIf="project.specialRequirements">
+            <div class="info-section">
+              <div class="info-label">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Special Requirements</span>
+              </div>
+              <p class="info-text">{{ project.specialRequirements }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="financial-card">
+          <h3 class="card-title">
+            <i class="fas fa-wallet"></i>
+            <span>Financial Summary</span>
+          </h3>
+          
+          <div class="financial-grid">
+            <div class="financial-item">
+              <div class="financial-label">Total Value</div>
+              <div class="financial-value total">{{ formatCurrency(project.projectValue) }}</div>
+            </div>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !project" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <h2>Project Not Found</h2>
+    <p>The project you're looking for doesn't exist or has been deleted.</p>
+    <button class="btn-primary" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Projects</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- ✅ NEW: Add styles for new elements -->
+<style>
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  margin-right: 15px;
+}
+
+.btn-refresh:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-refresh i {
+  font-size: 1rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 10px;
+  margin-bottom: 25px;
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.info-banner i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

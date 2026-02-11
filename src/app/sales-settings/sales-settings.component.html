@@ -1,0 +1,251 @@
+<div class="settings-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>My Settings</h1>
+      <p>Manage your personal preferences and account settings</p>
+    </div>
+  </div>
+
+  <!-- Settings Layout -->
+  <div class="settings-layout">
+    
+    <!-- Settings Sidebar -->
+    <div class="settings-sidebar">
+      <nav class="settings-nav">
+        <a 
+          class="nav-item" 
+          [class.active]="activeSection === 'personal'"
+          (click)="selectSection('personal')"
+        >
+          <i class="fas fa-user"></i>
+          <span>Personal Info</span>
+        </a>
+        <a 
+          class="nav-item" 
+          [class.active]="activeSection === 'security'"
+          (click)="selectSection('security')"
+        >
+          <i class="fas fa-shield-alt"></i>
+          <span>Security</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="settings-content">
+      
+      <!-- Personal Information -->
+      <div class="content-section" *ngIf="activeSection === 'personal'">
+        <div class="section-header">
+          <h2>Personal Information</h2>
+          <p>Update your personal details and contact information</p>
+        </div>
+
+        <form class="settings-form">
+          <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-user"></i>
+                  Full Name
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="personalInfo.fullName" 
+                  name="fullName"
+                  placeholder="Enter your full name"
+                >
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-envelope"></i>
+                  Email Address
+                </label>
+                <input 
+                  type="email" 
+                  [(ngModel)]="personalInfo.email" 
+                  name="email"
+                  placeholder="your.email@company.com"
+                >
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-phone"></i>
+                  Phone Number
+                </label>
+                <input 
+                  type="tel" 
+                  [(ngModel)]="personalInfo.phone" 
+                  name="phone"
+                  placeholder="+91 9876543210"
+                >
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-briefcase"></i>
+                  Designation
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="personalInfo.designation" 
+                  name="designation"
+                  readonly
+                  class="readonly-field"
+                >
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-id-badge"></i>
+                  Employee ID
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="personalInfo.employeeId" 
+                  name="employeeId"
+                  readonly
+                  class="readonly-field"
+                >
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-calendar"></i>
+                  Joining Date
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="personalInfo.joiningDate" 
+                  name="joiningDate"
+                  readonly
+                  class="readonly-field"
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-primary" (click)="savePersonalInfo()">
+              <i class="fas fa-save"></i>
+              Save Changes
+            </button>
+            <button type="button" class="btn-cancel">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Security -->
+      <div class="content-section" *ngIf="activeSection === 'security'">
+        <div class="section-header">
+          <h2>Security Settings</h2>
+          <p>Manage your password and security preferences</p>
+        </div>
+
+        <form class="settings-form">
+          <div class="form-section">
+            <h3>Change Password</h3>
+            <div class="form-group">
+              <label>
+                <i class="fas fa-lock"></i>
+                Current Password
+              </label>
+              <input 
+                type="password" 
+                [(ngModel)]="security.currentPassword" 
+                name="currentPassword"
+                placeholder="Enter current password"
+              >
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-key"></i>
+                  New Password
+                </label>
+                <input 
+                  type="password" 
+                  [(ngModel)]="security.newPassword" 
+                  name="newPassword"
+                  placeholder="Enter new password"
+                >
+              </div>
+              <div class="form-group">
+                <label>
+                  <i class="fas fa-check-circle"></i>
+                  Confirm Password
+                </label>
+                <input 
+                  type="password" 
+                  [(ngModel)]="security.confirmPassword" 
+                  name="confirmPassword"
+                  placeholder="Confirm new password"
+                >
+              </div>
+            </div>
+
+            <div class="password-requirements">
+              <p><i class="fas fa-info-circle"></i> Password must be at least 8 characters long</p>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Security Options</h3>
+            <div class="toggle-section">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <i class="fas fa-mobile-alt"></i>
+                  <div>
+                    <h3>Two-Factor Authentication</h3>
+                    <p>Add extra security to your account</p>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="security.twoFactorAuth"
+                    name="twoFactorAuth"
+                  >
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <i class="fas fa-hourglass-half"></i>
+                Session Timeout (minutes)
+              </label>
+              <input 
+                type="number" 
+                [(ngModel)]="security.sessionTimeout" 
+                name="sessionTimeout"
+                placeholder="30"
+              >
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-primary" (click)="changePassword()">
+              <i class="fas fa-key"></i>
+              Change Password
+            </button>
+            <button type="button" class="btn-secondary" (click)="saveSecurity()">
+              <i class="fas fa-save"></i>
+              Save Security Settings
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

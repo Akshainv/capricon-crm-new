@@ -1,0 +1,187 @@
+<!-- src/app/features/leads/lead-assignment/lead-assignment.component.html (Updated - Added back button in top left) -->
+<div class="assignment-container">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Processing assignment...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ errorMessage }}</span>
+    <button (click)="errorMessage = ''" class="close-btn">×</button>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back-top" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Leads List</span>
+      </button>
+      <div class="header-title">
+        <h1>👥 Assign Leads to Sales Team</h1>
+        <p>Select leads and assign them to sales team members</p>
+      </div>
+    </div>
+    <button class="btn-back" (click)="onCancel()">
+      <i class="fas fa-times"></i>
+      <span>Cancel</span>
+    </button>
+  </div>
+
+  <div class="assignment-layout">
+    <!-- Left Side - Lead Selection -->
+    <div class="leads-selection-section">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>📋 Select Leads to Assign</h3>
+          <label class="select-all-checkbox" *ngIf="leads.length > 0">
+            <input 
+              type="checkbox" 
+              [checked]="selectAll"
+              (change)="toggleSelectAll()"
+            />
+            <span>Select All ({{ leads.length }})</span>
+          </label>
+        </div>
+
+        <div class="leads-list" *ngIf="!isLoading">
+          <div 
+            class="lead-item" 
+            *ngFor="let lead of leads"
+            [class.selected]="lead.selected"
+            (click)="toggleLeadSelection(lead)"
+          >
+            <input 
+              type="checkbox" 
+              [checked]="lead.selected"
+              (click)="$event.stopPropagation()"
+              (change)="toggleLeadSelection(lead)"
+            />
+            <div class="lead-info">
+              <div class="lead-name">{{ lead.name }}</div>
+              <div class="lead-details">
+                <span class="lead-source">{{ lead.source }}</span>
+              </div>
+            </div>
+            <div class="lead-contact">
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <span>{{ lead.email }}</span>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <span>{{ lead.phone }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="leads.length === 0">
+            <i class="fas fa-inbox"></i>
+            <p>No unassigned leads available</p>
+            <small>All leads have been assigned to sales team members</small>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-state" *ngIf="isLoading">
+          <div class="spinner-small"></div>
+          <p>Loading leads...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Assignment Form -->
+    <div class="assignment-form-section">
+      <!-- Selected Leads Summary -->
+      <div class="section-card selected-summary">
+        <div class="summary-header">
+          <h3>✓ Selected Leads</h3>
+          <span class="count-badge">{{ selectedCount }}</span>
+        </div>
+
+        <div class="selected-leads-list" *ngIf="selectedCount > 0">
+          <div class="selected-lead-tag" *ngFor="let lead of selectedLeads">
+            <span class="lead-name">{{ lead.name }}</span>
+            <button 
+              class="remove-btn" 
+              (click)="removeSelectedLead(lead.id)"
+              title="Remove"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <div class="no-selection" *ngIf="selectedCount === 0">
+          <i class="fas fa-hand-pointer"></i>
+          <p>Select leads from the list to assign them</p>
+        </div>
+      </div>
+
+      <!-- Assignment Form -->
+      <div class="section-card assignment-form">
+        <h3 class="form-title">📝 Assignment Details</h3>
+
+        <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
+          <!-- Sales Person Selection -->
+          <div class="form-group">
+            <label for="salesPerson">
+              Assign to Sales Person <span class="required">*</span>
+            </label>
+            <select 
+              id="salesPerson" 
+              formControlName="salesPerson"
+              class="form-select"
+            >
+              <option value="">Select sales person...</option>
+              <option *ngFor="let person of salesPersons" [value]="person.id">
+                {{ person.name }} ({{ person.activeLeads }} active leads)
+              </option>
+            </select>
+            <button 
+              type="button" 
+              class="btn-auto-assign"
+              (click)="autoAssign()"
+              [disabled]="selectedCount === 0 || salesPersons.length === 0"
+            >
+              <i class="fas fa-magic"></i>
+              <span>Auto-assign to least busy</span>
+            </button>
+          </div>
+
+          <!-- No Sales Team Available -->
+          <div class="no-sales-team" *ngIf="salesPersons.length === 0 && !isLoading">
+            <i class="fas fa-users-slash"></i>
+            <p>No approved sales team members available</p>
+            <small>Please approve employees first</small>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-primary"
+              [disabled]="selectedCount === 0 || assignmentForm.invalid || isLoading"
+            >
+              <i class="fas fa-paper-plane"></i>
+              <span>Assign {{ selectedCount > 0 ? selectedCount : '' }} Lead{{ selectedCount !== 1 ? 's' : '' }}</span>
+            </button>
+            <button 
+              type="button" 
+              class="btn-secondary" 
+              (click)="onCancel()"
+              [disabled]="isLoading"
+            >
+              <i class="fas fa-times"></i>
+              <span>Cancel</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,633 @@
+/* src/app/sales-quotation-details/sales-quotation-details.component.css */
+
+.details-container {
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 179, 71, 0.3);
+  color: #d4b347;
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.btn-back:hover {
+  background: rgba(212, 179, 71, 0.2);
+  transform: translateX(-3px);
+}
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #d4b347;
+  margin: 0;
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  outline: none;
+}
+
+.btn-print {
+  background: linear-gradient(135deg, #d4b347, #f0d482);
+  color: #000;
+  box-shadow: 0 4px 12px rgba(212, 179, 71, 0.3);
+}
+
+.btn-print:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 179, 71, 0.4);
+}
+
+.btn-close {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.btn-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Quotation Card */
+.quotation-card {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.6), rgba(0, 0, 0, 0.8));
+  border: 1px solid rgba(212, 179, 71, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Quotation Document */
+.quotation-document {
+  background: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  color: #000;
+  box-shadow: 0 6px 20px rgba(212, 179, 71, 0.15);
+}
+
+/* Document Header */
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 25px;
+  margin-bottom: 25px;
+  border-bottom: 3px solid #d4b347;
+}
+
+.company-info {
+  flex: 1;
+}
+
+.company-logo-section {
+  margin-bottom: 12px;
+}
+
+.company-logo-img {
+  max-width: 120px;
+  height: auto;
+  display: block;
+}
+
+.company-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #d4b347;
+  margin: 10px 0;
+  font-weight: 700;
+}
+
+.company-detail {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.quote-info {
+  text-align: right;
+  min-width: 220px;
+}
+
+.quote-header {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: #333;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.quote-detail {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 6px 0;
+  line-height: 1.6;
+}
+
+.quote-detail strong {
+  font-weight: 700;
+  color: #333;
+}
+
+/* Bill To Section */
+.bill-to-section {
+  margin-bottom: 25px;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(212, 179, 71, 0.08), rgba(240, 212, 130, 0.05));
+  border-left: 4px solid #d4b347;
+  border-radius: 6px;
+}
+
+.section-heading {
+  color: #d4b347;
+  font-size: 0.95rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.customer-name {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.customer-detail {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 3px 0;
+  line-height: 1.5;
+}
+
+/* Items Table */
+.items-section {
+  margin-bottom: 25px;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.items-table thead {
+  background: linear-gradient(135deg, rgba(212, 179, 71, 0.15), rgba(240, 212, 130, 0.1));
+}
+
+.items-table th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #d4b347;
+}
+
+.items-table th.col-qty,
+.items-table th.col-rate,
+.items-table th.col-discount,
+.items-table th.col-tax,
+.items-table th.col-amount {
+  text-align: right;
+}
+
+.items-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.items-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.items-table td {
+  padding: 12px 10px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.item-description {
+  font-weight: 600;
+  color: #333;
+}
+
+.item-category {
+  display: block;
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.item-qty,
+.item-rate,
+.item-discount,
+.item-tax,
+.item-amount {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.item-amount {
+  font-weight: 700;
+  color: #333;
+}
+
+/* Totals Section */
+.totals-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 25px;
+}
+
+.totals-table {
+  width: 350px;
+  background: linear-gradient(135deg, rgba(212, 179, 71, 0.08), rgba(240, 212, 130, 0.05));
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 179, 71, 0.2);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.total-row.discount .total-value {
+  color: #ef4444;
+}
+
+.total-row.tax {
+  opacity: 0.9;
+}
+
+.total-label {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.total-value {
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.total-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d4b347, transparent);
+  margin: 12px 0;
+}
+
+.total-row.grand-total {
+  padding: 15px 0 0 0;
+}
+
+.total-row.grand-total .total-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #d4b347;
+  font-family: 'Playfair Display', serif;
+}
+
+.total-row.grand-total .total-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #d4b347;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Terms Section */
+.terms-section {
+  margin-bottom: 25px;
+  padding: 18px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #d4b347;
+}
+
+.terms-heading {
+  color: #d4b347;
+  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.terms-content {
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* Notes Section */
+.notes-section {
+  margin-bottom: 25px;
+  padding: 18px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  border-left: 4px solid #3b82f6;
+}
+
+.notes-heading {
+  color: #3b82f6;
+  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notes-content {
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+/* Document Footer */
+.doc-footer {
+  text-align: center;
+  padding-top: 25px;
+  margin-top: 25px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.footer-text {
+  color: #d4b347;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  font-style: italic;
+}
+
+.footer-signature {
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+.footer-signature strong {
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+/* Error State */
+.error-state {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-state i {
+  font-size: 4rem;
+  color: rgba(239, 68, 68, 0.5);
+  margin-bottom: 20px;
+}
+
+.error-state h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: #d4b347;
+  margin: 0 0 12px 0;
+}
+
+.error-state p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0 0 25px 0;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #d4b347, #f0d482);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(212, 179, 71, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 179, 71, 0.4);
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .details-container {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .quotation-card {
+    background: none;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .quotation-document {
+    box-shadow: none;
+    padding: 20px;
+  }
+
+  body {
+    background: white;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablets (≤1024px) */
+@media (max-width: 1024px) {
+  .details-container {
+    max-width: 100%;
+    padding: 20px 20px 20px 72px;
+    /* Clearance for fixed toggle */
+  }
+
+  .quotation-document {
+    padding: 30px;
+  }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+  .details-container {
+    padding: 15px 15px 15px 72px;
+  }
+
+  .details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .header-actions {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .btn-action {
+    flex: 1;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .quotation-card {
+    padding: 15px;
+  }
+
+  .quotation-document {
+    padding: 20px 15px;
+  }
+
+  .doc-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .quote-info {
+    text-align: left;
+    min-width: 100%;
+  }
+
+  .items-section {
+    overflow-x: auto;
+    margin: 0 -15px 25px -15px;
+    padding: 0 15px;
+  }
+
+  .items-table {
+    min-width: 600px;
+  }
+
+  .totals-section {
+    justify-content: stretch;
+  }
+
+  .totals-table {
+    width: 100%;
+    padding: 15px;
+  }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+  .details-container {
+    padding: 15px 10px 15px 65px;
+  }
+
+  .page-title {
+    font-size: 1.4rem;
+  }
+
+  .company-name {
+    font-size: 1.25rem;
+  }
+
+  .quote-header {
+    font-size: 1.4rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
+  }
+
+  .total-row.grand-total .total-label {
+    font-size: 1rem;
+  }
+
+  .total-row.grand-total .total-value {
+    font-size: 1.15rem;
+  }
+}
+
+/* Very Small (≤320px) */
+@media (max-width: 320px) {
+  .details-container {
+    padding: 15px 8px 15px 58px;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
+  }
+}

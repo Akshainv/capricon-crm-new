@@ -1,0 +1,71 @@
+<!-- src/app/features/dashboard/sales-dashboard/sales-dashboard.component.html - UPDATED -->
+<div class="dashboard-container">
+  <!-- Enhanced Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="greeting-section">
+        <h1>{{ greetingMessage }}, {{ userName }}! 👋</h1>
+        <p class="subtitle">Here's your sales performance overview</p>
+        <p class="date-info">
+          <i class="fas fa-calendar-alt"></i>
+          {{ currentDate | date: 'EEEE, MMMM d, yyyy' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Main Content -->
+  <ng-container *ngIf="!isLoading">
+    <!-- 3 Key Stats Cards -->
+    <div class="stats-grid">
+      <div 
+        *ngFor="let stat of stats" 
+        class="stat-card"
+        (click)="navigateTo(stat.route || '')"
+        [style.cursor]="stat.route ? 'pointer' : 'default'"
+      >
+        <div class="stat-icon">
+          <i class="fas {{ stat.icon }}"></i>
+        </div>
+        <div class="stat-content">
+          <h4 class="stat-label">{{ stat.label }}</h4>
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-change" [ngClass]="'trend-' + stat.trend">
+            <i class="fas" 
+               [ngClass]="{
+                 'fa-arrow-up': stat.trend === 'up',
+                 'fa-arrow-down': stat.trend === 'down',
+                 'fa-minus': stat.trend === 'neutral'
+               }"></i>
+            <span>{{ stat.change }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="chart-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-line"></i> My Sales Performance (Last 6 Months)</h3>
+          <span class="chart-subtitle">Won deals and total leads trend</span>
+        </div>
+        <div class="chart-content">
+          <div class="chart-container">
+            <canvas baseChart
+              [data]="lineChartData"
+              [options]="lineChartOptions"
+              [type]="lineChartType">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

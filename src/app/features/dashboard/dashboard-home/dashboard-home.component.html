@@ -1,0 +1,93 @@
+<!-- src/app/features/dashboard/dashboard-home/dashboard-home.component.html -->
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>
+      <i class="fas fa-chart-line"></i> 
+      {{ isAdmin ? 'Admin Dashboard' : 'Admin Dashboard' }}
+    </h1>
+  
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Main Content -->
+  <ng-container *ngIf="!isLoading">
+    <!-- ✅ 4 Report Cards Grid (From Reports Dashboard) -->
+    <div class="stats-grid">
+      <div *ngFor="let stat of statCards" class="stat-card">
+        <div class="stat-icon" [style.background]="stat.color + '22'" [style.color]="stat.color">
+          <i class="fas" [ngClass]="stat.icon"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">{{ stat.label }}</div>
+          <div class="stat-value" [style.color]="stat.color">{{ stat.value }}</div>
+          <div class="stat-subtitle">{{ stat.subtitle }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Chart Section - TWO-LINE CHART (Revenue + Deals Closed) -->
+    <div class="chart-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>
+            <i class="fas fa-chart-area"></i> 
+            Performance Trends
+          </h3>
+          <span class="chart-subtitle">
+            Revenue and closed deals over the last 6 months
+          </span>
+        </div>
+        <div class="chart-content">
+          <div class="chart-container">
+            <canvas baseChart
+              [data]="lineChartData"
+              [options]="lineChartOptions"
+              [type]="lineChartType">
+            </canvas>
+          </div>
+        </div>
+        <div class="chart-footer">
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background: #d4b347;"></span>
+              <span>Revenue (₹L)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background: #22c55e;"></span>
+              <span>Deals Closed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+      <div class="actions-grid">
+        <button class="action-btn" (click)="navigateTo('/deals')">
+          <i class="fas fa-handshake"></i>
+          <span>View Deals</span>
+        </button>
+        <button class="action-btn" (click)="navigateTo('/projects')">
+          <i class="fas fa-project-diagram"></i>
+          <span>Manage Projects</span>
+        </button>
+        <button class="action-btn" (click)="navigateTo('/leads')">
+          <i class="fas fa-users"></i>
+          <span>View Leads</span>
+        </button>
+        <button class="action-btn" (click)="navigateTo('/reports')">
+          <i class="fas fa-chart-bar"></i>
+          <span>Full Reports</span>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,153 @@
+<!-- src/app/features/leads/lead-detail/lead-detail.component.html -->
+<div class="detail-container" *ngIf="lead">
+  <!-- Page Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Leads</span>
+    </button>
+  </div>
+
+  <!-- Lead Header -->
+  <div class="lead-header">
+    <div class="lead-info">
+      <div class="lead-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="lead-title">
+        <h1>{{ lead.name }}</h1>
+        <p class="lead-id">Lead ID: {{ lead.id }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="status-badge" [ngClass]="getStatusClass(lead.status)">
+        {{ lead.status | titlecase }}
+      </span>
+      <button class="btn-primary" (click)="editLead()">
+        <i class="fas fa-edit"></i>
+        <span>Edit Lead</span>
+      </button>
+      <button class="btn-danger" (click)="deleteLead()">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Lead Details Grid -->
+  <div class="details-section">
+    <h3 class="section-title"> Contact Information</h3>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="info-content">
+          <label>Email Address</label>
+          <div class="info-value">{{ lead.email }}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-phone"></i>
+        </div>
+        <div class="info-content">
+          <label>Phone Number</label>
+          <div class="info-value">{{ lead.phone }}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <div class="info-content">
+          <label>Company</label>
+          <div class="info-value">{{ lead.company }}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-globe"></i>
+        </div>
+        <div class="info-content">
+          <label>Lead Source</label>
+          <div class="info-value">{{ lead.source }}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="info-content">
+          <label>Assigned To</label>
+          <div class="info-value">{{ lead.assignedTo }}</div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">
+          <i class="fas fa-calendar"></i>
+        </div>
+        <div class="info-content">
+          <label>Created Date</label>
+          <div class="info-value">{{ lead.createdAt | date: 'MMM dd, yyyy' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="notes-section" *ngIf="lead.notes">
+      <h4> Notes</h4>
+      <p>{{ lead.notes }}</p>
+    </div>
+  </div>
+
+  <!-- Activity Timeline -->
+  <div class="timeline-section">
+    <div class="timeline-header">
+      <h3 class="section-title">📅 Activity Timeline</h3>
+      <button class="btn-primary" (click)="addActivity()">
+        <i class="fas fa-plus"></i>
+        <span>Add Activity</span>
+      </button>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let activity of activities">
+        <div class="timeline-marker" [style.background]="getActivityColor(activity.type)">
+          <i class="fas" [ngClass]="getActivityIcon(activity.type)"></i>
+        </div>
+        <div class="timeline-content">
+          <div class="activity-header">
+            <h4>{{ activity.title }}</h4>
+            <span class="activity-time">{{ formatDate(activity.timestamp) }}</span>
+          </div>
+          <p class="activity-description">{{ activity.description }}</p>
+          <div class="activity-footer">
+            <span class="activity-user">
+              <i class="fas fa-user-circle"></i>
+              {{ activity.user }}
+            </span>
+            <span class="activity-meta" *ngIf="activity.duration">
+              <i class="fas fa-clock"></i>
+              {{ activity.duration }}
+            </span>
+            <span class="activity-meta" *ngIf="activity.attachment">
+              <i class="fas fa-paperclip"></i>
+              {{ activity.attachment }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="!lead">
+  <i class="fas fa-spinner fa-spin"></i>
+  <p>Loading lead details...</p>
+</div>

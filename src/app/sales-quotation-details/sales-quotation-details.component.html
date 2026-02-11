@@ -1,0 +1,156 @@
+<!-- src/app/sales-quotation-details/sales-quotation-details.component.html -->
+<div class="details-container" *ngIf="quotationData">
+  
+  <!-- Header Actions -->
+  <div class="details-header no-print">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="page-title">Quotation Details</h1>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-action btn-print" (click)="printQuotation()">
+        <i class="fas fa-print"></i>
+        <span>Print</span>
+      </button>
+      <button class="btn-action btn-close" (click)="goBack()">
+        <i class="fas fa-times"></i>
+        <span>Close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quotation Document Card -->
+  <div class="quotation-card">
+    <div class="quotation-document">
+      
+      <!-- Document Header -->
+      <div class="doc-header">
+        <div class="company-info">
+          <div class="company-logo-section">
+            <img src="assets/images/capricorn.png" alt="Capricorn Elevators Logo" class="company-logo-img" 
+                 onerror="this.style.display='none'">
+          </div>
+          <h2 class="company-name">{{ companyInfo.name }}</h2>
+          <p class="company-detail">{{ companyInfo.address }}</p>
+          <p class="company-detail">{{ companyInfo.phone }}</p>
+          <p class="company-detail">{{ companyInfo.website }}</p>
+          <p class="company-detail">GST: {{ companyInfo.gst }}</p>
+        </div>
+        
+        <div class="quote-info">
+          <h3 class="quote-header">QUOTATION</h3>
+          <p class="quote-detail"><strong>Quote #:</strong> {{ quotationData.quoteNumber }}</p>
+          <p class="quote-detail"><strong>Date:</strong> {{ formatDate(quotationData.quoteDate) }}</p>
+          <p class="quote-detail"><strong>Valid Until:</strong> {{ formatDate(quotationData.validUntil) }}</p>
+        </div>
+      </div>
+
+      <!-- Bill To Section -->
+      <div class="bill-to-section">
+        <h4 class="section-heading">Bill To:</h4>
+        <p class="customer-name">{{ quotationData.customer.name }}</p>
+        <p class="customer-detail" *ngIf="quotationData.customer.company">
+          {{ quotationData.customer.company }}
+        </p>
+        <p class="customer-detail">{{ quotationData.customer.email }}</p>
+        <p class="customer-detail">{{ quotationData.customer.phone }}</p>
+        <p class="customer-detail" *ngIf="quotationData.customer.address">
+          {{ quotationData.customer.address }}
+        </p>
+      </div>
+
+      <!-- Items Table -->
+      <div class="items-section">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th class="col-description">Description</th>
+              <th class="col-qty">Qty</th>
+              <th class="col-rate">Rate</th>
+              <th class="col-discount">Discount</th>
+              <th class="col-tax">Tax</th>
+              <th class="col-amount">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of quotationData.items">
+              <td class="item-description">
+                <strong>{{ item.product.name }}</strong>
+                <span class="item-category">{{ item.product.category }}</span>
+              </td>
+              <td class="item-qty">{{ item.quantity }}</td>
+              <td class="item-rate">{{ formatCurrency(item.price) }}</td>
+              <td class="item-discount">{{ item.discount }}%</td>
+              <td class="item-tax">{{ item.tax }}%</td>
+              <td class="item-amount">{{ formatCurrency(item.total) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totals Section -->
+      <div class="totals-section">
+        <div class="totals-table">
+          <div class="total-row">
+            <span class="total-label">Subtotal:</span>
+            <span class="total-value">{{ formatCurrency(quotationData.subtotal) }}</span>
+          </div>
+          <div class="total-row discount" *ngIf="quotationData.totalDiscount > 0">
+            <span class="total-label">Total Discount:</span>
+            <span class="total-value">- {{ formatCurrency(quotationData.totalDiscount) }}</span>
+          </div>
+          <div class="total-row tax">
+            <span class="total-label">Total Tax:</span>
+            <span class="total-value">+ {{ formatCurrency(quotationData.totalTax) }}</span>
+          </div>
+          <div class="total-divider"></div>
+          <div class="total-row grand-total">
+            <span class="total-label">Grand Total:</span>
+            <span class="total-value">{{ formatCurrency(quotationData.grandTotal) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms & Conditions -->
+      <div class="terms-section" *ngIf="quotationData.termsAndConditions">
+        <h4 class="terms-heading">Terms & Conditions:</h4>
+        <div class="terms-content">
+          {{ quotationData.termsAndConditions }}
+        </div>
+      </div>
+
+      <!-- Additional Notes -->
+      <div class="notes-section" *ngIf="quotationData.notes">
+        <h4 class="notes-heading">Additional Notes:</h4>
+        <div class="notes-content">
+          {{ quotationData.notes }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="doc-footer">
+        <p class="footer-text">Thank you for your business!</p>
+        <p class="footer-signature">
+          <strong>Authorized Signature</strong><br>
+          {{ companyInfo.name }}
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Error State -->
+<div class="error-state" *ngIf="!quotationData">
+  <i class="fas fa-exclamation-triangle"></i>
+  <h3>Quotation Not Found</h3>
+  <p>Unable to load quotation details. Please try again.</p>
+  <button class="btn-primary" (click)="goBack()">
+    <i class="fas fa-arrow-left"></i>
+    <span>Back to Quotations</span>
+  </button>
+</div>

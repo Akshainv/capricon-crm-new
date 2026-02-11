@@ -1,0 +1,99 @@
+<header class="header">
+  <div class="header-left">
+    <!-- Removed: menu-toggle button with 3-lines icon -->
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search leads, quotations, deals...">
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- 🌓 THEME TOGGLE BUTTON (Kept) -->
+    <button class="header-btn theme-toggle" (click)="toggleTheme()" [title]="getThemeLabel()"
+      [class.light-mode]="currentTheme === 'light'">
+      <i class="fas" [ngClass]="getThemeIcon()"></i>
+    </button>
+
+    <!-- 🔔 NOTIFICATION BELL -->
+    <div class="header-dropdown notification-dropdown">
+      <button class="header-btn notification-btn" (click)="toggleNotifications()" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge" *ngIf="((notificationService.unreadCount$ | async) || 0) > 0">
+          {{ notificationService.unreadCount$ | async }}
+        </span>
+      </button>
+
+      <div class="dropdown-menu notification-menu" [class.show]="showNotifications">
+        <div class="dropdown-header">
+          <h4>Notifications</h4>
+          <span class="badge-count">{{ (notificationService.unreadCount$ | async) || 0 }} New</span>
+        </div>
+
+        <div class="dropdown-body">
+          <div *ngIf="((notificationService.notifications$ | async)?.length || 0) === 0" class="empty-notifications">
+            <i class="fas fa-bell-slash"></i>
+            <p>No new notifications</p>
+          </div>
+
+          <div class="notification-item" *ngFor="let notification of (notificationService.notifications$ | async)"
+            (click)="handleNotificationClick(notification)">
+            <div class="notification-icon" [ngClass]="notification.type">
+              <i class="fas" [ngClass]="notification.icon"></i>
+            </div>
+            <div class="notification-content">
+              <p class="notification-text">{{ notification.message }}</p>
+              <span class="notification-time">{{ formatTime(notification.time) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown-footer" *ngIf="((notificationService.notifications$ | async)?.length || 0) > 0">
+          <a href="javascript:void(0)" (click)="markAllAsRead($event)">
+            <i class="fas fa-check-double"></i>
+            Mark all as read
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile (Kept) -->
+    <div class="header-dropdown">
+      <button class="header-btn profile-btn" (click)="toggleProfile()" title="Profile">
+        <div class="profile-avatar">
+          {{ userInitials }}
+        </div>
+        <span class="profile-name">{{ userName }}</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+
+      <div class="dropdown-menu profile-menu" [class.show]="showProfile">
+        <div class="profile-info">
+          <div class="profile-avatar-large">
+            {{ userInitials }}
+          </div>
+          <h4>{{ userName }}</h4>
+          <p>{{ userEmail }}</p>
+          <span class="role-badge">{{ userRole }}</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-body">
+          <a (click)="navigateTo('/profile')" class="dropdown-item">
+            <i class="fas fa-user"></i>
+            <span>My Profile</span>
+          </a>
+          <a (click)="navigateTo('/dashboard')" class="dropdown-item">
+            <i class="fas fa-chart-line"></i>
+            <span>My Dashboard</span>
+          </a>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-footer">
+          <a (click)="logout()" class="logout-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

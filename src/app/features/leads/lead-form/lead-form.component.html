@@ -1,0 +1,124 @@
+<!-- src/app/features/leads/lead-form/lead-form.component.html -->
+<div class="form-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>{{ isEditMode ? ' Edit Lead' : '+ Add New Lead' }}</h1>
+      <p>{{ isEditMode ? 'Update lead information' : 'Enter customer details to create a new lead' }}</p>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <form [formGroup]="leadForm" (ngSubmit)="onSubmit()">
+
+      <!-- Basic Information Section -->
+      <div class="form-section">
+        <h3 class="section-title"> Basic Information</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">
+              Full Name <span class="required">*</span>
+            </label>
+            <input type="text" id="name" formControlName="name" placeholder="Enter customer name"
+              [class.invalid]="isFieldInvalid('name')" />
+            <span class="error-message" *ngIf="isFieldInvalid('name')">
+              {{ getErrorMessage('name') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="email">
+              Email Address <span class="required">*</span>
+            </label>
+            <input type="email" id="email" formControlName="email" placeholder="customer@example.com"
+              [class.invalid]="isFieldInvalid('email')" />
+            <span class="error-message" *ngIf="isFieldInvalid('email')">
+              {{ getErrorMessage('email') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">
+              Phone Number <span class="required">*</span>
+            </label>
+            <input type="tel" id="phone" formControlName="phone" placeholder="+91 9876543210"
+              [class.invalid]="isFieldInvalid('phone')" />
+            <span class="error-message" *ngIf="isFieldInvalid('phone')">
+              {{ getErrorMessage('phone') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="company">
+              Company Name
+            </label>
+            <input type="text" id="company" formControlName="company" placeholder="Company name (optional)" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Lead Details Section -->
+      <div class="form-section">
+        <h3 class="section-title"> Lead Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="source">
+              Lead Source <span class="required">*</span>
+            </label>
+            <select id="source" formControlName="source" [class.invalid]="isFieldInvalid('source')">
+              <option value="">Select source...</option>
+              <option *ngFor="let source of sources" [value]="source">
+                {{ source }}
+              </option>
+            </select>
+            <span class="error-message" *ngIf="isFieldInvalid('source')">
+              {{ getErrorMessage('source') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="assignedTo">
+              Assign To <span class="required">*</span>
+            </label>
+            <select id="assignedTo" formControlName="assignedTo" [class.invalid]="isFieldInvalid('assignedTo')">
+              <option value="">Select sales person...</option>
+              <option *ngFor="let person of salesPersons" [value]="person">
+                {{ person }}
+              </option>
+            </select>
+            <span class="error-message" *ngIf="isFieldInvalid('assignedTo')">
+              {{ getErrorMessage('assignedTo') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group form-group-full">
+            <label for="notes">
+              Notes / Comments
+            </label>
+            <textarea id="notes" formControlName="notes" rows="5"
+              placeholder="Additional information about the lead..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-save"></i>
+          <span>{{ isEditMode ? 'Update Lead' : 'Save Lead' }}</span>
+        </button>
+        <button type="button" class="btn-secondary" (click)="onCancel()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

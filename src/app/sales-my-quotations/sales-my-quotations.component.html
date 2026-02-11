@@ -1,0 +1,190 @@
+<!-- src/app/sales-my-quotations/sales-my-quotations.component.html -->
+<div class="quotations-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>📋 My Quotations</h1>
+      <p>View and manage your quotations</p>
+    </div>
+    <button class="btn-primary" (click)="createQuotation()">
+      <i class="fas fa-plus"></i>
+      <span>Create Quotation</span>
+    </button>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-grid">
+    <div class="stat-card clickable" (click)="setFilterStatus('Pending')">
+      <div class="stat-icon total-quotes">
+        <i class="fas fa-file-invoice"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Total Quotations</div>
+        <div class="stat-value">{{ totalQuotations }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card clickable" (click)="setFilterStatus('Approved')">
+      <div class="stat-icon approved">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Approved Quotations</div>
+        <div class="stat-value">{{ approvedCount }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card clickable" (click)="setFilterStatus('Rejected')">
+      <div class="stat-icon rejected">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Rejected Quotations</div>
+        <div class="stat-value">{{ rejectedCount }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Section -->
+  <div class="filters-section">
+    <div class="filter-controls">
+      <!-- Status Filter -->
+      <div class="status-filter">
+        <select [(ngModel)]="selectedStatus" (change)="setFilterStatus($any($event.target).value)"
+          class="status-select">
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search quotations..." [(ngModel)]="searchTerm"
+          (input)="applyFiltersAndSort()" />
+      </div>
+
+      <!-- Date Filter -->
+      <div class="date-filter" style="margin-left: 1rem;">
+        <input type="date" [(ngModel)]="dateFilter" (change)="applyFiltersAndSort()" class="date-input" />
+      </div>
+
+      <button class="btn-clear-filter" (click)="clearFilters()"
+        *ngIf="searchTerm || selectedStatus !== 'Pending' || dateFilter" style="margin-left: 1rem;">
+        <i class="fas fa-times"></i>
+        <span>Clear Filters</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <p>Loading quotations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state">
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Quotations Table -->
+  <div class="table-card" *ngIf="!loading">
+    <div class="table-container">
+      <table class="quotations-table">
+        <thead>
+          <tr>
+            <th>Quote #</th>
+            <th>Customer</th>
+            <th>Company</th>
+            <th>Quote Date</th>
+            <th>Valid Until</th>
+            <th>Elevator Type</th>
+            <th class="text-center">Status</th>
+            <th *ngIf="selectedStatus === 'Approved'" class="text-center">Send to Client</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let quote of paginatedQuotations" class="table-row">
+            <td class="quote-number">{{ quote.quoteNumber }}</td>
+            <td>
+              <div class="customer-info">
+                <div class="customer-name">{{ quote.customerName || 'N/A' }}</div>
+                <div class="customer-contact">{{ quote.customerPhone || 'N/A' }}</div>
+              </div>
+            </td>
+            <td>
+              <div class="company-info">{{ quote.customerCompany || quote.companyName || 'N/A' }}</div>
+            </td>
+            <td>
+              <div class="date-info">{{ formatDate(quote.quoteDate) }}</div>
+            </td>
+            <td>
+              <div class="date-info">{{ formatDate(quote.validUntil) }}</div>
+            </td>
+            <td>
+              <div class="elevator-info">
+                <span class="elevator-icon">{{ getElevatorTypeIcon(quote.elevatorType || '') }}</span>
+                {{ quote.elevatorType || 'N/A' }}
+              </div>
+            </td>
+            <td class="text-center">
+              <!-- Status Label Logic -->
+              <div class="status-display" [ngClass]="{
+                    'status-pending': ($any(quote).status?.toLowerCase() === 'sent' || $any(quote).status?.toLowerCase() === 'pending' || $any(quote).status?.toLowerCase() === 'draft'), 
+                    'status-approved': $any(quote).status?.toLowerCase() === 'approved', 
+                    'status-rejected': $any(quote).status?.toLowerCase() === 'rejected'
+                  }">
+                {{ ($any(quote).status?.toLowerCase() === 'approved' ? 'Approved' :
+                ($any(quote).status?.toLowerCase() === 'rejected' ? 'Rejected' : 'Sent')) }}
+              </div>
+            </td>
+            <td *ngIf="selectedStatus === 'Approved'" class="text-center">
+              <!-- Send Button only for Approved -->
+              <button class="btn-send-client" *ngIf="$any(quote).status?.toLowerCase() === 'approved'"
+                (click)="sendToClient(quote)" title="Send to Client" style="margin: 0 auto;">
+                <i class="fas fa-paper-plane"></i> Send
+              </button>
+            </td>
+            <td class="text-center">
+              <div class="action-buttons" style="justify-content: center;">
+                <button class="action-btn btn-view" (click)="viewQuotation(getQuotationId(quote))" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+
+                <!-- Deal Button only for Approved -->
+                <button class="action-btn btn-deal" *ngIf="$any(quote).status?.toLowerCase() === 'approved'"
+                  (click)="convertToDeal(getQuotationId(quote))" title="Convert to Deal">
+                  <i class="fas fa-handshake"></i>
+                </button>
+
+                <button class="action-btn btn-delete" (click)="deleteQuotation(getQuotationId(quote))" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredQuotations.length === 0 && !loading" class="empty-state">
+        <i class="fas fa-file-invoice"></i>
+        <h3>No quotations found</h3>
+
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-controls" *ngIf="filteredQuotations.length > 0">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

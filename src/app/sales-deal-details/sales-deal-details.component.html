@@ -1,0 +1,253 @@
+<!-- src/app/sales-deal-details/sales-deal-details.component.html -->
+<div class="deal-details-container">
+  
+  <!-- Header -->
+  <div class="details-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="header-info">
+        <h1 class="page-title">{{ dealDetails.title }}</h1>
+        <span class="status-badge" [ngClass]="getStatusClass(dealDetails.status)">
+          {{ getStatusLabel(dealDetails.status) }}
+        </span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-action btn-quotation" (click)="createQuotation()">
+        <i class="fas fa-file-invoice"></i>
+        <span>Create Quotation</span>
+      </button>
+      <button class="btn-action btn-edit" (click)="editDeal()">
+        <i class="fas fa-edit"></i>
+        <span>Edit</span>
+      </button>
+      <button 
+        *ngIf="dealDetails.status === 'won'" 
+        class="btn-action btn-convert" 
+        (click)="convertToProject()"
+      >
+        <i class="fas fa-arrow-right"></i>
+        <span>Convert to Project</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon amount">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="metric-content">
+        <div class="metric-label">Deal Value</div>
+        <div class="metric-value">{{ formatCurrency(dealDetails.amount) }}</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon probability">
+        <i class="fas fa-chart-pie"></i>
+      </div>
+      <div class="metric-content">
+        <div class="metric-label">Probability</div>
+        <div class="metric-value">{{ dealDetails.probability }}%</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon date">
+        <i class="fas fa-calendar"></i>
+      </div>
+      <div class="metric-content">
+        <div class="metric-label">Expected Close</div>
+        <div class="metric-value">{{ formatDate(dealDetails.closeDate) }}</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon type">
+        <i class="fas fa-elevator"></i>
+      </div>
+      <div class="metric-content">
+        <div class="metric-label">Type</div>
+        <div class="metric-value">{{ dealDetails.elevatorType }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'overview'"
+        (click)="setActiveTab('overview')"
+      >
+        Overview
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'timeline'"
+        (click)="setActiveTab('timeline')"
+      >
+        Timeline
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'quotations'"
+        (click)="setActiveTab('quotations')"
+      >
+        Quotations ({{ dealDetails.quotations.length }})
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'documents'"
+        (click)="setActiveTab('documents')"
+      >
+        Documents ({{ dealDetails.documents.length }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="content-grid">
+    
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="content-area">
+      
+      <!-- Contact Information -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3><i class="fas fa-building"></i> Company & Contact</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-row">
+            <div class="info-label">Company</div>
+            <div class="info-value">{{ dealDetails.company }}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Contact Person</div>
+            <div class="info-value">{{ dealDetails.contactPerson }}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Phone</div>
+            <div class="info-value">{{ dealDetails.phone }}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Email</div>
+            <div class="info-value">{{ dealDetails.email }}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Address</div>
+            <div class="info-value">{{ dealDetails.address }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage History -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3><i class="fas fa-history"></i> Stage History</h3>
+        </div>
+        <div class="card-body">
+          <div class="stage-timeline">
+            <div *ngFor="let stage of dealDetails.stageHistory" class="stage-item">
+              <div class="stage-dot"></div>
+              <div class="stage-content">
+                <div class="stage-name">{{ stage.stage }}</div>
+                <div class="stage-date">{{ formatDate(stage.date) }}</div>
+                <div class="stage-duration">{{ stage.duration }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Actions -->
+      <div class="info-card">
+        <div class="card-header">
+          <h3><i class="fas fa-tasks"></i> Next Actions</h3>
+        </div>
+        <div class="card-body">
+          <ul class="actions-list">
+            <li *ngFor="let action of dealDetails.nextActions">
+              <i class="fas fa-check-circle"></i>
+              <span>{{ action }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Timeline Tab -->
+    <div *ngIf="activeTab === 'timeline'" class="content-area">
+      <div class="timeline-container">
+        <div *ngFor="let event of dealDetails.timeline" class="timeline-item">
+          <div class="timeline-dot" [style.background-color]="event.color"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div class="timeline-icon" [style.color]="event.color">
+                <i class="fas" [ngClass]="event.icon"></i>
+              </div>
+              <div class="timeline-info">
+                <h4>{{ event.title }}</h4>
+                <p class="timeline-date">{{ formatDate(event.date) }}</p>
+              </div>
+            </div>
+            <p class="timeline-description">{{ event.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quotations Tab -->
+    <div *ngIf="activeTab === 'quotations'" class="content-area">
+      <div class="quotations-list">
+        <div *ngFor="let quotation of dealDetails.quotations" class="quotation-item" (click)="viewQuotation(quotation)">
+          <div class="quotation-icon">
+            <i class="fas fa-file-invoice"></i>
+          </div>
+          <div class="quotation-info">
+            <div class="quotation-number">{{ quotation.quoteNumber }}</div>
+            <div class="quotation-date">{{ formatDate(quotation.date) }}</div>
+          </div>
+          <div class="quotation-amount">{{ formatCurrency(quotation.amount) }}</div>
+          <span class="quotation-status" [ngClass]="'status-' + quotation.status">
+            {{ quotation.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Tab -->
+    <div *ngIf="activeTab === 'documents'" class="content-area">
+      <div class="documents-list">
+        <div *ngFor="let doc of dealDetails.documents" class="document-item">
+          <div class="document-icon">
+            <i class="fas fa-file-pdf" *ngIf="doc.type === 'PDF'"></i>
+            <i class="fas fa-file-word" *ngIf="doc.type === 'DOCX'"></i>
+          </div>
+          <div class="document-info">
+            <div class="document-name">{{ doc.name }}</div>
+            <div class="document-meta">
+              <span>{{ doc.size }}</span>
+              <span>•</span>
+              <span>{{ doc.uploadedBy }}</span>
+              <span>•</span>
+              <span>{{ formatDate(doc.uploadedDate) }}</span>
+            </div>
+          </div>
+          <button class="btn-download" (click)="downloadDocument(doc)">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

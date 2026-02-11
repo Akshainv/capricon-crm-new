@@ -1,0 +1,20 @@
+<!-- src/app/layouts/main-layout/main-layout.component.html -->
+<div class="layout-wrapper">
+  <!-- Admin Sidebar (only for /admin/* routes) -->
+  <app-sidebar *ngIf="isAdminRoute"></app-sidebar>
+
+  <!-- Sales Sidebar (default for all other routes) -->
+  <app-sales-sidebar *ngIf="!isAdminRoute"></app-sales-sidebar>
+
+  <div class="main-container">
+    <!-- Admin Header (only for /admin/* routes) -->
+    <app-header *ngIf="isAdminRoute"></app-header>
+
+    <!-- Sales Header (default for all other routes) -->
+    <app-sales-header *ngIf="!isAdminRoute"></app-sales-header>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

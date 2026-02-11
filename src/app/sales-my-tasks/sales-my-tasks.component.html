@@ -1,0 +1,194 @@
+<div class="task-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>✅ My Tasks</h1>
+      <p>Manage your daily follow-ups and action items</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div 
+      class="stat-card today" 
+      [class.active]="filterStatus === 'today'"
+      (click)="setFilter('today')"
+    >
+      <div class="stat-icon">
+        <i class="fas fa-calendar-day"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Today</div>
+        <div class="stat-value">{{ getTaskCounts().today }}</div>
+      </div>
+    </div>
+
+    <div 
+      class="stat-card upcoming" 
+      [class.active]="filterStatus === 'upcoming'"
+      (click)="setFilter('upcoming')"
+    >
+      <div class="stat-icon">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value">{{ getTaskCounts().upcoming }}</div>
+      </div>
+    </div>
+
+    <div 
+      class="stat-card overdue" 
+      [class.active]="filterStatus === 'overdue'"
+      (click)="setFilter('overdue')"
+    >
+      <div class="stat-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value">{{ getTaskCounts().overdue }}</div>
+      </div>
+    </div>
+
+    <div 
+      class="stat-card completed" 
+      [class.active]="filterStatus === 'completed'"
+      (click)="setFilter('completed')"
+    >
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value">{{ getTaskCounts().completed }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-filters">
+    <button 
+      class="category-btn"
+      [class.active]="selectedCategory === 'all'"
+      (click)="filterByCategory('all')"
+    >
+      <i class="fas fa-list"></i>
+      <span>All</span>
+    </button>
+    
+    <button 
+      *ngFor="let cat of taskCategories"
+      class="category-btn"
+      [class.active]="selectedCategory === cat.value"
+      (click)="filterByCategory(cat.value)"
+      [style.--category-color]="getCategoryColor(cat.value)"
+    >
+      <i class="fas" [ngClass]="cat.icon"></i>
+      <span>{{ cat.label }}</span>
+    </button>
+  </div>
+
+  <div class="tasks-section">
+    <div class="section-header">
+      <h3>
+        <span *ngIf="filterStatus === 'all'">All Pending Tasks</span>
+        <span *ngIf="filterStatus === 'today'">Today's Tasks</span>
+        <span *ngIf="filterStatus === 'upcoming'">Upcoming Tasks</span>
+        <span *ngIf="filterStatus === 'overdue'">⚠️ Overdue Tasks</span>
+        <span *ngIf="filterStatus === 'completed'">✅ Completed Tasks</span>
+      </h3>
+      <button class="btn-filter-all" (click)="setFilter('all')" *ngIf="filterStatus !== 'all'">
+        <i class="fas fa-list"></i>
+        <span>Show All</span>
+      </button>
+    </div>
+
+    <div class="tasks-list">
+      <div 
+        class="task-card" 
+        *ngFor="let task of filteredTasks"
+        [class.completed]="task.status === 'completed'"
+        [class.overdue]="isOverdue(task)"
+      >
+        <div class="task-checkbox">
+          <input 
+            type="checkbox" 
+            [checked]="task.status === 'completed'"
+            (change)="toggleTaskStatus(task.id)"
+            [id]="'task-' + task.id"
+          />
+          <label [for]="'task-' + task.id"></label>
+        </div>
+
+        <div class="task-indicator" [style.background]="getCategoryColor(task.category)"></div>
+
+        <div class="task-content">
+          <div class="task-header">
+            <div class="task-title-section">
+              <h4 [class.strikethrough]="task.status === 'completed'">
+                {{ task.title }}
+              </h4>
+              <span class="category-badge" 
+                    [style.background]="getCategoryColor(task.category) + '20'"
+                    [style.color]="getCategoryColor(task.category)">
+                <i class="fas" [ngClass]="getCategoryIcon(task.category)"></i>
+                {{ task.category === 'site-visit' ? 'Site Visit' : (task.category | titlecase) }}
+              </span>
+            </div>
+            <div class="task-meta-right">
+              <span class="priority-badge" [ngClass]="getPriorityClass(task.priority)">
+                {{ task.priority }}
+              </span>
+            </div>
+          </div>
+
+          <p class="task-description" *ngIf="task.description">
+            {{ task.description }}
+          </p>
+
+          <div class="task-footer">
+            <span class="task-due" 
+                  [class.overdue-text]="isOverdue(task)" 
+                  [class.today-text]="isDueToday(task)">
+              <i class="fas fa-clock"></i>
+              {{ formatDueDate(task.dueDate) }}
+            </span>
+
+            <button 
+              class="task-lead-link" 
+              *ngIf="task.leadId"
+              (click)="viewLead(task.leadId)"
+            >
+              <i class="fas fa-user"></i>
+              {{ task.leadName }}
+            </button>
+
+            <button 
+              class="task-deal-link" 
+              *ngIf="task.dealId"
+              (click)="viewDeal(task.dealId)"
+            >
+              <i class="fas fa-handshake"></i>
+              {{ task.dealName }}
+            </button>
+          </div>
+        </div>
+        
+        <div class="task-actions">
+          <button class="action-btn btn-delete" (click)="deleteTask(task.id)" title="Delete Task">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredTasks.length === 0">
+      <i class="fas fa-tasks"></i>
+      <h3>No tasks found</h3>
+      <p *ngIf="filterStatus === 'all' && selectedCategory === 'all'">You're all caught up!</p>
+      <p *ngIf="filterStatus === 'today'">No tasks due today</p>
+      <p *ngIf="filterStatus === 'upcoming'">No upcoming tasks</p>
+      <p *ngIf="filterStatus === 'overdue'">Great! No overdue tasks</p>
+      <p *ngIf="filterStatus === 'completed'">No completed tasks yet</p>
+      <p *ngIf="selectedCategory !== 'all' && filterStatus === 'all'">No tasks in this category</p>
+    </div>
+  </div>
+</div>

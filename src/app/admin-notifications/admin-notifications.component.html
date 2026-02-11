@@ -1,0 +1,114 @@
+<!-- src/app/features/notifications/admin-notifications/admin-notifications.component.html -->
+<div class="notifications-container">
+  <!-- Header -->
+  <div class="notifications-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="page-title">
+        <i class="fas fa-bell"></i>
+        Notifications
+      </h1>
+      <span class="unread-badge" *ngIf="getUnreadCount() > 0">
+        {{ getUnreadCount() }} new
+      </span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-mark-all" (click)="markAllAsRead()" [disabled]="getUnreadCount() === 0">
+        <i class="fas fa-check-double"></i>
+        Mark all as read
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="notifications-filters">
+    <button 
+      class="filter-btn" 
+      [class.active]="activeFilter === 'all'"
+      (click)="setFilter('all')"
+    >
+      <i class="fas fa-list"></i>
+      All ({{ getAllCount() }})
+    </button>
+    <button 
+      class="filter-btn" 
+      [class.active]="activeFilter === 'unread'"
+      (click)="setFilter('unread')"
+    >
+      <i class="fas fa-envelope"></i>
+      Unread ({{ getUnreadCount() }})
+    </button>
+    <button 
+      class="filter-btn" 
+      [class.active]="activeFilter === 'read'"
+      (click)="setFilter('read')"
+    >
+      <i class="fas fa-envelope-open"></i>
+      Read ({{ getReadCount() }})
+    </button>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-list">
+    <div 
+      *ngFor="let notification of filteredNotifications" 
+      class="notification-card"
+      [class.unread]="!notification.isRead"
+      [class]="notification.type"
+      (click)="handleNotificationClick(notification)"
+    >
+      <div class="notification-icon-wrapper" [class]="notification.type">
+        <i class="fas {{ notification.icon }}"></i>
+      </div>
+      
+      <div class="notification-content">
+        <div class="notification-header">
+          <h3 class="notification-title">{{ notification.title }}</h3>
+          <span class="notification-time">
+            <i class="fas fa-clock"></i>
+            {{ notification.time }}
+          </span>
+        </div>
+        <p class="notification-message">{{ notification.message }}</p>
+        
+        <div class="notification-actions">
+          <button 
+            *ngIf="!notification.isRead"
+            class="action-btn mark-read"
+            (click)="markAsRead(notification); $event.stopPropagation()"
+          >
+            <i class="fas fa-check"></i>
+            Mark as read
+          </button>
+          <button 
+            *ngIf="notification.actionLink"
+            class="action-btn view-details"
+          >
+            <i class="fas fa-external-link-alt"></i>
+            View Details
+          </button>
+          <button 
+            class="action-btn delete"
+            (click)="deleteNotification(notification.id, $event)"
+          >
+            <i class="fas fa-trash-alt"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div class="notification-indicator" *ngIf="!notification.isRead"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredNotifications.length === 0">
+      <i class="fas fa-bell-slash"></i>
+      <h3>No notifications found</h3>
+      <p *ngIf="activeFilter === 'unread'">You're all caught up! No unread notifications.</p>
+      <p *ngIf="activeFilter === 'read'">No read notifications yet.</p>
+      <p *ngIf="activeFilter === 'all'">You don't have any notifications at the moment.</p>
+    </div>
+  </div>
+</div>

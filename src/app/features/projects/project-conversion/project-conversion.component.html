@@ -1,0 +1,293 @@
+<!-- src/app/features/projects/project-conversion/project-conversion.component.html -->
+<div class="conversion-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1> Convert Deal to Project</h1>
+      <p>Create a new project and assign installation team</p>
+    </div>
+  </div>
+
+  <!-- Deal Summary Card -->
+  <div class="deal-summary" *ngIf="dealData">
+    <div class="summary-badge">
+      <i class="fas fa-trophy"></i>
+      <span>Deal Won</span>
+    </div>
+    
+    <div class="summary-content">
+      <h3>{{ dealData.title }}</h3>
+      <div class="summary-details">
+        <div class="detail-item">
+          <span class="label">Deal Value:</span>
+          <span class="value">{{ formatCurrency(dealData.amount) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Customer:</span>
+          <span class="value">{{ dealData.company }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Type:</span>
+          <span class="value">{{ dealData.elevatorType }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversion Form -->
+  <form [formGroup]="conversionForm" (ngSubmit)="onSubmit()">
+    <div class="form-card">
+      
+      <!-- Project Information -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-project-diagram"></i>
+          <span>Project Information</span>
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Project Name *</label>
+            <input 
+              type="text" 
+              formControlName="projectName"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('projectName')"
+              placeholder="Enter project name"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('projectName')">
+              {{ getErrorMessage('projectName') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Project Code *</label>
+            <input 
+              type="text" 
+              formControlName="projectCode"
+              class="form-control"
+              readonly
+              style="background: rgba(0, 0, 0, 0.6); cursor: not-allowed;"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Assignment -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-users"></i>
+          <span>Team Assignment</span>
+        </h3>
+        
+        <div class="form-group">
+          <label>Installation Team Leader *</label>
+          <select 
+            formControlName="teamLeader"
+            class="form-control"
+            [class.invalid]="isFieldInvalid('teamLeader')"
+          >
+            <option value="">Select team leader...</option>
+            <option *ngFor="let leader of teamLeaders" [value]="leader.id">
+              {{ leader.name }} - {{ leader.role }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('teamLeader')">
+            {{ getErrorMessage('teamLeader') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Team Members * (Select multiple)</label>
+          <div class="team-members-grid">
+            <div 
+              *ngFor="let member of teamMembers"
+              class="member-card"
+              [class.selected]="isSelected(member.id)"
+              (click)="toggleTeamMember(member.id)"
+            >
+              <div class="member-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="member-info">
+                <div class="member-name">{{ member.name }}</div>
+                <div class="member-role">{{ member.role }}</div>
+              </div>
+              <div class="member-checkbox">
+                <i class="fas fa-check" *ngIf="isSelected(member.id)"></i>
+              </div>
+            </div>
+          </div>
+          <div class="selected-count" *ngIf="selectedMembers.length > 0">
+            <i class="fas fa-users"></i>
+            <span>{{ selectedMembers.length }} member(s) selected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-calendar"></i>
+          <span>Project Schedule</span>
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Expected Start Date *</label>
+            <input 
+              type="date" 
+              formControlName="startDate"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('startDate')"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('startDate')">
+              {{ getErrorMessage('startDate') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Expected Completion Date *</label>
+            <input 
+              type="date" 
+              formControlName="completionDate"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('completionDate')"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('completionDate')">
+              {{ getErrorMessage('completionDate') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Site Information -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Site Information</span>
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Site Address *</label>
+            <textarea 
+              formControlName="siteAddress"
+              class="form-control"
+              rows="3"
+              [class.invalid]="isFieldInvalid('siteAddress')"
+              placeholder="Complete installation site address..."
+            ></textarea>
+            <span class="error-message" *ngIf="isFieldInvalid('siteAddress')">
+              {{ getErrorMessage('siteAddress') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Site Contact Person *</label>
+            <input 
+              type="text" 
+              formControlName="contactPerson"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('contactPerson')"
+              placeholder="On-site contact name"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('contactPerson')">
+              {{ getErrorMessage('contactPerson') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Contact Phone *</label>
+            <input 
+              type="tel" 
+              formControlName="contactPhone"
+              class="form-control"
+              [class.invalid]="isFieldInvalid('contactPhone')"
+              placeholder="+91 9876543210"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('contactPhone')">
+              {{ getErrorMessage('contactPhone') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input 
+              type="email" 
+              formControlName="contactEmail"
+              class="form-control"
+              placeholder="site.contact@example.com"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Details -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Additional Details</span>
+        </h3>
+        
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Technical Specifications</label>
+            <textarea 
+              formControlName="specifications"
+              class="form-control"
+              rows="4"
+              placeholder="Elevator specifications, technical requirements..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Special Requirements</label>
+            <textarea 
+              formControlName="specialRequirements"
+              class="form-control"
+              rows="3"
+              placeholder="Any special requirements or considerations..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Handover Notes</label>
+            <textarea 
+              formControlName="handoverNotes"
+              class="form-control"
+              rows="3"
+              placeholder="Notes for the installation team..."
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn-cancel"
+          (click)="cancel()"
+          [disabled]="isSubmitting"
+        >
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+        
+        <button 
+          type="submit" 
+          class="btn-submit"
+          [disabled]="conversionForm.invalid || selectedMembers.length === 0 || isSubmitting"
+        >
+          <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+          <i class="fas fa-rocket" *ngIf="!isSubmitting"></i>
+          <span>{{ isSubmitting ? 'Creating Project...' : 'Create Project' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>

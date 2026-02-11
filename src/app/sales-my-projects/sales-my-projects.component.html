@@ -1,0 +1,265 @@
+<!-- src/app/sales-my-projects/sales-my-projects.component.html -->
+<div class="projects-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>🏗️ My Projects</h1>
+      <p>Track your won deals converted to active projects</p>
+    </div>
+    <button class="btn-refresh" (click)="refreshProjects()" [disabled]="loading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+      <span>Refresh</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading projects...</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon total">
+          <i class="fas fa-project-diagram"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">My Projects</div>
+          <div class="stat-value">{{ projects.length }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon active">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">In Progress</div>
+          <div class="stat-value">{{ getActiveProjects() }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon completed">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">{{ getCompletedProjects() }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon value">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Value</div>
+          <div class="stat-value">{{ formatCurrency(getTotalValue()) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="controls-section">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          placeholder="Search by project name, customer, code, or sales person..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch($event)"
+        />
+        <button 
+          *ngIf="searchTerm" 
+          class="clear-search-btn"
+          (click)="clearSearch()"
+          title="Clear search"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="filter-buttons">
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedFilter === 'all'"
+          (click)="filterByStatus('all')"
+        >
+          <i class="fas fa-list"></i>
+          <span>All</span>
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedFilter === 'planning'"
+          (click)="filterByStatus('planning')"
+        >
+          <i class="fas fa-clipboard-list"></i>
+          <span>Planning</span>
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedFilter === 'in_progress'"
+          (click)="filterByStatus('in_progress')"
+        >
+          <i class="fas fa-spinner"></i>
+          <span>In Progress</span>
+        </button>
+        <button 
+          class="filter-btn" 
+          [class.active]="selectedFilter === 'completed'"
+          (click)="filterByStatus('completed')"
+        >
+          <i class="fas fa-check-circle"></i>
+          <span>Completed</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Results Info -->
+    <div class="search-info" *ngIf="searchTerm">
+      <p>
+        <i class="fas fa-filter"></i>
+        Found <strong>{{ getFilteredProjects().length }}</strong> project(s) matching "<strong>{{ searchTerm }}</strong>"
+      </p>
+    </div>
+
+    <!-- Projects List -->
+    <div class="projects-list" *ngIf="getPaginatedProjects().length > 0">
+      <div 
+        *ngFor="let project of getPaginatedProjects()"
+        class="project-row"
+      >
+        <div class="project-main-info">
+          <div class="project-title-section">
+            <h3 class="project-name">{{ project.name }}</h3>
+            <span 
+              class="status-badge"
+              [style.background]="getStatusColor(project.status) + '33'"
+              [style.border-color]="getStatusColor(project.status)"
+              [style.color]="getStatusColor(project.status)"
+            >
+              <i class="fas" [ngClass]="getStatusIcon(project.status)"></i>
+              <span>{{ project.status | titlecase }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="project-details">
+          <div class="detail-item">
+            <i class="fas fa-building"></i>
+            <span class="detail-label">Client:</span>
+            <span class="detail-value">{{ project.customer }}</span>
+          </div>
+
+          <div class="detail-item">
+            <i class="fas fa-user-tie"></i>
+            <span class="detail-label">Sales Person:</span>
+            <span class="detail-value">{{ project.salesExecutive }}</span>
+          </div>
+
+          <div class="detail-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span class="detail-label">Start Date:</span>
+            <span class="detail-value">{{ formatDate(project.startDate) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <i class="fas fa-calendar-check"></i>
+            <span class="detail-label">Expected Completion:</span>
+            <span class="detail-value">{{ formatDate(project.expectedCompletion) }}</span>
+          </div>
+
+          <div class="detail-item">
+            <i class="fas fa-dollar-sign"></i>
+            <span class="detail-label">Project Value:</span>
+            <span class="detail-value value-highlight">{{ formatCurrency(project.value) }}</span>
+          </div>
+
+          <div class="detail-item progress-item">
+            <i class="fas fa-chart-line"></i>
+            <span class="detail-label">Progress:</span>
+            <div class="progress-inline">
+              <div class="progress-bar-bg">
+                <div 
+                  class="progress-bar-fill"
+                  [style.width.%]="project.progress"
+                  [style.background]="getProgressColor(project.progress)"
+                ></div>
+              </div>
+              <span class="progress-percentage">{{ project.progress }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="view-btn" (click)="viewProject(project)">
+            <i class="fas fa-eye"></i>
+            <span>View</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="getFilteredProjects().length > 0 && getTotalPages() > 1">
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
+      >
+        <i class="fas fa-chevron-left"></i>
+        <span>Previous</span>
+      </button>
+
+      <div class="pagination-numbers">
+        <button
+          *ngFor="let page of getPageNumbers()"
+          class="page-number"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn" 
+        [disabled]="currentPage === getTotalPages()"
+        (click)="nextPage()"
+      >
+        <span>Next</span>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="getFilteredProjects().length === 0">
+      <div class="empty-icon">
+        <i class="fas fa-project-diagram"></i>
+      </div>
+      <h3>No Projects Found</h3>
+      <p *ngIf="!searchTerm && selectedFilter === 'all'">
+        Projects from your won deals will appear here once converted by admin.
+      </p>
+      <p *ngIf="searchTerm">
+        No projects match your search "<strong>{{ searchTerm }}</strong>". Try different keywords.
+      </p>
+      <p *ngIf="!searchTerm && selectedFilter !== 'all'">
+        No projects match your current filter. Try adjusting your selection.
+      </p>
+      <button 
+        *ngIf="searchTerm || selectedFilter !== 'all'" 
+        class="reset-btn"
+        (click)="clearSearch(); filterByStatus('all')"
+      >
+        <i class="fas fa-redo"></i>
+        <span>Reset Filters</span>
+      </button>
+    </div>
+  </div>
+
+</div>

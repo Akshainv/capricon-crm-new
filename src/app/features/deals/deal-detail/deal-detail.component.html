@@ -1,0 +1,224 @@
+<!-- src/app/features/deals/deal-detail/deal-detail.component.html -->
+<div class="deal-detail-container">
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading deal details...</p>
+  </div>
+
+  <!-- Deal Details -->
+  <div *ngIf="!isLoading && deal" class="detail-content">
+    
+    <!-- Back Button -->
+    <button class="btn-back" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Pipeline</span>
+    </button>
+
+    <!-- Header Section -->
+    <div class="detail-header">
+      <div class="header-left">
+        <h1>{{ deal.title }}</h1>
+        <!-- ✅ REMOVED: Deal ID line -->
+      </div>
+      <div class="header-actions">
+        <button class="btn-edit" (click)="editDeal()">
+          <i class="fas fa-edit"></i>
+          <span>Edit Deal</span>
+        </button>
+        <button class="btn-delete" (click)="deleteDeal()">
+          <i class="fas fa-trash"></i>
+          <span>Delete</span>
+        </button>
+        <button 
+          *ngIf="getDealStatus() === 'won'" 
+          class="btn-convert"
+          (click)="convertToProject()"
+        >
+          <i class="fas fa-arrow-right"></i>
+          <span>Convert to Project</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Badge & Amount -->
+    <div class="status-amount-row">
+      <div class="status-badge" [style.background-color]="getStatusColor(getDealStatus()) + '20'" [style.color]="getStatusColor(getDealStatus())">
+        <i class="fas fa-circle"></i>
+        <span>{{ getStatusLabel(getDealStatus()) }}</span>
+      </div>
+      <div class="deal-amount">{{ formatCurrency(getDealAmount()) }}</div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid">
+      
+      <!-- Left Column - Deal Information -->
+      <div class="left-column">
+        
+        <!-- Contact Information -->
+        <div class="info-card">
+          <h3 class="card-title">
+            <i class="fas fa-building"></i>
+            <span>Contact Information</span>
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Company</label>
+              <div class="info-value">{{ deal.company }}</div>
+            </div>
+            <div class="info-item">
+              <label>Contact Person</label>
+              <div class="info-value">{{ deal.contactPerson }}</div>
+            </div>
+            <div class="info-item">
+              <label>Email</label>
+              <div class="info-value">
+                <a [href]="'mailto:' + deal.email">{{ deal.email }}</a>
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Phone</label>
+              <div class="info-value">
+                <a [href]="'tel:' + deal.phone">{{ deal.phone }}</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deal Specifications -->
+        <div class="info-card">
+          <h3 class="card-title">
+            <i class="fas fa-elevator"></i>
+            <span>Elevator Specifications</span>
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Elevator Type</label>
+              <div class="info-value">{{ deal.elevatorType }}</div>
+            </div>
+            <div class="info-item">
+              <label>Number of Floors</label>
+              <div class="info-value">{{ deal.floors || 'N/A' }} Floors</div>
+            </div>
+            <div class="info-item">
+              <label>Quantity</label>
+              <div class="info-value">{{ deal.quantity || 1 }} Unit(s)</div>
+            </div>
+            <div class="info-item">
+              <label>Deal Amount</label>
+              <div class="info-value highlight">{{ formatCurrency(getDealAmount()) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales Information -->
+        <div class="info-card">
+          <h3 class="card-title">
+            <i class="fas fa-chart-line"></i>
+            <span>Sales Information</span>
+          </h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Probability</label>
+              <div class="info-value">
+                <div class="probability-container">
+                  <span>{{ getDealProbability() }}%</span>
+                  <div class="probability-bar">
+                    <div class="probability-fill" [style.width.%]="getDealProbability()"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Expected Close Date</label>
+              <div class="info-value">{{ formatDate(getDealCloseDate()) }}</div>
+            </div>
+            <div class="info-item">
+              <label>Assigned To</label>
+              <div class="info-value">
+                <i class="fas fa-user"></i>
+                <span>{{ deal.assignedTo || 'Not Assigned' }}</span>
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Lead Source</label>
+              <div class="info-value">{{ deal.leadSource }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address & Requirements -->
+        <div class="info-card" *ngIf="deal.address">
+          <h3 class="card-title">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Installation Address</span>
+          </h3>
+          <p class="text-content">{{ deal.address }}</p>
+        </div>
+
+        <div class="info-card" *ngIf="deal.requirements">
+          <h3 class="card-title">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Requirements</span>
+          </h3>
+          <p class="text-content">{{ deal.requirements }}</p>
+        </div>
+
+        <div class="info-card" *ngIf="deal.notes">
+          <h3 class="card-title">
+            <i class="fas fa-sticky-note"></i>
+            <span>Internal Notes</span>
+          </h3>
+          <p class="text-content">{{ deal.notes }}</p>
+        </div>
+
+      </div>
+
+      <!-- Right Column - Activity Timeline -->
+      <div class="right-column">
+        <div class="info-card activity-card">
+          <h3 class="card-title">
+            <i class="fas fa-history"></i>
+            <span>Activity Timeline</span>
+          </h3>
+          
+          <div class="timeline">
+            <div *ngFor="let activity of activities" class="timeline-item">
+              <div class="timeline-icon" [ngClass]="activity.type">
+                <i class="fas" [ngClass]="activity.icon"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="activity-header">
+                  <h4>{{ activity.title }}</h4>
+                  <span class="activity-time">{{ formatDateTime(activity.timestamp) }}</span>
+                </div>
+                <p class="activity-description">{{ activity.description }}</p>
+                <div class="activity-footer" *ngIf="activity.userName">
+                  <i class="fas fa-user"></i>
+                  <span>{{ activity.userName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !deal" class="error-state">
+    <i class="fas fa-exclamation-triangle"></i>
+    <h2>Deal Not Found</h2>
+    <p>The deal you're looking for doesn't exist or has been deleted.</p>
+    <button class="btn-primary" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to Pipeline</span>
+    </button>
+  </div>
+
+</div>

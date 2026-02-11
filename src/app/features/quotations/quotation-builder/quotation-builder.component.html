@@ -1,0 +1,442 @@
+<!-- src/app/features/quotations/quotation-builder/quotation-builder.component.html -->
+<div class="quotation-builder-container">
+  
+  <!-- Progress Steps -->
+  <div class="progress-steps">
+    <div class="step-item" [class.completed]="currentStep > 1" [class.active]="currentStep === 1">
+      <div class="step-circle">
+        <span *ngIf="currentStep > 1">✓</span>
+        <span *ngIf="currentStep <= 1">1</span>
+      </div>
+      <div class="step-label">Customer Details</div>
+    </div>
+    <div class="step-connector" [class.completed]="currentStep > 1"></div>
+
+    <div class="step-item" [class.completed]="currentStep > 2" [class.active]="currentStep === 2">
+      <div class="step-circle">
+        <span *ngIf="currentStep > 2">✓</span>
+        <span *ngIf="currentStep <= 2">2</span>
+      </div>
+      <div class="step-label">Configure Elevator</div>
+    </div>
+    <div class="step-connector" [class.completed]="currentStep > 2"></div>
+
+    <div class="step-item" [class.active]="currentStep === 3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Pricing & Options</div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="quotationForm" (ngSubmit)="onSubmit()">
+    <div class="form-card">
+      
+      <!-- Step 1: Customer Details -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <h2 class="form-title">👤 Customer Details</h2>
+
+        <!-- Lead Selection Section -->
+        <div class="config-section lead-selection-section">
+          <h3 class="section-title">📋 Select from Existing Leads</h3>
+          <div class="form-group">
+            <label>Select Lead (Optional)</label>
+            <select 
+              formControlName="selectedLeadId" 
+              class="form-control lead-select"
+            >
+              <option value="">-- Select a lead or enter manually --</option>
+              <option *ngFor="let lead of leads" [value]="lead.id">
+                {{ lead.name }} - {{ lead.company }} ({{ lead.phone }})
+              </option>
+            </select>
+            <p class="helper-text">
+              <i class="fas fa-info-circle"></i>
+              Select a lead to auto-fill customer information, or leave blank to enter details manually
+            </p>
+          </div>
+        </div>
+
+        <!-- Quote Dates Section -->
+        <div class="config-section">
+          <h3 class="section-title">📅 Quote Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Quote Date *</label>
+              <input 
+                type="date" 
+                formControlName="quoteDate"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('quoteDate')"
+                [min]="today"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('quoteDate')">
+                Quote date is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Valid Until *</label>
+              <input 
+                type="date" 
+                formControlName="validUntil"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('validUntil')"
+                [min]="quotationForm.get('quoteDate')?.value || today"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('validUntil')">
+                Valid until date is required
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Information Section -->
+        <div class="config-section">
+          <h3 class="section-title">📝 Customer Information</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Customer Name *</label>
+              <input 
+                type="text" 
+                formControlName="customerName"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('customerName')"
+                placeholder="Enter customer name"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('customerName')">
+                Customer name is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Email *</label>
+              <input 
+                type="email" 
+                formControlName="customerEmail"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('customerEmail')"
+                placeholder="customer@example.com"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('customerEmail')">
+                Valid email is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Phone *</label>
+              <input 
+                type="tel" 
+                formControlName="customerPhone"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('customerPhone')"
+                placeholder="+91 9876543210"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('customerPhone')">
+                Phone number is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Company</label>
+              <input 
+                type="text" 
+                formControlName="customerCompany"
+                class="form-control"
+                placeholder="Company name"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>Address</label>
+              <textarea 
+                formControlName="customerAddress"
+                class="form-control"
+                rows="3"
+                placeholder="Customer address"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Configure Elevator -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <h2 class="form-title">⚙️ Configure Elevator Specifications</h2>
+
+        <!-- Elevator Type Selection -->
+        <div class="config-section">
+          <h3 class="section-title">🏗️ Select Elevator Type *</h3>
+          <div class="type-grid">
+            <div 
+              *ngFor="let type of elevatorTypes"
+              class="type-card"
+              [class.selected]="quotationForm.get('elevatorType')?.value === type.id"
+              [class.invalid]="isFieldInvalid('elevatorType')"
+              (click)="selectElevatorType(type.id)"
+            >
+              <div class="type-icon">{{ type.icon }}</div>
+              <div class="type-name">{{ type.name }}</div>
+              <div class="type-description">{{ type.description }}</div>
+            </div>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('elevatorType')">
+            Please select an elevator type
+          </span>
+        </div>
+
+        <!-- Technical Specifications -->
+        <div class="config-section">
+          <h3 class="section-title">📐 Technical Specifications</h3>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Number of Floors *</label>
+              <input 
+                type="number" 
+                formControlName="floors"
+                class="form-control"
+                [class.invalid]="isFieldInvalid('floors')"
+                min="2"
+                max="50"
+                placeholder="8"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('floors')">
+                Minimum 2 floors required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Door Configuration *</label>
+              <select 
+                formControlName="doors" 
+                class="form-control"
+                [class.invalid]="isFieldInvalid('doors')"
+              >
+                <option value="">Select door type...</option>
+                <option *ngFor="let door of doorOptions" [value]="door.value">
+                  {{ door.label }}
+                </option>
+              </select>
+              <span class="error-message" *ngIf="isFieldInvalid('doors')">
+                Door configuration is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Speed (m/s) *</label>
+              <select 
+                formControlName="speed" 
+                class="form-control"
+                [class.invalid]="isFieldInvalid('speed')"
+              >
+                <option value="">Select speed...</option>
+                <option *ngFor="let speed of speedOptions" [value]="speed.value">
+                  {{ speed.label }}
+                </option>
+              </select>
+              <span class="error-message" *ngIf="isFieldInvalid('speed')">
+                Speed is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Capacity *</label>
+              <select 
+                formControlName="capacity" 
+                class="form-control"
+                [class.invalid]="isFieldInvalid('capacity')"
+              >
+                <option value="">Select capacity...</option>
+                <option *ngFor="let cap of capacityOptions" [value]="cap.value">
+                  {{ cap.label }}
+                </option>
+              </select>
+              <span class="error-message" *ngIf="isFieldInvalid('capacity')">
+                Capacity is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Drive Type *</label>
+              <select 
+                formControlName="driveType" 
+                class="form-control"
+                [class.invalid]="isFieldInvalid('driveType')"
+              >
+                <option value="">Select drive type...</option>
+                <option *ngFor="let drive of driveTypes" [value]="drive.value">
+                  {{ drive.label }}
+                </option>
+              </select>
+              <span class="error-message" *ngIf="isFieldInvalid('driveType')">
+                Drive type is required
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label>Control System *</label>
+              <select 
+                formControlName="controlSystem" 
+                class="form-control"
+                [class.invalid]="isFieldInvalid('controlSystem')"
+              >
+                <option value="">Select control system...</option>
+                <option *ngFor="let control of controlSystems" [value]="control.value">
+                  {{ control.label }}
+                </option>
+              </select>
+              <span class="error-message" *ngIf="isFieldInvalid('controlSystem')">
+                Control system is required
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Pricing & Options -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <h2 class="form-title">💰 Pricing & Additional Options</h2>
+
+        <!-- Additional Options -->
+        <div class="config-section">
+          <h3 class="section-title">📦 Additional Services</h3>
+          
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                formControlName="includeInstallation"
+                class="checkbox-input"
+              />
+              <span class="checkbox-text">Include Installation & Commissioning</span>
+            </label>
+
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                formControlName="includeAmc"
+                class="checkbox-input"
+              />
+              <span class="checkbox-text">Include AMC (Annual Maintenance Contract)</span>
+            </label>
+          </div>
+
+          <div class="form-group" *ngIf="quotationForm.get('includeAmc')?.value">
+            <label>AMC Period (Years)</label>
+            <select formControlName="amcYears" class="form-control">
+              <option [value]="1">1 Year</option>
+              <option [value]="2">2 Years</option>
+              <option [value]="3">3 Years</option>
+              <option [value]="5">5 Years</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Special Requirements</label>
+            <textarea 
+              formControlName="specialRequirements"
+              class="form-control"
+              rows="3"
+              placeholder="Any special requirements or customizations..."
+            ></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Internal Notes</label>
+            <textarea 
+              formControlName="notes"
+              class="form-control"
+              rows="2"
+              placeholder="Internal notes (not visible to customer)..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Pricing Summary -->
+        <div class="pricing-summary">
+          <h3 class="section-title">📊 Pricing Summary</h3>
+          
+          <div class="pricing-table">
+            <div class="pricing-row">
+              <span class="pricing-label">Base Elevator Cost:</span>
+              <span class="pricing-value">{{ formatCurrency(basePrice) }}</span>
+            </div>
+            
+            <div class="pricing-row" *ngIf="quotationForm.get('includeInstallation')?.value">
+              <span class="pricing-label">Installation & Commissioning:</span>
+              <span class="pricing-value">{{ formatCurrency(installationCost) }}</span>
+            </div>
+            
+            <div class="pricing-row" *ngIf="quotationForm.get('includeAmc')?.value">
+              <span class="pricing-label">AMC ({{ quotationForm.get('amcYears')?.value }} Year{{ quotationForm.get('amcYears')?.value > 1 ? 's' : '' }}):</span>
+              <span class="pricing-value">{{ formatCurrency(amcCost) }}</span>
+            </div>
+
+            <div class="pricing-divider"></div>
+            
+            <div class="pricing-row">
+              <span class="pricing-label">Subtotal:</span>
+              <span class="pricing-value">{{ formatCurrency(subtotal) }}</span>
+            </div>
+            
+            <div class="pricing-row tax">
+              <span class="pricing-label">CGST (9%):</span>
+              <span class="pricing-value">{{ formatCurrency(cgst) }}</span>
+            </div>
+            
+            <div class="pricing-row tax">
+              <span class="pricing-label">SGST (9%):</span>
+              <span class="pricing-value">{{ formatCurrency(sgst) }}</span>
+            </div>
+
+            <div class="pricing-divider-bold"></div>
+            
+            <div class="pricing-row total">
+              <span class="pricing-label">Total Amount:</span>
+              <span class="pricing-value">{{ formatCurrency(totalAmount) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button 
+          type="button" 
+          class="btn-back" 
+          (click)="previousStep()"
+          *ngIf="currentStep > 1"
+        >
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <button 
+          type="button" 
+          class="btn-cancel" 
+          (click)="cancel()"
+        >
+          <i class="fas fa-times"></i> Cancel
+        </button>
+
+        <button 
+          type="button" 
+          class="btn-continue" 
+          (click)="nextStep()"
+          *ngIf="currentStep < 3"
+        >
+          Continue <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <button 
+          type="submit" 
+          class="btn-submit" 
+          *ngIf="currentStep === 3"
+          [disabled]="quotationForm.invalid"
+        >
+          <i class="fas fa-check"></i> Generate Preview
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>

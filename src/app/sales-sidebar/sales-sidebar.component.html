@@ -1,0 +1,52 @@
+<!-- Mobile Toggle Button (always visible on tablets/mobile) -->
+<button class="sidebar-toggle mobile-toggle" (click)="toggleCollapse()" aria-label="Toggle sidebar">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar" [class.collapsed]="collapsed && !mobileMenuOpen" [class.mobile-open]="mobileMenuOpen">
+  <div class="sidebar-header">
+    <div class="logo-area">
+      <div class="logo-container">
+        <img [src]="currentLogo" alt="Capricorn CRM Logo" class="sidebar-logo"
+          (error)="currentLogo = 'assets/images/logo1.png'">
+      </div>
+      <h3 class="brand-name" *ngIf="!collapsed || mobileMenuOpen">Capricorn CRM</h3>
+      <p class="brand-subtitle" *ngIf="!collapsed || mobileMenuOpen">Sales Dashboard</p>
+    </div>
+
+    <!-- Desktop Toggle Button -->
+    <button class="sidebar-toggle desktop-toggle" (click)="toggleCollapse()" *ngIf="!mobileMenuOpen"
+      aria-label="Toggle sidebar">
+      <i class="fas" [ngClass]="collapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+    </button>
+  </div>
+  <nav class="sidebar-nav">
+    <div *ngFor="let section of menuSections" class="nav-section">
+      <h4 class="section-title">{{ section.title }}</h4>
+      <a *ngFor="let item of section.items" [routerLink]="item.route" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" class="nav-item"
+        [attr.data-tooltip]="item.label" (click)="onMenuItemClick()">
+        <i class="fas {{ item.icon }} nav-icon"></i>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-details">
+        <p class="user-name">{{ userName }}</p>
+        <p class="user-role">{{ userRole }}</p>
+      </div>
+    </div>
+    <button class="logout-btn" (click)="logout()" title="Logout" data-tooltip="Logout">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile Overlay Backdrop -->
+<div class="sidebar-backdrop" [class.show]="mobileMenuOpen" (click)="closeMobileMenu()"></div>

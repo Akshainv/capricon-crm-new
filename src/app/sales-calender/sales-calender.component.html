@@ -1,0 +1,399 @@
+<!-- src/app/features/communication/sales-calendar/sales-calendar.component.html -->
+<div class="calendar-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>📅 My Calendar</h1>
+      <p>Schedule and track all your meetings and activities</p>
+    </div>
+    <button class="btn-primary" (click)="toggleAddForm()">
+      <i class="fas" [ngClass]="showAddForm ? 'fa-times' : 'fa-plus'"></i>
+      <span>{{ showAddForm ? 'Cancel' : 'Add Event' }}</span>
+    </button>
+  </div>
+
+  <!-- Add Event Form -->
+  <div class="add-form-card" *ngIf="showAddForm">
+    <h3>➕ Schedule New Event</h3>
+    
+    <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="title">Event Title *</label>
+        <input 
+          type="text" 
+          id="title" 
+          formControlName="title"
+          placeholder="What's the event about?"
+          class="form-input"
+        />
+        <div class="error-message" *ngIf="eventForm.get('title')?.invalid && eventForm.get('title')?.touched">
+          Event title is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description" 
+          formControlName="description"
+          rows="3"
+          placeholder="Additional details..."
+          class="form-textarea"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="type">Event Type *</label>
+          <select id="type" formControlName="type" class="form-select">
+            <option *ngFor="let type of eventTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="priority">Priority *</label>
+          <select id="priority" formControlName="priority" class="form-select">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input 
+            type="text" 
+            id="location" 
+            formControlName="location"
+            placeholder="e.g., Client Office, Showroom"
+            class="form-input"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date *</label>
+          <input 
+            type="date" 
+            id="startDate" 
+            formControlName="startDate"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="startTime">Start Time *</label>
+          <input 
+            type="time" 
+            id="startTime" 
+            formControlName="startTime"
+            class="form-input"
+            [disabled]="eventForm.get('allDay')?.value"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">End Date *</label>
+          <input 
+            type="date" 
+            id="endDate" 
+            formControlName="endDate"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="endTime">End Time *</label>
+          <input 
+            type="time" 
+            id="endTime" 
+            formControlName="endTime"
+            class="form-input"
+            [disabled]="eventForm.get('allDay')?.value"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            formControlName="allDay"
+          />
+          <span>All Day Event</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!eventForm.valid">
+          <i class="fas fa-save"></i>
+          <span>Add to Calendar</span>
+        </button>
+        <button type="button" class="btn-secondary" (click)="toggleAddForm()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Calendar Controls -->
+  <div class="calendar-controls">
+    <div class="view-switcher">
+      <button 
+        class="view-btn" 
+        [class.active]="viewMode === 'month'"
+        (click)="changeView('month')"
+      >
+        <i class="fas fa-calendar"></i>
+        <span>Month</span>
+      </button>
+      <button 
+        class="view-btn" 
+        [class.active]="viewMode === 'week'"
+        (click)="changeView('week')"
+      >
+        <i class="fas fa-calendar-week"></i>
+        <span>Week</span>
+      </button>
+      <button 
+        class="view-btn" 
+        [class.active]="viewMode === 'day'"
+        (click)="changeView('day')"
+      >
+        <i class="fas fa-calendar-day"></i>
+        <span>Day</span>
+      </button>
+    </div>
+
+    <div class="period-navigation">
+      <button class="nav-btn" (click)="previousPeriod()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <h3 class="period-label">{{ getCurrentPeriodLabel() }}</h3>
+      <button class="nav-btn" (click)="nextPeriod()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <button class="btn-today" (click)="goToToday()">
+      <i class="fas fa-calendar-check"></i>
+      <span>Today</span>
+    </button>
+  </div>
+
+  <!-- Month View -->
+  <div class="calendar-grid month-view" *ngIf="viewMode === 'month'">
+    <div class="calendar-header">
+      <div class="day-header" *ngFor="let day of weekDays">{{ day }}</div>
+    </div>
+    
+    <div class="calendar-body">
+      <div 
+        class="calendar-day" 
+        *ngFor="let day of calendarDays"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        [class.has-events]="day.events.length > 0"
+        (click)="onDayClick(day)"
+      >
+        <div class="day-number">{{ day.date.getDate() }}</div>
+        
+        <div class="day-events">
+          <div 
+            class="event-item" 
+            *ngFor="let event of getDayEvents(day)"
+            [style.border-left-color]="getEventTypeInfo(event.type).color"
+            [class.completed]="event.status === 'completed'"
+            (click)="viewEventDetails(event); $event.stopPropagation()"
+          >
+            <div class="event-time">{{ formatTime(event.startDate) }}</div>
+            <div class="event-title">{{ event.title }}</div>
+          </div>
+          
+          <div class="more-events" *ngIf="hasMoreEvents(day)">
+            +{{ getMoreEventsCount(day) }} more
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week View -->
+  <div class="calendar-grid week-view" *ngIf="viewMode === 'week'">
+    <div class="week-header">
+      <div 
+        class="week-day-header" 
+        *ngFor="let day of calendarDays"
+        [class.today]="day.isToday"
+      >
+        <div class="day-name">{{ weekDays[day.date.getDay()] }}</div>
+        <div class="day-date">{{ day.date.getDate() }}</div>
+      </div>
+    </div>
+
+    <div class="week-body">
+      <div class="week-day-column" *ngFor="let day of calendarDays">
+        <div 
+          class="week-event" 
+          *ngFor="let event of getDayEvents(day)"
+          [style.background]="getEventTypeInfo(event.type).color + '20'"
+          [style.border-left-color]="getEventTypeInfo(event.type).color"
+          [class.completed]="event.status === 'completed'"
+          (click)="viewEventDetails(event)"
+        >
+          <div class="event-time-range">
+            {{ formatTimeRange(event.startDate, event.endDate) }}
+          </div>
+          <div class="event-title">{{ event.title }}</div>
+          <div class="event-type">
+            <i class="fas" [ngClass]="getEventTypeInfo(event.type).icon"></i>
+            {{ getEventTypeInfo(event.type).label }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day View -->
+  <div class="day-view" *ngIf="viewMode === 'day'">
+    <div class="day-timeline">
+      <div class="timeline-hour" *ngFor="let hourSlot of getHourlyEvents()">
+        <div class="hour-label">
+          {{ hourSlot.hour === 0 ? '12 AM' : 
+             hourSlot.hour < 12 ? hourSlot.hour + ' AM' : 
+             hourSlot.hour === 12 ? '12 PM' : 
+             (hourSlot.hour - 12) + ' PM' }}
+        </div>
+        <div class="hour-events">
+          <div 
+            class="day-event" 
+            *ngFor="let event of hourSlot.events"
+            [style.background]="getEventTypeInfo(event.type).color + '20'"
+            [style.border-left-color]="getEventTypeInfo(event.type).color"
+            [class.completed]="event.status === 'completed'"
+            (click)="viewEventDetails(event)"
+          >
+            <div class="event-header">
+              <span class="event-time">{{ formatTimeRange(event.startDate, event.endDate) }}</span>
+              <i class="fas" [ngClass]="getEventTypeInfo(event.type).icon" 
+                 [style.color]="getEventTypeInfo(event.type).color"></i>
+            </div>
+            <div class="event-title">{{ event.title }}</div>
+            <div class="event-location" *ngIf="event.location">
+              <i class="fas fa-map-marker-alt"></i>
+              {{ event.location }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Details Modal -->
+  <div class="modal-overlay" *ngIf="showEventDetails" (click)="closeEventDetails()">
+    <div class="event-details-modal" (click)="$event.stopPropagation()" *ngIf="selectedEvent">
+      <div class="modal-header">
+        <h3>
+          <i class="fas" [ngClass]="getEventTypeInfo(selectedEvent.type).icon"
+             [style.color]="getEventTypeInfo(selectedEvent.type).color"></i>
+          {{ selectedEvent.title }}
+        </h3>
+        <button class="btn-close" (click)="closeEventDetails()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-row">
+          <i class="fas fa-calendar"></i>
+          <div class="detail-content">
+            <strong>Date & Time</strong>
+            <p>{{ selectedEvent.startDate | date:'fullDate' }}</p>
+            <p>{{ formatTimeRange(selectedEvent.startDate, selectedEvent.endDate) }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedEvent.type">
+          <i class="fas fa-tag"></i>
+          <div class="detail-content">
+            <strong>Type</strong>
+            <p>
+              <span class="event-type-badge" 
+                    [style.background]="getEventTypeInfo(selectedEvent.type).color + '20'"
+                    [style.color]="getEventTypeInfo(selectedEvent.type).color">
+                {{ getEventTypeInfo(selectedEvent.type).label }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedEvent.priority">
+          <i class="fas fa-flag"></i>
+          <div class="detail-content">
+            <strong>Priority</strong>
+            <p>
+              <span class="priority-badge" [ngClass]="'priority-' + selectedEvent.priority">
+                {{ selectedEvent.priority | titlecase }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedEvent.location">
+          <i class="fas fa-map-marker-alt"></i>
+          <div class="detail-content">
+            <strong>Location</strong>
+            <p>{{ selectedEvent.location }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedEvent.description">
+          <i class="fas fa-align-left"></i>
+          <div class="detail-content">
+            <strong>Description</strong>
+            <p>{{ selectedEvent.description }}</p>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedEvent.leadId">
+          <i class="fas fa-user"></i>
+          <div class="detail-content">
+            <strong>Related Lead</strong>
+            <button class="link-btn" (click)="viewLead(selectedEvent.leadId!)">
+              {{ selectedEvent.leadName }}
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <i class="fas fa-info-circle"></i>
+          <div class="detail-content">
+            <strong>Status</strong>
+            <p>
+              <span class="status-badge" [ngClass]="'status-' + selectedEvent.status">
+                {{ selectedEvent.status | titlecase }}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-complete" 
+                (click)="markAsCompleted(selectedEvent.id)"
+                *ngIf="selectedEvent.status !== 'completed'">
+          <i class="fas fa-check"></i>
+          Mark as Completed
+        </button>
+        <button class="btn-delete" (click)="deleteEvent(selectedEvent.id)">
+          <i class="fas fa-trash"></i>
+          Delete Event
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

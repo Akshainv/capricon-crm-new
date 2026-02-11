@@ -1,0 +1,186 @@
+<!-- src/app/features/reports/export-reports/export-reports.component.html -->
+<div class="export-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div>
+        <h1>📥 Export Report</h1>
+        <p>Download or share your report in multiple formats</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Summary -->
+  <div class="summary-card">
+    <div class="summary-header">
+      <div class="summary-icon">
+        <i class="fas fa-chart-bar"></i>
+      </div>
+      <div class="summary-info">
+        <h3>{{ reportSummary.type }}</h3>
+        <p>{{ reportSummary.dateRange }}</p>
+      </div>
+    </div>
+    
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <div class="stat-label">Total Leads</div>
+        <div class="stat-value">{{ reportSummary.totalLeads }}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-label">Deals Closed</div>
+        <div class="stat-value">{{ reportSummary.totalDeals }}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">{{ formatCurrency(reportSummary.totalRevenue) }}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-label">Conversion Rate</div>
+        <div class="stat-value">{{ reportSummary.conversionRate }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Format Selection -->
+  <div class="export-section">
+    <h3 class="section-title">
+      <i class="fas fa-file-export"></i>
+      <span>Choose Export Format</span>
+    </h3>
+    
+    <div class="formats-grid">
+      <div 
+        *ngFor="let format of exportFormats"
+        class="format-card"
+        [class.selected]="isFormatSelected(format.id)"
+        (click)="selectFormat(format.id)"
+      >
+        <div class="format-icon" [style.color]="format.color">
+          <i class="fas" [ngClass]="format.icon"></i>
+        </div>
+        <div class="format-info">
+          <h4 class="format-name">{{ format.name }}</h4>
+          <p class="format-description">{{ format.description }}</p>
+          <span class="format-extension">{{ format.extension }}</span>
+        </div>
+        <div class="format-check" *ngIf="isFormatSelected(format.id)">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Actions -->
+  <div class="actions-section">
+    <h3 class="section-title">
+      <i class="fas fa-tasks"></i>
+      <span>Quick Actions</span>
+    </h3>
+    
+    <div class="actions-grid">
+      <button 
+        class="action-btn export"
+        (click)="onExport()"
+        [disabled]="!selectedFormat || isExporting"
+      >
+        <div class="action-icon">
+          <i class="fas" [ngClass]="isExporting ? 'fa-spinner fa-spin' : 'fa-download'"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">{{ isExporting ? 'Exporting...' : 'Export & Download' }}</div>
+          <div class="action-subtitle">Save report to your device</div>
+        </div>
+      </button>
+
+      <button class="action-btn print" (click)="onPrint()">
+        <div class="action-icon">
+          <i class="fas fa-print"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">Print Report</div>
+          <div class="action-subtitle">Print physical copy</div>
+        </div>
+      </button>
+
+      <button class="action-btn email" (click)="onEmail()">
+        <div class="action-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">Email Report</div>
+          <div class="action-subtitle">Send via email</div>
+        </div>
+      </button>
+
+      <button class="action-btn create" (click)="createNewReport()">
+        <div class="action-icon">
+          <i class="fas fa-plus"></i>
+        </div>
+        <div class="action-content">
+          <div class="action-title">Create New Report</div>
+          <div class="action-subtitle">Build custom report</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Export History -->
+  <div class="history-section">
+    <h3 class="section-title">
+      <i class="fas fa-history"></i>
+      <span>Export History</span>
+    </h3>
+    
+    <div class="history-list">
+      <div *ngFor="let item of exportHistory" class="history-item">
+        <div class="history-icon" [style.color]="getStatusColor(item.status)">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        
+        <div class="history-content">
+          <div class="history-name">{{ item.reportName }}</div>
+          <div class="history-meta">
+            <span class="history-format">{{ item.format }}</span>
+            <span class="separator">•</span>
+            <span class="history-size">{{ item.fileSize }}</span>
+            <span class="separator">•</span>
+            <span class="history-date">{{ formatDate(item.exportedAt) }}</span>
+          </div>
+        </div>
+        
+        <div class="history-status" [style.color]="getStatusColor(item.status)">
+          <i class="fas" [ngClass]="getStatusIcon(item.status)"></i>
+          <span>{{ item.status | titlecase }}</span>
+        </div>
+        
+        <div class="history-actions">
+          <button 
+            class="history-btn download"
+            (click)="downloadHistoryItem(item)"
+            *ngIf="item.status === 'completed'"
+          >
+            <i class="fas fa-download"></i>
+          </button>
+          <button 
+            class="history-btn delete"
+            (click)="deleteHistoryItem(item)"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="exportHistory.length === 0" class="history-empty">
+        <i class="fas fa-inbox"></i>
+        <p>No export history yet</p>
+      </div>
+    </div>
+  </div>
+
+</div>

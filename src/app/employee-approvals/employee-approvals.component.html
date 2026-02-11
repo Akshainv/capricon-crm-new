@@ -1,0 +1,292 @@
+<!-- src/app/features/employee/employee-approvals/employee-approvals.component.html -->
+<div class="approvals-container">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Processing...</p>
+    </div>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1><i class="fas fa-user-check"></i> Employee Approvals</h1>
+          <p class="subtitle">Review and manage employee registration requests</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon pending">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <h4>Pending Review</h4>
+          <div class="stat-value">{{ pendingCount }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon approved">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h4>Approved</h4>
+          <div class="stat-value">{{ approvedCount }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon rejected">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h4>Rejected</h4>
+          <div class="stat-value">{{ rejectedCount }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label for="statusFilter">
+          <i class="fas fa-filter"></i>
+          Filter by Status
+        </label>
+        <select id="statusFilter" [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
+          <option value="pending">Pending Only</option>
+          <option value="approved">Approved Only</option>
+        </select>
+      </div>
+
+      <div class="search-group">
+        <label for="searchInput">
+          <i class="fas fa-search"></i>
+          Search
+        </label>
+        <input id="searchInput" type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()"
+          placeholder="Search by name, email, phone or ID..." class="search-input">
+      </div>
+    </div>
+
+    <!-- Employees List -->
+    <div class="employees-section">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-list"></i>
+          {{ filterStatus === 'pending' ? 'Pending' : 'Approved' }} Employee Registrations
+          <span class="count-badge">{{ filteredEmployees.length }}</span>
+        </h3>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredEmployees.length === 0 && !isLoading" class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Registrations Found</h3>
+        <p>{{ searchQuery ? 'Try adjusting your search criteria' : 'No employee registrations match the current filter'
+          }}</p>
+      </div>
+
+      <!-- Employees List View -->
+      <div class="employees-list-container" *ngIf="filteredEmployees.length > 0">
+        <div class="list-header">
+          <div class="col-avatar">Photo</div>
+          <div class="col-name">Employee</div>
+          <div class="col-contact">Contact</div>
+          <div class="col-dates">Dates</div>
+          <div class="col-status">Status</div>
+          <div class="col-actions">Actions</div>
+        </div>
+
+        <div *ngFor="let employee of paginatedEmployees" class="employee-row"
+          [class.pending]="employee.status === 'pending'" [class.approved]="employee.status === 'accept'"
+          [class.rejected]="employee.status === 'reject'">
+          <!-- Avatar -->
+          <div class="col-avatar">
+            <div class="employee-avatar-small">
+              <img *ngIf="employee.photo" [src]="employee.photo" [alt]="employee.fullName"
+                (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'">
+              <div class="avatar-placeholder-small" [style.display]="employee.photo ? 'none' : 'flex'">
+                {{ getInitials(employee.fullName) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Name & ID -->
+          <div class="col-name">
+            <div class="name">{{ employee.fullName }}</div>
+            <div class="employee-id">{{ employee.employeeId }}</div>
+          </div>
+
+          <!-- Contact -->
+          <div class="col-contact">
+            <div><i class="fas fa-envelope"></i> {{ employee.email }}</div>
+            <div><i class="fas fa-phone"></i> {{ employee.phoneNumber }}</div>
+          </div>
+
+          <!-- Dates -->
+          <div class="col-dates">
+            <div>Submitted: {{ formatDate(employee.createdAt) }}</div>
+            <div *ngIf="employee.updatedAt">Updated: {{ formatDate(employee.updatedAt) }}</div>
+          </div>
+
+          <!-- Status -->
+          <div class="col-status">
+            <span class="status-badge" [class]="getStatusClass(employee.status)">
+              <i class="fas {{ getStatusIcon(employee.status) }}"></i>
+              {{ getStatusDisplay(employee.status) }}
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="col-actions">
+            <button class="btn-view-sm" (click)="viewDetails(employee)" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+
+            <ng-container *ngIf="employee.status === 'pending'">
+              <button class="btn-approve-sm" (click)="approveEmployee(employee)" title="Approve" [disabled]="isLoading">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn-reject-sm" (click)="rejectEmployee(employee)" title="Reject" [disabled]="isLoading">
+                <i class="fas fa-times"></i>
+              </button>
+            </ng-container>
+
+            <button class="btn-delete-sm" (click)="deleteEmployee(employee)" title="Delete" [disabled]="isLoading">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredEmployees.length > 0">
+        <div class="pagination-info">
+          Showing {{ ((currentPage - 1) * itemsPerPage) + 1 }} to {{ Math.min(currentPage * itemsPerPage,
+          filteredEmployees.length) }} of {{ filteredEmployees.length }} entries
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <button *ngFor="let page of getPageNumbers()" class="pagination-btn page-number"
+            [class.active]="page === currentPage" [class.ellipsis]="page === -1" (click)="page !== -1 && goToPage(page)"
+            [disabled]="page === -1">
+            {{ page === -1 ? '...' : page }}
+          </button>
+
+          <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedEmployee">
+        <div class="modal-header">
+          <h2><i class="fas fa-user-circle"></i> Employee Details</h2>
+          <button class="close-btn" (click)="closeDetailModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Employee Photo -->
+          <div class="detail-photo-section">
+            <div class="photo-container">
+              <img *ngIf="selectedEmployee.photo" [src]="selectedEmployee.photo" [alt]="selectedEmployee.fullName"
+                (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling.style.display='flex'">
+              <div class="photo-placeholder" [style.display]="selectedEmployee.photo ? 'none' : 'flex'">
+                {{ getInitials(selectedEmployee.fullName) }}
+              </div>
+            </div>
+            <div class="status-indicator" [class]="getStatusClass(selectedEmployee.status)">
+              <i class="fas {{ getStatusIcon(selectedEmployee.status) }}"></i>
+              {{ getStatusDisplay(selectedEmployee.status) }}
+            </div>
+          </div>
+
+          <!-- Personal Information -->
+          <div class="detail-section">
+            <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>Employee ID</label>
+                <p>{{ selectedEmployee.employeeId }}</p>
+              </div>
+              <div class="detail-item">
+                <label>Full Name</label>
+                <p>{{ selectedEmployee.fullName }}</p>
+              </div>
+              <div class="detail-item">
+                <label>Email Address</label>
+                <p>{{ selectedEmployee.email }}</p>
+              </div>
+              <div class="detail-item">
+                <label>Phone Number</label>
+                <p>{{ selectedEmployee.phoneNumber }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Registration Information -->
+          <div class="detail-section">
+            <h3><i class="fas fa-info-circle"></i> Registration Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <label>Submitted Date</label>
+                <p>{{ selectedEmployee.createdAt | date: 'medium' }}</p>
+              </div>
+              <div class="detail-item" *ngIf="selectedEmployee.updatedAt">
+                <label>Last Updated</label>
+                <p>{{ selectedEmployee.updatedAt | date: 'medium' }}</p>
+              </div>
+              <div class="detail-item">
+                <label>Current Status</label>
+                <p>
+                  <span class="status-badge" [class]="getStatusClass(selectedEmployee.status)">
+                    <i class="fas {{ getStatusIcon(selectedEmployee.status) }}"></i>
+                    {{ getStatusDisplay(selectedEmployee.status) }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-close" (click)="closeDetailModal()">
+            Close
+          </button>
+
+          <div class="action-buttons" *ngIf="selectedEmployee.status === 'pending'">
+            <button class="btn-approve" (click)="approveEmployee(selectedEmployee); closeDetailModal()"
+              [disabled]="isLoading">
+              <i class="fas fa-check"></i>
+              Approve
+            </button>
+            <button class="btn-reject" (click)="rejectEmployee(selectedEmployee); closeDetailModal()"
+              [disabled]="isLoading">
+              <i class="fas fa-times"></i>
+              Reject
+            </button>
+          </div>
+
+          <button class="btn-delete" (click)="deleteEmployee(selectedEmployee)" [disabled]="isLoading">
+            <i class="fas fa-trash"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

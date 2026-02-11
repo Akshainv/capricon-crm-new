@@ -1,0 +1,188 @@
+<!-- src/app/sales-my-deals/sales-my-deals.component.html -->
+<div class="deals-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>💼 My Deals Pipeline</h1>
+      <p>Track and manage your deals across different stages</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="createNewDeal()">
+        <i class="fas fa-plus"></i>
+        <span>New Deal</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon pipeline">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Pipeline Value</div>
+        <div class="stat-value">{{ formatCurrency(getTotalPipelineValue()) }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon won">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Won Deals</div>
+        <div class="stat-value">{{ formatCurrency(getWonDealsValue()) }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon count">
+        <i class="fas fa-briefcase"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Active Deals</div>
+        <div class="stat-value">{{ getActiveDealsCount() }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon rate">
+        <i class="fas fa-percent"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value">{{ getWinRate() }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Min Value</label>
+      <input 
+        type="number" 
+        [(ngModel)]="filterValue" 
+        (input)="applyFilters()"
+        placeholder="₹ 0"
+        class="filter-input"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Close Date Before</label>
+      <input 
+        type="date" 
+        [(ngModel)]="filterDate" 
+        (change)="applyFilters()"
+        class="filter-input"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="selectedStatus" (change)="applyFilters()" class="filter-input">
+        <option value="all">All Status</option>
+        <option value="lead">Lead</option>
+        <option value="qualified">Qualified</option>
+        <option value="proposal">Proposal</option>
+        <option value="negotiation">Negotiation</option>
+        <option value="won">Won</option>
+        <option value="lost">Lost</option>
+      </select>
+    </div>
+
+    <button class="btn-clear-filter" (click)="clearFilters()" *ngIf="filterValue || filterDate">
+      <i class="fas fa-times"></i>
+      <span>Clear Filters</span>
+    </button>
+  </div>
+
+  <!-- Pipeline Board -->
+  <div class="pipeline-board">
+    <div 
+      *ngFor="let column of columns" 
+      class="pipeline-column"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event, column.status)"
+    >
+      <div class="column-header" [style.border-color]="column.color">
+        <div class="column-title">
+          <span class="column-icon" [style.color]="column.color">●</span>
+          <span>{{ column.title }}</span>
+          <span class="column-count">({{ getColumnCount(column) }})</span>
+        </div>
+        <div class="column-total">{{ formatCurrency(getColumnTotal(column)) }}</div>
+      </div>
+
+      <div class="column-body">
+        <div 
+          *ngFor="let deal of column.deals" 
+          class="deal-card"
+          draggable="true"
+          (dragstart)="onDragStart($event, deal)"
+          (click)="viewDealDetails(deal)"
+        >
+          <div class="deal-header">
+            <h4 class="deal-title">{{ deal.title }}</h4>
+          </div>
+
+          <div class="deal-company">
+            <i class="fas fa-building"></i>
+            <span>{{ deal.company }}</span>
+          </div>
+
+          <div class="deal-info">
+            <div class="deal-type">
+              <i class="fas fa-elevator"></i>
+              <span>{{ deal.elevatorType }}</span>
+            </div>
+            <div class="deal-amount">{{ formatCurrency(deal.amount) }}</div>
+          </div>
+
+          <div class="deal-meta">
+            <div class="deal-probability">
+              <i class="fas fa-chart-pie"></i>
+              <span>{{ deal.probability }}%</span>
+            </div>
+            <div class="deal-date">
+              <i class="fas fa-calendar"></i>
+              <span>{{ formatDate(deal.closeDate) }}</span>
+            </div>
+          </div>
+
+          <div class="deal-footer">
+            <div class="deal-contact">
+              <i class="fas fa-user"></i>
+              <span>{{ deal.contactPerson }}</span>
+            </div>
+            <div class="deal-status-select">
+              <select
+                class="status-dropdown"
+                [value]="deal.status"
+                (change)="updateDealStatus(deal, $any($event.target).value, $event)"
+                (click)="$event.stopPropagation()"
+              >
+                <option value="lead">Lead</option>
+                <option value="qualified">Qualified</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="column.deals.length === 0" class="column-empty">
+          <i class="fas fa-inbox"></i>
+          <p>No deals in {{ column.title }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

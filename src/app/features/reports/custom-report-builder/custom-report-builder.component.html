@@ -1,0 +1,251 @@
+<!-- src/app/features/reports/custom-report-builder/custom-report-builder.component.html -->
+<div class="builder-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>🎨 Custom Report Builder</h1>
+      <p>Create customized reports with specific filters and metrics</p>
+    </div>
+  </div>
+
+  <form [formGroup]="reportForm" (ngSubmit)="onGenerateReport()">
+    
+    <!-- Report Templates -->
+    <div class="builder-section">
+      <h3 class="section-title">
+        <i class="fas fa-file-alt"></i>
+        <span>Choose Report Type</span>
+      </h3>
+      
+      <div class="templates-grid">
+        <div 
+          *ngFor="let template of reportTemplates"
+          class="template-card"
+          [class.selected]="isTemplateSelected(template.id)"
+          (click)="selectTemplate(template)"
+        >
+          <div class="template-icon" [style.background]="template.color + '22'" [style.color]="template.color">
+            <i class="fas" [ngClass]="template.icon"></i>
+          </div>
+          <div class="template-info">
+            <h4 class="template-name">{{ template.name }}</h4>
+            <p class="template-description">{{ template.description }}</p>
+          </div>
+          <div class="template-check" *ngIf="isTemplateSelected(template.id)">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+      </div>
+      
+      <span class="error-message" *ngIf="isFieldInvalid('reportType')">
+        {{ getErrorMessage('reportType') }}
+      </span>
+    </div>
+
+    <!-- Report Configuration -->
+    <div class="builder-section">
+      <h3 class="section-title">
+        <i class="fas fa-cog"></i>
+        <span>Report Configuration</span>
+      </h3>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Report Name *</label>
+          <input 
+            type="text" 
+            formControlName="reportName"
+            class="form-control"
+            [class.invalid]="isFieldInvalid('reportName')"
+            placeholder="Enter report name"
+          />
+          <span class="error-message" *ngIf="isFieldInvalid('reportName')">
+            {{ getErrorMessage('reportName') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Report Format *</label>
+          <div class="format-selector">
+            <div 
+              *ngFor="let format of reportFormats"
+              class="format-option"
+              [class.selected]="reportForm.get('reportFormat')?.value === format.value"
+              (click)="reportForm.patchValue({ reportFormat: format.value })"
+            >
+              <i class="fas" [ngClass]="format.icon"></i>
+              <span>{{ format.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Date From *</label>
+          <input 
+            type="date" 
+            formControlName="dateFrom"
+            class="form-control"
+            [class.invalid]="isFieldInvalid('dateFrom')"
+          />
+          <span class="error-message" *ngIf="isFieldInvalid('dateFrom')">
+            {{ getErrorMessage('dateFrom') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Date To *</label>
+          <input 
+            type="date" 
+            formControlName="dateTo"
+            class="form-control"
+            [class.invalid]="isFieldInvalid('dateTo')"
+          />
+          <span class="error-message" *ngIf="isFieldInvalid('dateTo')">
+            {{ getErrorMessage('dateTo') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="builder-section">
+      <h3 class="section-title">
+        <i class="fas fa-filter"></i>
+        <span>Apply Filters</span>
+      </h3>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Filter by Sales Person</label>
+          <select 
+            formControlName="salesPerson"
+            class="form-control"
+          >
+            <option *ngFor="let person of salesTeam" [value]="person.id">
+              {{ person.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Filter by Status</label>
+          <select 
+            formControlName="status"
+            class="form-control"
+          >
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Description (Optional)</label>
+          <textarea 
+            formControlName="description"
+            class="form-control"
+            rows="3"
+            placeholder="Add notes or description for this report..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include Options -->
+    <div class="builder-section">
+      <h3 class="section-title">
+        <i class="fas fa-check-square"></i>
+        <span>Include in Report</span>
+      </h3>
+      
+      <div class="include-options">
+        <div 
+          *ngFor="let option of includeOptions"
+          class="include-item"
+          [class.checked]="option.checked"
+          (click)="toggleIncludeOption(option.id)"
+        >
+          <div class="include-checkbox">
+            <i class="fas" [ngClass]="option.checked ? 'fa-check-square' : 'fa-square'"></i>
+          </div>
+          <span class="include-label">{{ option.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="preview-section" *ngIf="getSelectedTemplate()">
+      <h3 class="section-title">
+        <i class="fas fa-eye"></i>
+        <span>Report Preview</span>
+      </h3>
+      
+      <div class="preview-card">
+        <div class="preview-header">
+          <div class="preview-icon" [style.background]="getSelectedTemplate()!.color + '22'" [style.color]="getSelectedTemplate()!.color">
+            <i class="fas" [ngClass]="getSelectedTemplate()!.icon"></i>
+          </div>
+          <div class="preview-info">
+            <h4>{{ reportForm.get('reportName')?.value || 'Untitled Report' }}</h4>
+            <p>{{ getSelectedTemplate()!.name }}</p>
+          </div>
+        </div>
+        
+        <div class="preview-body">
+          <div class="preview-item">
+            <span class="preview-label">Report Type:</span>
+            <span class="preview-value">{{ getSelectedTemplate()!.name }}</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Format:</span>
+            <span class="preview-value">{{ reportForm.get('reportFormat')?.value | uppercase }}</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Date Range:</span>
+            <span class="preview-value">{{ reportForm.get('dateFrom')?.value }} to {{ reportForm.get('dateTo')?.value }}</span>
+          </div>
+          <div class="preview-item">
+            <span class="preview-label">Sections Included:</span>
+            <span class="preview-value">{{ getSelectedIncludes().length }} items</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn-cancel"
+        (click)="cancel()"
+        [disabled]="isGenerating"
+      >
+        <i class="fas fa-times"></i>
+        <span>Cancel</span>
+      </button>
+      
+      <button 
+        type="button" 
+        class="btn-secondary"
+        (click)="onSaveTemplate()"
+        [disabled]="reportForm.invalid || isGenerating"
+      >
+        <i class="fas fa-save"></i>
+        <span>Save Template</span>
+      </button>
+      
+      <button 
+        type="submit" 
+        class="btn-submit"
+        [disabled]="reportForm.invalid || isGenerating"
+      >
+        <i class="fas fa-spinner fa-spin" *ngIf="isGenerating"></i>
+        <i class="fas fa-chart-bar" *ngIf="!isGenerating"></i>
+        <span>{{ isGenerating ? 'Generating...' : 'Generate Report' }}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>

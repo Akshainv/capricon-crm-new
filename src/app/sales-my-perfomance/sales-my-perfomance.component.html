@@ -1,0 +1,198 @@
+<div class="performance-container">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>My Performance</h1>
+      <p>Track your sales achievements and targets</p>
+    </div>
+    
+    <div class="header-right">
+      <div class="achievement-badge">
+        <span class="badge-label">Overall Achievement</span>
+        <span class="badge-value">{{ getOverallAchievement() }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Targets vs Actual -->
+  <div class="section-card">
+    <div class="section-header">
+      <h3><i class="fas fa-bullseye"></i> Monthly Targets vs Actual</h3>
+      <span class="section-subtitle">{{ selectedMonth }}</span>
+    </div>
+    
+    <div class="targets-grid">
+      <div *ngFor="let target of targetsData" class="target-card">
+        <div class="target-header">
+          <div class="target-icon" [style.background]="target.color + '22'" [style.color]="target.color">
+            <i class="fas" [ngClass]="target.icon"></i>
+          </div>
+          <div class="target-percentage" 
+               [style.color]="getAchievementColor(getAchievementPercentage(target.target, target.actual))">
+            {{ getAchievementPercentage(target.target, target.actual) }}%
+          </div>
+        </div>
+        
+        <div class="target-body">
+          <div class="target-metric">{{ target.metric }}</div>
+          <div class="target-values">
+            <div class="value-item">
+              <span class="value-label">Target:</span>
+              <span class="value-number">
+                {{ target.unit }}{{ target.unit === '₹' ? formatCurrency(target.target) : target.target }}
+              </span>
+            </div>
+            <div class="value-item actual">
+              <span class="value-label">Actual:</span>
+              <span class="value-number" [style.color]="target.color">
+                {{ target.unit }}{{ target.unit === '₹' ? formatCurrency(target.actual) : target.actual }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="progress-bar-bg">
+            <div 
+              class="progress-bar-fill"
+              [style.width.%]="getAchievementPercentage(target.target, target.actual)"
+              [style.background]="getAchievementColor(getAchievementPercentage(target.target, target.actual))"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Grid -->
+  <div class="two-column-grid">
+    
+    <!-- Activity Summary -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="fas fa-chart-bar"></i> Activity Summary</h3>
+        <span class="section-subtitle">This Month</span>
+      </div>
+      
+      <div class="activity-grid">
+        <div class="activity-item">
+          <div class="activity-icon" [style.background]="activitySummary.calls.color + '22'" [style.color]="activitySummary.calls.color">
+            <i class="fas" [ngClass]="activitySummary.calls.icon"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-label">Calls Made</div>
+            <div class="activity-count">{{ activitySummary.calls.count }}</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon" [style.background]="activitySummary.emails.color + '22'" [style.color]="activitySummary.emails.color">
+            <i class="fas" [ngClass]="activitySummary.emails.icon"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-label">Emails Sent</div>
+            <div class="activity-count">{{ activitySummary.emails.count }}</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon" [style.background]="activitySummary.meetings.color + '22'" [style.color]="activitySummary.meetings.color">
+            <i class="fas" [ngClass]="activitySummary.meetings.icon"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-label">Meetings</div>
+            <div class="activity-count">{{ activitySummary.meetings.count }}</div>
+          </div>
+        </div>
+
+        <div class="activity-item">
+          <div class="activity-icon" [style.background]="activitySummary.quotes.color + '22'" [style.color]="activitySummary.quotes.color">
+            <i class="fas" [ngClass]="activitySummary.quotes.icon"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-label">Quotes Sent</div>
+            <div class="activity-count">{{ activitySummary.quotes.count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Performance Trend -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="fas fa-trending-up"></i> Performance Trend</h3>
+        <span class="section-subtitle">Last 6 Months</span>
+      </div>
+      
+      <div class="trend-chart">
+        <div *ngFor="let month of monthlyTrend" class="trend-bar-wrapper">
+          <div class="trend-bar-container">
+            <div 
+              class="trend-bar"
+              [style.height.%]="getBarHeight(month.revenue)"
+            >
+              <span class="trend-bar-value">{{ formatCurrency(month.revenue) }}</span>
+            </div>
+          </div>
+          <div class="trend-bar-label">{{ month.month }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Grid -->
+  <div class="bottom-grid">
+    
+    <!-- Top Clients -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="fas fa-star"></i> Top Clients</h3>
+        <span class="section-subtitle">By Revenue</span>
+      </div>
+      
+      <div class="clients-list">
+        <div *ngFor="let client of topClients; let i = index" class="client-item">
+          <div class="client-rank">{{ i + 1 }}</div>
+          <div class="client-avatar">{{ client.avatar }}</div>
+          <div class="client-info">
+            <div class="client-name">{{ client.name }}</div>
+            <div class="client-deals">{{ client.deals }} deal{{ client.deals !== 1 ? 's' : '' }}</div>
+          </div>
+          <div class="client-revenue">{{ formatCurrency(client.revenue) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Breakdown -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="fas fa-chart-pie"></i> Revenue Breakdown</h3>
+        <span class="section-subtitle">Total: {{ formatCurrency(getTotalRevenue()) }}</span>
+      </div>
+      
+      <div class="breakdown-list">
+        <div *ngFor="let item of revenueBreakdown" class="breakdown-item">
+          <div class="breakdown-header">
+            <div class="breakdown-info">
+              <span class="breakdown-dot" [style.background]="item.color"></span>
+              <span class="breakdown-name">{{ item.category }}</span>
+            </div>
+            <div class="breakdown-stats">
+              <span class="breakdown-amount">{{ formatCurrency(item.amount) }}</span>
+              <span class="breakdown-percentage">{{ item.percentage }}%</span>
+            </div>
+          </div>
+          <div class="breakdown-bar-bg">
+            <div 
+              class="breakdown-bar-fill"
+              [style.width.%]="item.percentage"
+              [style.background]="item.color"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

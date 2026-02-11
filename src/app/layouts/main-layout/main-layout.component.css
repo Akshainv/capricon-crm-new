@@ -1,0 +1,94 @@
+/* ========================================
+   MAIN LAYOUT STYLES
+   ======================================== */
+
+.layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  transition: background 0.3s ease;
+}
+
+.main-container {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  background: var(--bg-primary);
+  min-height: calc(100vh - 70px);
+  transition: background 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   RESPONSIVE: TABLETS (≤1024px)
+   ======================================== */
+@media (max-width: 1024px) {
+  .main-container {
+    margin-left: 0;
+  }
+
+  .main-content {
+    padding: 25px 25px 25px 72px;
+    /* Consistent clearance for toggle */
+    min-height: calc(100vh - 65px);
+  }
+}
+
+/* ========================================
+   RESPONSIVE: SMALL TABLETS (768px-1024px)
+   ======================================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .main-content {
+    padding: 30px 30px 30px 75px;
+  }
+}
+
+/* ========================================
+   RESPONSIVE: MOBILE (≤768px)
+   ======================================== */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px 15px 20px 72px;
+    min-height: calc(100vh - 60px);
+  }
+}
+
+/* ========================================
+   RESPONSIVE: SMALL MOBILE (≤480px)
+   ======================================== */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 15px 10px 15px 68px;
+    min-height: calc(100vh - 56px);
+  }
+}
+
+/* ========================================
+   RESPONSIVE: VERY SMALL (≤320px)
+   ======================================== */
+@media (max-width: 320px) {
+  .main-content {
+    padding: 15px 8px 15px 62px;
+    min-height: calc(100vh - 52px);
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+
+  .main-container,
+  .main-content {
+    transition: none;
+  }
+}

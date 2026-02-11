@@ -1,0 +1,549 @@
+/* src/app/features/deals/deal-detail/deal-detail.component.css */
+
+.deal-detail-container {
+  padding: 25px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loading-state i {
+  font-size: 3rem;
+  color: #d4b347;
+  margin-bottom: 20px;
+}
+
+.loading-state p {
+  font-size: 1.1rem;
+}
+
+/* Back Button */
+.btn-back {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(212, 179, 71, 0.3);
+  color: #d4b347;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: rgba(212, 179, 71, 0.2);
+  border-color: #d4b347;
+  transform: translateX(-3px);
+}
+
+/* Header Section */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #d4b347;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.deal-id {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-convert {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #d4b347, #f0d482);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(212, 179, 71, 0.3);
+}
+
+.btn-edit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 179, 71, 0.4);
+}
+
+.btn-delete {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-convert {
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.btn-convert:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+/* Status & Amount Row */
+.status-amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid rgba(212, 179, 71, 0.2);
+  border-radius: 15px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge i {
+  font-size: 0.6rem;
+}
+
+.deal-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #d4b347;
+}
+
+/* Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+}
+
+/* Info Cards */
+.info-card {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.6), rgba(0, 0, 0, 0.8));
+  border: 1px solid rgba(212, 179, 71, 0.2);
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d4b347;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(212, 179, 71, 0.2);
+}
+
+.card-title i {
+  font-size: 1.2rem;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-item label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.info-value.highlight {
+  color: #d4b347;
+  font-size: 1.2rem;
+  font-family: 'Playfair Display', serif;
+}
+
+.info-value a {
+  color: #d4b347;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.info-value a:hover {
+  color: #f0d482;
+  text-decoration: underline;
+}
+
+.info-value i {
+  color: #d4b347;
+  margin-right: 6px;
+}
+
+/* Probability Bar */
+.probability-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.probability-container span {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #d4b347;
+}
+
+.probability-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.probability-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #d4b347, #f0d482);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* Text Content */
+.text-content {
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Activity Timeline */
+.activity-card {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 15px;
+  position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 40px;
+  bottom: -20px;
+  width: 2px;
+  background: rgba(212, 179, 71, 0.2);
+}
+
+.timeline-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.timeline-icon.call {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.timeline-icon.email {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.timeline-icon.meeting {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.timeline-icon.note {
+  background: rgba(156, 163, 175, 0.2);
+  color: #d1d5db;
+}
+
+.timeline-icon.status_change {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.activity-header h4 {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.activity-time {
+
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.activity-description {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.activity-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.activity-footer i {
+  color: #d4b347;
+}
+
+/* Scrollbar */
+.activity-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-card::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+.activity-card::-webkit-scrollbar-thumb {
+  background: rgba(212, 179, 71, 0.3);
+  border-radius: 10px;
+}
+
+.activity-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 179, 71, 0.5);
+}
+
+/* Error State */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.error-state i {
+  font-size: 4rem;
+  color: #ef4444;
+  margin-bottom: 20px;
+}
+
+.error-state h2 {
+  color: #fff;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.error-state p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #d4b347, #f0d482);
+  color: #000;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(212, 179, 71, 0.3);
+}
+
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 179, 71, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-card {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .deal-detail-container {
+    padding: 15px;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-edit,
+  .btn-delete,
+  .btn-convert {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .status-amount-row {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .deal-amount {
+    font-size: 1.8rem;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-back {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .header-left h1 {
+    font-size: 1.2rem;
+  }
+
+  .deal-amount {
+    font-size: 1.5rem;
+  }
+
+  .status-badge {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  .info-card {
+    padding: 15px;
+  }
+
+  .timeline-item {
+    gap: 12px;
+  }
+
+  .timeline-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .timeline-item:not(:last-child)::after {
+    left: 15px;
+  }
+}

@@ -1,0 +1,554 @@
+/* src/app/sales-my-performance/sales-my-performance.component.css */
+
+.performance-container {
+  padding: 25px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-left h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: var(--accent-gold);
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.header-left p {
+  font-size: 0.95rem;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.achievement-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 15px 25px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-gold);
+  border-radius: 15px;
+}
+
+.badge-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.badge-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  font-family: 'Playfair Display', serif;
+}
+
+/* Section Card */
+.section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Targets Grid */
+.targets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.target-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.target-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
+}
+
+.target-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.target-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.target-percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+}
+
+.target-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.target-metric {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.target-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.value-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.value-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.value-number {
+  font-weight: 700;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* Two Column Grid */
+.two-column-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+/* Activity Grid */
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.activity-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.activity-info {
+  flex: 1;
+}
+
+.activity-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.activity-count {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  font-family: 'Playfair Display', serif;
+}
+
+/* Trend Chart */
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  height: 220px;
+  padding: 20px 0;
+}
+
+.trend-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.trend-bar-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.trend-bar {
+  width: 100%;
+  background: linear-gradient(to top, var(--accent-gold), var(--accent-gold-light));
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  transition: all 0.3s ease;
+  min-height: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.trend-bar:hover {
+  background: linear-gradient(to top, var(--accent-gold-light), var(--accent-gold));
+}
+
+.trend-bar-value {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.trend-bar-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Bottom Grid */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+/* Clients List */
+.clients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.client-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.client-item:hover {
+  border-color: var(--border-hover);
+  transform: translateX(5px);
+}
+
+.client-rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.client-avatar {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.client-info {
+  flex: 1;
+}
+
+.client-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.client-deals {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.client-revenue {
+  font-weight: 700;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Revenue Breakdown */
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.breakdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breakdown-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.breakdown-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.breakdown-name {
+  font-weight: 600;
+}
+
+.breakdown-stats {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.breakdown-amount {
+  font-weight: 700;
+  color: #d4b347;
+  font-size: 1.1rem;
+}
+
+.breakdown-percentage {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.breakdown-bar-bg {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.breakdown-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablets (≤1024px) */
+@media (max-width: 1024px) {
+  .performance-container {
+    max-width: 100%;
+    padding: 25px 25px 25px 72px;
+    /* Clearance for fixed toggle */
+  }
+
+  .targets-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .two-column-grid,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .trend-chart {
+    height: 200px;
+  }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+  .performance-container {
+    padding: 15px 15px 15px 72px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .achievement-badge {
+    width: 100%;
+    align-items: center;
+    padding: 15px;
+  }
+
+  .badge-value {
+    font-size: 1.5rem;
+  }
+
+  .section-card {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .targets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .trend-chart {
+    height: 180px;
+    padding: 10px 0;
+  }
+
+  .trend-bar-label {
+    font-size: 0.75rem;
+  }
+
+  .client-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+  }
+
+  .client-revenue {
+    width: 100%;
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  .breakdown-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+  .performance-container {
+    padding: 15px 10px 15px 65px;
+  }
+
+  .header-left h1 {
+    font-size: 1.4rem;
+  }
+
+  .target-percentage {
+    font-size: 1.25rem;
+  }
+
+  .activity-count {
+    font-size: 1.5rem;
+  }
+}
+
+/* Very Small (≤320px) */
+@media (max-width: 320px) {
+  .performance-container {
+    padding: 15px 8px 15px 58px;
+  }
+
+  .header-left h1 {
+    font-size: 1.2rem;
+  }
+}

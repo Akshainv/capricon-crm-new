@@ -1,0 +1,453 @@
+<!-- src/app/features/quotations/quotation-preview/quotation-preview.component.html -->
+<div class="preview-container" *ngIf="quotationData">
+
+  <!-- Header Actions -->
+  <div class="preview-header no-print">
+    <h1 class="page-title">Quotation Preview</h1>
+
+    <div class="header-actions">
+      <button class="btn-action btn-official" (click)="downloadOfficialPDF()" *ngIf="!isAdmin">
+        <i class="fas fa-file-pdf"></i>
+        <span>Download Official PDF</span>
+      </button>
+      <button class="btn-action btn-print" (click)="printQuotation()">
+        <i class="fas fa-print"></i>
+        <span>Print</span>
+      </button>
+      <button class="btn-action btn-close" (click)="close()">
+        <i class="fas fa-times"></i>
+        <span>Close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PDF Preview Card -->
+  <div class="pdf-preview-card official-view">
+    <div class="loading-overlay" *ngIf="isLoadingPdf" style="text-align: center; padding: 50px;">
+      <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--accent-gold); margin-bottom: 20px;"></i>
+      <p style="font-size: 1.2rem; color: var(--text-secondary);">Generating Official 13-Page PDF...</p>
+    </div>
+
+    <!-- Toggle between official PDF and HTML Dynamic Preview -->
+    <div class="preview-mode-selector no-print" style="margin-bottom: 20px; text-align: right;">
+      <div class="mode-toggle-group">
+        <button [class.active]="previewMode === 'pdf'" (click)="setPreviewMode('pdf')" class="toggle-btn">
+          <i class="fas fa-file-pdf"></i> Official PDF View
+        </button>
+        <button [class.active]="previewMode === 'html'" (click)="setPreviewMode('html')" class="toggle-btn">
+          <i class="fas fa-code"></i> Dynamic Page Preview
+        </button>
+      </div>
+    </div>
+
+    <!-- Official PDF Viewer -->
+    <div class="pdf-viewer-container" *ngIf="previewMode === 'pdf' && officialPdfUrl && !isLoadingPdf">
+      <iframe [src]="officialPdfUrl" width="100%" height="1100px" frameborder="0"
+        style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"></iframe>
+    </div>
+
+  </div>
+
+  <!-- PDF Capture Templates (Always in DOM but hidden) -->
+  <div class="capture-templates-hidden" style="position: absolute; left: -9999px; top: -9999px;">
+
+    <!-- ========== PAGE 1 - COVER PAGE ========== -->
+    <div id="page1-template" class="p9-exact-template p9-capture-only" *ngIf="quotationData">
+      <ng-container *ngTemplateOutlet="page1ContentTpl"></ng-container>
+    </div>
+
+    <!-- ========== PAGE 4 - TECHNICAL SPECIFICATIONS ========== -->
+    <div id="page4-template" class="p9-exact-template p9-capture-only" *ngIf="quotationData">
+      <ng-container *ngTemplateOutlet="page4ContentTpl"></ng-container>
+    </div>
+
+    <!-- ========== PAGE 9 - PRICING (EXISTING) ========== -->
+    <div id="page9-template" class="p9-exact-template p9-capture-only" *ngIf="quotationData">
+      <ng-container *ngTemplateOutlet="page9ContentTpl"></ng-container>
+    </div>
+  </div>
+
+  <!-- Interactive HTML Preview -->
+  <div class="interactive-preview" *ngIf="previewMode === 'html' && quotationData">
+    <div class="preview-notice no-print">
+      <i class="fas fa-info-circle"></i> Dynamic preview of quotation pages. Select a page below.
+    </div>
+
+    <!-- Page Tabs Selector -->
+    <div class="page-tabs no-print" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+      <button [class.active]="activePage === 'page1'" (click)="activePage = 'page1'" class="page-tab-btn"
+        style="padding: 10px 20px; border-radius: 8px; border: 2px solid var(--accent-gold); cursor: pointer; background: var(--surface-secondary); color: var(--text-primary); transition: all 0.3s;"
+        [style.background]="activePage === 'page1' ? 'var(--accent-gold)' : 'var(--surface-secondary)'"
+        [style.color]="activePage === 'page1' ? '#000' : 'var(--text-primary)'">
+        <i class="fas fa-file-alt"></i> Page 1 - Cover
+      </button>
+      <button [class.active]="activePage === 'page4'" (click)="activePage = 'page4'" class="page-tab-btn"
+        style="padding: 10px 20px; border-radius: 8px; border: 2px solid var(--accent-gold); cursor: pointer; background: var(--surface-secondary); color: var(--text-primary); transition: all 0.3s;"
+        [style.background]="activePage === 'page4' ? 'var(--accent-gold)' : 'var(--surface-secondary)'"
+        [style.color]="activePage === 'page4' ? '#000' : 'var(--text-primary)'">
+        <i class="fas fa-cog"></i> Page 4 - Technical Specs
+      </button>
+      <button [class.active]="activePage === 'page9'" (click)="activePage = 'page9'" class="page-tab-btn"
+        style="padding: 10px 20px; border-radius: 8px; border: 2px solid var(--accent-gold); cursor: pointer; background: var(--surface-secondary); color: var(--text-primary); transition: all 0.3s;"
+        [style.background]="activePage === 'page9' ? 'var(--accent-gold)' : 'var(--surface-secondary)'"
+        [style.color]="activePage === 'page9' ? '#000' : 'var(--text-primary)'">
+        <i class="fas fa-calculator"></i> Page 9 - Pricing
+      </button>
+    </div>
+
+
+    <!-- ========== PAGE 1 - INTERACTIVE VIEW ========== -->
+    <div class="p9-preview-wrapper" *ngIf="activePage === 'page1'">
+      <div class="p9-exact-template interactive-view">
+        <ng-container *ngTemplateOutlet="page1ContentTpl"></ng-container>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 4 - INTERACTIVE VIEW ========== -->
+    <div class="p9-preview-wrapper" *ngIf="activePage === 'page4'">
+      <div class="p9-exact-template interactive-view">
+        <ng-container *ngTemplateOutlet="page4ContentTpl"></ng-container>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 9 - INTERACTIVE VIEW ========== -->
+    <div class="p9-preview-wrapper" *ngIf="activePage === 'page9'">
+      <div class="p9-exact-template interactive-view">
+        <ng-container *ngTemplateOutlet="page9ContentTpl"></ng-container>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ========== PAGE 1 CONTENT TEMPLATE (Cover Page) ========== -->
+  <ng-template #page1ContentTpl>
+    <div class="page1-container"
+      style="height: 100%; display: flex; flex-direction: column; position: relative; background: white;">
+      <!-- Main Content Block -->
+      <div style="margin-top: auto; margin-bottom: 60px; padding: 0 40px;">
+        <!-- Prepared For Section -->
+        <div style="margin-bottom: 40px;">
+          <h3
+            style="color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+            Prepared For</h3>
+          <h1 style="color: #1a1a1a; font-size: 32px; font-weight: 700; margin: 0; text-transform: uppercase;">
+            {{quotationData.customer.name}}</h1>
+          <p *ngIf="quotationData.customer.company" style="color: #333; font-size: 18px; margin: 5px 0 0 0;">
+            {{quotationData.customer.company}}</p>
+          <p style="color: #666; font-size: 16px; margin: 10px 0 0 0;">Email: {{quotationData.customer.email}}</p>
+          <p style="color: #666; font-size: 16px; margin: 5px 0 0 0;">Phone: {{quotationData.customer.phone}}</p>
+        </div>
+
+        <!-- Site Address Section -->
+        <div style="margin-bottom: 40px;" *ngIf="quotationData.customer.address">
+          <h3
+            style="color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+            Site Address</h3>
+          <p style="color: #333; font-size: 16px; margin: 0; line-height: 1.6; max-width: 500px;">
+            {{quotationData.customer.address}}</p>
+        </div>
+
+        <!-- Quote Details Section -->
+        <div style="display: flex; gap: 80px; border-top: 1px solid #ddd; padding-top: 30px;">
+          <div>
+            <h4
+              style="color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+              Reference No</h4>
+            <p style="color: #1a1a1a; font-size: 16px; font-weight: 600; margin: 0;">{{quotationData.quoteNumber}}</p>
+          </div>
+          <div>
+            <h4
+              style="color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+              Date</h4>
+            <p style="color: #1a1a1a; font-size: 16px; font-weight: 600; margin: 0;">
+              {{formatDate(quotationData.quoteDate)}}
+            </p>
+          </div>
+          <div>
+            <h4
+              style="color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+              Valid Until</h4>
+            <p style="color: #1a1a1a; font-size: 16px; font-weight: 600; margin: 0;">
+              {{formatDate(quotationData.validUntil)}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Brand -->
+      <div
+        style="padding: 30px 40px; border-top: 4px solid #d4b347; display: flex; justify-content: space-between; align-items: center; background: white;">
+        <span style="font-weight: 700; color: #1a1a1a; letter-spacing: 1px;">CAPRICORN ELEVATORS PVT LTD</span>
+        <span style="color: #d4b347; font-weight: 600;">CONFIDENTIAL</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ========== PAGE 4 CONTENT TEMPLATE (Technical Specifications) ========== -->
+  <ng-template #page4ContentTpl>
+    <div class="p9-gold-top-line"></div>
+    <div class="p9-header-grid">
+      <div class="p9-header-text">
+        <h1 class="p9-title-gold">Technical Specifications</h1>
+        <p class="p9-subtitle-gold">Elevator Configuration Details</p>
+      </div>
+      <div class="p9-header-logo">
+        <img src="assets/images/capricorn.png" alt="Capricorn Logo">
+      </div>
+    </div>
+
+    <!-- Technical Specifications Table -->
+    <div class="p9-section-pricing" style="margin-top: 30px;">
+      <h3 style="color: var(--accent-gold); margin-bottom: 15px; font-size: 18px;">
+        {{quotationData.model}} - G+{{(quotationData.noOfStops || 2) - 1}}
+      </h3>
+      <table class="p9-table-thin" style="width: 100%;">
+        <thead>
+          <tr style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a);">
+            <th class="text-left" style="width: 45%;">Specification</th>
+            <th class="text-left" style="width: 55%;">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left"><strong>Model</strong></td>
+            <td class="text-left">{{quotationData.model}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Quantity</strong></td>
+            <td class="text-left">{{quotationData.quantity}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>No of Stops</strong></td>
+            <td class="text-left">{{quotationData.noOfStops}} Stops</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Elevator Type</strong></td>
+            <td class="text-left">{{quotationData.elevatorType}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Rated Load</strong></td>
+            <td class="text-left">{{quotationData.ratedLoad}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Maximum Speed</strong></td>
+            <td class="text-left">{{quotationData.maximumSpeed}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Travel Height</strong></td>
+            <td class="text-left">{{quotationData.travelHeight}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Drive System</strong></td>
+            <td class="text-left">{{quotationData.driveSystem}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Control System</strong></td>
+            <td class="text-left">{{quotationData.controlSystem}}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Cabin Walls</strong></td>
+            <td class="text-left">{{quotationData.cabinWalls}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Cabin Doors</strong></td>
+            <td class="text-left">{{quotationData.cabinDoors}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Door Type</strong></td>
+            <td class="text-left">{{quotationData.doorType}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Door Opening</strong></td>
+            <td class="text-left">{{quotationData.doorOpening}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>COP & LOP Screen</strong></td>
+            <td class="text-left">{{quotationData.copLopScreen}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Cabin Ceiling</strong></td>
+            <td class="text-left">{{quotationData.cabinCeiling}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Cabin Floor</strong></td>
+            <td class="text-left">{{quotationData.cabinFloor}}</td>
+          </tr>
+          <tr>
+            <td class="text-left"><strong>Handrails</strong></td>
+            <td class="text-left">{{quotationData.handrails}} No.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Emergency & Protection Features (HARDCODED) -->
+    <div class="p9-section-emergency"
+      style="margin-top: 30px; padding: 20px; background: rgba(212, 175, 55, 0.05); border-radius: 8px; border-left: 4px solid var(--accent-gold);">
+      <h3 style="color: var(--accent-gold); margin-bottom: 15px; font-size: 16px;">1. Emergency & Protection
+        Features</h3>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.8;">
+        <li><strong>Emergency Stop Button</strong> – Instantly halts the lift in case of an emergency.</li>
+        <li><strong>Emergency Alarm</strong> – Alerts building occupants in case of distress.</li>
+        <li><strong>Emergency Light</strong> – Ensures illumination during power failures.</li>
+        <li><strong>Auto Rescue Device (ARD)</strong> – Automatically moves the lift to the nearest floor in case of
+          power failure.</li>
+        <li><strong>Over-Speed Governor</strong> – Prevents the lift from exceeding safe speeds.</li>
+        <li><strong>Overload Sensor</strong> – Detects excess weight and prevents operation.</li>
+        <li><strong>Mechanical Clutch for Anti-Fall Protection</strong> – Prevents free fall in case of system
+          failure.</li>
+        <li><strong>Buffer System for Smooth Landing</strong> – Ensures controlled and cushioned landing.</li>
+        <li><strong>Fireman Control Mode</strong> – Dedicated emergency mode for firefighters.</li>
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <div class="p9-footer" style="margin-top: auto;">
+      <div class="p9-footer-left">
+        <span class="p9-footer-brand">Capricorn Elevators Pvt Ltd</span>
+        <span class="p9-footer-confidential">CONFIDENTIAL</span>
+      </div>
+      <div class="p9-footer-right">
+        <span class="p9-footer-page">Page No. 4</span>
+      </div>
+    </div>
+
+  </ng-template>
+
+  <!-- PAGE 9 CONTENT TEMPLATE -->
+  <ng-template #page9ContentTpl>
+    <!-- Top Gold Line -->
+    <div class="p9-gold-top-line"></div>
+
+    <!-- Header: Logo Top-Right, Text Top-Left -->
+    <div class="p9-header-grid">
+      <div class="p9-header-text">
+        <h1 class="p9-title-gold">Pricing & Payment Terms</h1>
+        <p class="p9-subtitle-gold">Price Structure</p>
+      </div>
+      <div class="p9-header-logo">
+        <img src="assets/images/capricorn.png" alt="Capricorn Logo">
+      </div>
+    </div>
+
+    <!-- Main Pricing Table (14 Rows) -->
+    <div class="p9-section-pricing">
+      <table class="p9-table-thin">
+        <thead>
+          <tr>
+            <th class="text-left">Item</th>
+            <th class="text-right">Standard Price</th>
+            <th class="text-right">Launch Offer Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 11 Items Mapping -->
+          <tr *ngFor="let item of quotationData?.pricingItems">
+            <td class="text-left">{{item.description || item.label}}</td>
+            <td class="text-right">{{item.isNA ? '-' : formatCurrency(item.standard)}}</td>
+            <td class="text-right" [class.p9-complimentary]="item.isComplimentary">
+              {{item.isNA ? 'NA' : (item.isComplimentary ? 'Complimentary' : formatCurrency(item.launch))}}
+            </td>
+          </tr>
+          <!-- Row 12: Total -->
+          <tr class="p9-row-total">
+            <td class="text-left">Total</td>
+            <td class="text-right">{{formatCurrency(quotationData?.standardSubtotal)}}</td>
+            <td class="text-right">{{formatCurrency(quotationData?.launchSubtotal)}}</td>
+          </tr>
+          <!-- Row 13: GST -->
+          <tr class="p9-row-total">
+            <td class="text-left">GST ({{quotationData?.gstRate || 18}}%)</td>
+            <td class="text-right">{{formatCurrency(quotationData?.standardTax)}}</td>
+            <td class="text-right">{{formatCurrency(quotationData?.launchTax)}}</td>
+          </tr>
+          <!-- Row 14: Grand Total -->
+          <tr class="p9-row-grand">
+            <td class="text-left"><strong>Grand Total</strong></td>
+            <td class="text-right"><strong>{{formatCurrency(quotationData?.standardGrandTotal)}}</strong></td>
+            <td class="text-right"><strong>{{formatCurrency(quotationData?.launchGrandTotal)}}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total Value Section -->
+    <div class="p9-value-section">
+      <p class="p9-value-words"><strong>Total Value of Project: {{quotationData?.launchGrandTotalInWords}}</strong>
+      </p>
+      <p class="p9-validity">The Above price is valid till {{formatDate(quotationData?.validUntil || '')}}</p>
+    </div>
+
+    <!-- Payment Terms Section -->
+    <div class="p9-section-payment">
+      <h3 class="p9-heading-gold">Payment Terms</h3>
+      <table class="p9-table-thin payment-table">
+        <thead>
+          <tr>
+            <th style="width: 80px;">SL.No.</th>
+            <th>Description</th>
+            <th class="text-center" style="width: 100px;">Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let term of quotationData?.paymentTerms">
+            <td class="text-center">{{term.slNo}}</td>
+            <td>{{term.description}}</td>
+            <td class="text-center">{{term.rate}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="p9-favour-text">Payments are to be made in favour of <strong>"Capricorn Elevators Pvt.
+          Ltd."</strong>.</p>
+    </div>
+
+    <!-- Bank Details Section -->
+    <div class="p9-section-bank">
+      <div class="p9-bank-container">
+        <div class="p9-bank-box">
+          <div class="p9-bank-row"><span class="p9-lbl">Account No.</span><span
+              class="p9-val">{{quotationData?.bankDetails?.accountNo}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">IFSC</span><span
+              class="p9-val">{{quotationData?.bankDetails?.ifsc}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">BANK</span><span
+              class="p9-val">{{quotationData.bankDetails?.bank}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">GSTIN</span><span
+              class="p9-val">{{quotationData.bankDetails?.gstin}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">&nbsp;</span><span class="p9-val">&nbsp;</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">&nbsp;</span><span class="p9-val">&nbsp;</span></div>
+        </div>
+        <div class="p9-bank-box">
+          <div class="p9-bank-row"><span class="p9-lbl">Account Name</span><span
+              class="p9-val">{{quotationData.bankDetails?.accountName}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">Account Type</span><span
+              class="p9-val">{{quotationData.bankDetails?.accountType}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">Branch</span><span
+              class="p9-val">{{quotationData.bankDetails?.branch}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">PAN</span><span
+              class="p9-val">{{quotationData.bankDetails?.pan}}</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">&nbsp;</span><span class="p9-val">&nbsp;</span></div>
+          <div class="p9-bank-row"><span class="p9-lbl">&nbsp;</span><span class="p9-val">&nbsp;</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Outside border -->
+    <div class="p9-footer-exact">
+      <span class="p9-footer-brand">Capricorn elevators</span>
+      <span class="p9-footer-page">Page No. 9</span>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Error State -->
+<div class="error-state" *ngIf="!quotationData">
+  <i class="fas fa-exclamation-triangle"></i>
+  <h3>No Quotation Data Found</h3>
+  <p>Unable to load quotation data. Please try again.</p>
+  <button class="btn-primary" (click)="close()">
+    <i class="fas fa-arrow-left"></i>
+    <span>Back to Quotations</span>
+  </button>
+</div>
