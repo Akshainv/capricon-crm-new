@@ -25,8 +25,8 @@ export class SalesActivityLogComponent implements OnInit {
   notifications: Notification[] = [];
   filteredNotifications: Notification[] = [];
   activeFilter: 'all' | 'unread' | 'read' = 'all';
-  
-  constructor(private router: Router) {}
+
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.loadNotifications();

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProjectService, Project as BackendProject } from '../services/project.service';
-import { EmployeeService,Employee } from '../../employee/employee.service';
+import { EmployeeService, Employee } from '../../employee/employee.service';
 import { AuthService } from '../services/auth.service';
 import { interval, Subscription } from 'rxjs';
 
@@ -39,15 +39,15 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
   selectedFilter: string = 'all';
   currentUser: string = '';
   currentUserId: string = '';
-  
+
   projects: Project[] = [];
   employees: Employee[] = [];
   loading: boolean = false;
-  
+
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 7;
-  
+
   // Auto-refresh subscription
   private refreshSubscription?: Subscription;
 
@@ -56,7 +56,7 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private employeeService: EmployeeService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const currentUser = this.authService.currentUserValue;
@@ -64,10 +64,10 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
       this.currentUser = currentUser.fullName || currentUser.email || 'User';
       this.currentUserId = currentUser.userId || '';
     }
-    
+
     this.loadEmployees();
     this.loadMyProjects();
-    
+
     // Auto-refresh every 30 seconds
     this.refreshSubscription = interval(30000).subscribe(() => {
       this.loadMyProjects(true); // Silent refresh
@@ -158,15 +158,15 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
   getSalesPersonName(userId: string): string {
     console.log('Looking for employee with ID:', userId);
     console.log('Available employees:', this.employees);
-    
+
     // Find employee by _id
     const employee = this.employees.find(emp => emp._id === userId);
-    
+
     if (employee) {
       console.log('✅ Found employee:', employee.fullName);
       return employee.fullName;
     }
-    
+
     console.log('❌ Employee not found, returning default');
     return 'Sales Executive';
   }
@@ -191,7 +191,7 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
         const matchesCustomer = p.customer && p.customer.toLowerCase().includes(term);
         const matchesProjectCode = p.projectCode && p.projectCode.toLowerCase().includes(term);
         const matchesSalesPerson = p.salesExecutive.toLowerCase().includes(term);
-        
+
         return matchesProjectName || matchesCustomer || matchesProjectCode || matchesSalesPerson;
       });
     }

@@ -66,7 +66,7 @@ export class ProjectConversionComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    
+
     // Check if deal ID is passed via route
     const dealId = this.route.snapshot.queryParamMap.get('dealId');
     if (dealId && !this.dealData) {

@@ -26,6 +26,8 @@ import { LeadAssignmentComponent } from './features/leads/lead-assignment/lead-a
 import { ImportLeadsComponent } from './features/leads/import-leads/import-leads.component';
 import { SalesImportLeadsComponent } from './sales-import-leads/sales-import-leads.component';
 import { SalesAddLeadComponent } from './sales-add-leads/sales-add-leads.component';
+import { MetaLeadsComponent } from './features/leads/meta-leads/meta-leads.component';
+
 
 // Communication Imports
 import { SalesActivityLogComponent } from './sales-notifications/sales-activity-log.component';
@@ -91,7 +93,9 @@ export const routes: Routes = [
       // Lead Management (Sales Executive View)
       { path: 'leads', component: SalesLeadsComponent },
       { path: 'leads/add', component: SalesAddLeadComponent },
+      { path: 'leads/meta', component: MetaLeadsComponent },
       { path: 'leads/import', component: SalesImportLeadsComponent },
+
       { path: 'leads/edit/:id', component: SalesAddLeadComponent },
       { path: 'leads/:id', component: LeadDetailComponent },
 
@@ -141,7 +145,9 @@ export const routes: Routes = [
       // Admin Lead Management
       { path: 'admin/leads', component: LeadsListComponent },
       { path: 'admin/leads/add', component: LeadFormComponent },
+      { path: 'admin/leads/meta', component: MetaLeadsComponent },
       { path: 'admin/leads/import', component: ImportLeadsComponent },
+
       { path: 'admin/leads/assign', component: LeadAssignmentComponent },
       { path: 'admin/leads/edit/:id', component: LeadFormComponent },
       { path: 'admin/leads/:id', component: LeadDetailComponent },

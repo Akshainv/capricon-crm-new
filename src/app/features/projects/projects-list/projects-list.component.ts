@@ -30,7 +30,7 @@ export class ProjectsListComponent implements OnInit {
     private route: ActivatedRoute,
     private projectService: ProjectService,
     private employeeService: EmployeeService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadEmployees();
@@ -39,7 +39,7 @@ export class ProjectsListComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['newProject'] && params['highlight'] === 'true') {
         this.highlightedProjectId = params['newProject'];
-        
+
         setTimeout(() => {
           this.highlightedProjectId = null;
         }, 3000);
@@ -93,25 +93,25 @@ export class ProjectsListComponent implements OnInit {
       filtered = filtered.filter(p => {
         // Search in project name
         const matchesProjectName = p.projectName && p.projectName.toLowerCase().includes(term);
-        
+
         // Search in client name
         const matchesClientName = p.clientName && p.clientName.toLowerCase().includes(term);
-        
+
         // Search in project code
         const matchesProjectCode = p.projectCode && p.projectCode.toLowerCase().includes(term);
-        
+
         // Search in sales person name
         const salesPersonName = this.getSalesPersonName(p.assignedTo).toLowerCase();
         const matchesSalesPerson = salesPersonName.includes(term);
-        
+
         // Search in site address
         const matchesSiteAddress = p.siteAddress && p.siteAddress.toLowerCase().includes(term);
-        
+
         // Search in elevator type
         const matchesElevatorType = p.elevatorType && p.elevatorType.toLowerCase().includes(term);
-        
-        return matchesProjectName || matchesClientName || matchesProjectCode || 
-               matchesSalesPerson || matchesSiteAddress || matchesElevatorType;
+
+        return matchesProjectName || matchesClientName || matchesProjectCode ||
+          matchesSalesPerson || matchesSiteAddress || matchesElevatorType;
       });
     }
 
@@ -189,15 +189,15 @@ export class ProjectsListComponent implements OnInit {
   getSalesPersonName(userId: string): string {
     console.log('Looking for employee with ID:', userId);
     console.log('Available employees:', this.employees);
-    
+
     // Find employee by _id
     const employee = this.employees.find(emp => emp._id === userId);
-    
+
     if (employee) {
       console.log('✅ Found employee:', employee.fullName);
       return employee.fullName;
     }
-    
+
     console.log('❌ Employee not found, returning default');
     return 'Sales Executive';
   }

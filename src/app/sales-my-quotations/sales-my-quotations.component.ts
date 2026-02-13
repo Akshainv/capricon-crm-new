@@ -86,6 +86,14 @@ export class SalesMyQuotationsComponent implements OnInit {
     return this.quotations.filter(q => (q as any).status?.toLowerCase() === 'rejected').length;
   }
 
+  get sentCount(): number {
+    return this.quotations.filter(q => (q as any).status?.toLowerCase() === 'sent').length;
+  }
+
+  get dealCount(): number {
+    return this.sentCount;
+  }
+
   setFilterStatus(status: string): void {
     this.selectedStatus = status;
     this.loadQuotations(); // Re-fetch to get latest status updates from Admin
@@ -98,13 +106,17 @@ export class SalesMyQuotationsComponent implements OnInit {
 
       // Status Filter
       let matchesStatus = false;
-      if (this.selectedStatus === 'Pending') {
-        // Show if explicitly 'sent' (lowercase or TitleCase) or 'draft'
-        matchesStatus = ['pending', 'draft', 'sent'].includes(normalizedStatus);
+      if (this.selectedStatus === 'All') {
+        matchesStatus = true;
       } else if (this.selectedStatus === 'Approved') {
         matchesStatus = normalizedStatus === 'approved';
       } else if (this.selectedStatus === 'Rejected') {
         matchesStatus = normalizedStatus === 'rejected';
+      } else if (this.selectedStatus === 'Deal') {
+        matchesStatus = normalizedStatus === 'sent';
+      } else {
+        // Default to Pending (catch-all): anything not approved, rejected, or sent
+        matchesStatus = !['approved', 'rejected', 'sent'].includes(normalizedStatus);
       }
 
       // Search Filter
@@ -175,7 +187,7 @@ export class SalesMyQuotationsComponent implements OnInit {
   viewQuotation(id: string | undefined): void {
     try {
       if (!id) {
-        alert('Invalid quotation ID');
+        this.showToast('Invalid quotation ID', 'error');
         return;
       }
 
@@ -198,18 +210,18 @@ export class SalesMyQuotationsComponent implements OnInit {
             try { localStorage.setItem('quotationPreview', JSON.stringify(previewData)); } catch (e) { }
             this.router.navigate(['/quotations/preview'], { state: { quotationData: previewData } });
           } else {
-            alert('Quotation data not found');
+            this.showToast('Quotation data not found', 'error');
           }
         },
         error: (err) => {
           this.loading = false;
           console.error('Error fetching quotation:', err);
-          alert('Failed to load quotation. Please try again.');
+          this.showToast('Failed to load quotation. Please try again.', 'error');
         }
       });
     } catch (err) {
       console.error('Unexpected error in viewQuotation:', err);
-      alert('An unexpected error occurred. Check console for details.');
+      this.showToast('An unexpected error occurred.', 'error');
     }
   }
 
@@ -284,69 +296,13 @@ export class SalesMyQuotationsComponent implements OnInit {
   sendToClient(quote: Quotation): void {
     const email = quote.customerEmail;
     if (!email) {
-      alert('Customer email is missing.');
+      this.showToast('Customer email is missing.', 'error');
       return;
     }
 
-    if (typeof Toastify !== 'undefined') {
-      const toastHtml = `
-        <div style="text-align: center;">
-          <div style="font-weight: 600; margin-bottom: 8px;">Send Quotation?</div>
-          <div style="font-size: 13px; opacity: 0.9;">Send quotation to ${email}</div>
-        </div>
-      `;
-
-      const toast = Toastify({
-        text: toastHtml,
-        duration: -1,
-        close: true,
-        gravity: "top",
-        position: "center",
-        stopOnFocus: true,
-        escapeMarkup: false,
-        style: {
-          background: "#60a5fa",
-          borderRadius: "8px",
-          fontSize: "14px",
-          fontWeight: "500",
-          textAlign: "center",
-          maxWidth: "400px",
-          padding: "20px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-        },
-        onClick: function () { }
-      }).showToast();
-
-      setTimeout(() => {
-        const toastElement = document.querySelector('.toastify') as HTMLElement;
-        if (toastElement) {
-          const buttonsHTML = `
-            <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center;">
-              <button id="toast-confirm-btn" style="padding: 8px 20px; background: white; color: #60a5fa; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                Send
-              </button>
-              <button id="toast-cancel-btn" style="padding: 8px 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                Cancel
-              </button>
-            </div>
-          `;
-          toastElement.insertAdjacentHTML('beforeend', buttonsHTML);
-
-          document.getElementById('toast-confirm-btn')?.addEventListener('click', () => {
-            toast.hideToast();
-            this.proceedSendToClient(quote);
-          });
-
-          document.getElementById('toast-cancel-btn')?.addEventListener('click', () => {
-            toast.hideToast();
-          });
-        }
-      }, 100);
-    } else {
-      if (confirm(`Send quotation to ${email}?`)) {
-        this.proceedSendToClient(quote);
-      }
-    }
+    this.showConfirmToast(`Send quotation to ${email}?`, 'Send', () => {
+      this.proceedSendToClient(quote);
+    });
   }
 
   private proceedSendToClient(quote: Quotation): void {
@@ -399,53 +355,133 @@ export class SalesMyQuotationsComponent implements OnInit {
         }
       }).showToast();
     } else {
-      alert(message);
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+  }
+
+  showConfirmToast(message: string, confirmLabel: string, onConfirm: () => void): void {
+    if (typeof Toastify !== 'undefined') {
+      // Create a container element
+      const container = document.createElement('div');
+      container.style.textAlign = 'center';
+      container.style.padding = '10px';
+
+      // Create message element
+      const msgEl = document.createElement('div');
+      msgEl.style.fontWeight = '600';
+      msgEl.style.marginBottom = '15px';
+      msgEl.innerText = message;
+      container.appendChild(msgEl);
+
+      // Create buttons container
+      const btnContainer = document.createElement('div');
+      btnContainer.style.display = 'flex';
+      btnContainer.style.gap = '10px';
+      btnContainer.style.justifyContent = 'center';
+
+      const toast = Toastify({
+        node: container,
+        duration: -1,
+        close: true,
+        gravity: "top",
+        position: "center",
+        stopOnFocus: true,
+        style: {
+          background: "#60a5fa",
+          borderRadius: "12px",
+          fontSize: "14px",
+          fontWeight: "500",
+          maxWidth: "400px",
+          padding: "15px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+        }
+      }).showToast();
+
+      // Create Confirm button
+      const confirmBtn = document.createElement('button');
+      confirmBtn.innerText = confirmLabel;
+      confirmBtn.style.padding = '8px 20px';
+      confirmBtn.style.background = 'white';
+      confirmBtn.style.color = '#60a5fa';
+      confirmBtn.style.border = 'none';
+      confirmBtn.style.borderRadius = '6px';
+      confirmBtn.style.cursor = 'pointer';
+      confirmBtn.style.fontWeight = '700';
+      confirmBtn.style.fontSize = '13px';
+      confirmBtn.style.transition = 'all 0.2s';
+      confirmBtn.addEventListener('click', () => {
+        toast.hideToast();
+        onConfirm();
+      });
+
+      // Create Cancel button
+      const cancelBtn = document.createElement('button');
+      cancelBtn.innerText = 'Cancel';
+      cancelBtn.style.padding = '8px 20px';
+      cancelBtn.style.background = 'rgba(255,255,255,0.2)';
+      cancelBtn.style.color = 'white';
+      cancelBtn.style.border = 'none';
+      cancelBtn.style.borderRadius = '6px';
+      cancelBtn.style.cursor = 'pointer';
+      cancelBtn.style.fontWeight = '600';
+      cancelBtn.style.fontSize = '13px';
+      cancelBtn.style.transition = 'all 0.2s';
+      cancelBtn.addEventListener('click', () => {
+        toast.hideToast();
+      });
+
+      btnContainer.appendChild(confirmBtn);
+      btnContainer.appendChild(cancelBtn);
+      container.appendChild(btnContainer);
+    } else {
+      if (confirm(message)) {
+        onConfirm();
+      }
     }
   }
 
   deleteQuotation(id: string | undefined): void {
     if (!id) {
-      alert('Invalid quotation ID');
+      this.showToast('Invalid quotation ID', 'error');
       return;
     }
 
     const quotation = this.quotations.find(q => (q.id || q._id) === id);
-    if (confirm(`Are you sure you want to delete quotation ${quotation?.quoteNumber}?`)) {
+    this.showConfirmToast(`Delete quotation ${quotation?.quoteNumber}?`, 'Delete', () => {
       const quotationId = quotation?._id || quotation?.id;
       if (!quotationId) {
-        alert('Invalid quotation ID');
+        this.showToast('Invalid quotation ID', 'error');
         return;
       }
 
       this.quotationService.deleteQuotation(quotationId).subscribe({
         next: (response) => {
           if (response.statusCode === 200) {
-            alert('Quotation deleted successfully!');
+            this.showToast('Quotation deleted successfully!', 'success');
             this.loadQuotations();
           }
         },
         error: (error) => {
           console.error('Error deleting quotation:', error);
-          alert('Failed to delete quotation. Please try again.');
+          this.showToast('Failed to delete quotation. Please try again.', 'error');
         }
       });
-    }
+    });
   }
 
-  // CHANGED: No navigation after successful conversion
   convertToDeal(id: string | undefined): void {
     if (!id) {
-      alert('Invalid quotation ID');
+      this.showToast('Invalid quotation ID', 'error');
       return;
     }
 
     const quotation = this.quotations.find(q => (q.id || q._id) === id);
     if (!quotation) {
-      alert('Quotation not found');
+      this.showToast('Quotation not found', 'error');
       return;
     }
 
-    if (confirm(`Convert quotation ${quotation.quoteNumber} for ${quotation.customerName} to a deal?`)) {
+    this.showConfirmToast(`Convert quotation ${quotation.quoteNumber} to a deal?`, 'Convert', () => {
       this.loading = true;
 
       console.log('Converting quotation to deal:', quotation);
@@ -472,7 +508,9 @@ export class SalesMyQuotationsComponent implements OnInit {
           this.loading = false;
           console.log('Deal created successfully:', deal);
 
-          alert(`✓ Quotation converted to deal successfully!\n\nDeal Title: ${deal.title || deal.dealTitle || 'New Deal'}\nDeal Amount: ${this.formatCurrency(deal.dealAmount || quotation.totalAmount)}\n\nThe new deal is now available in the Deals section.`);
+          const dealTitle = deal.title || deal.dealTitle || 'New Deal';
+          const dealAmount = this.formatCurrency(deal.dealAmount || quotation.totalAmount);
+          this.showToast(`✓ Deal created: ${dealTitle} (${dealAmount})`, 'success');
 
           // Stay on the current page and refresh the list
           this.loadQuotations();
@@ -481,28 +519,22 @@ export class SalesMyQuotationsComponent implements OnInit {
           this.loading = false;
           console.error('Error converting quotation to deal:', error);
 
-          let errorMessage = 'Failed to convert quotation to deal.\n\n';
+          let errorMessage = 'Failed to convert quotation to deal. ';
 
           if (error.status === 400) {
-            errorMessage += 'Bad Request: ';
-            if (error.error && error.error.message) {
-              errorMessage += error.error.message;
-            } else {
-              errorMessage += 'The data sent to the server is invalid.';
-            }
+            errorMessage += error.error?.message || 'Invalid data.';
           } else if (error.status === 401) {
-            errorMessage += 'Authentication Error: Please log in again.';
+            errorMessage += 'Please log in again.';
           } else if (error.status === 500) {
-            errorMessage += 'Server Error: Please contact support.';
+            errorMessage += 'Server error. Contact support.';
           } else {
-            errorMessage += error.message || 'Unknown error occurred.';
+            errorMessage += error.message || 'Unknown error.';
           }
 
-          errorMessage += '\n\nPlease check the browser console for more details.';
-          alert(errorMessage);
+          this.showToast(errorMessage, 'error');
         }
       });
-    }
+    });
   }
 
   formatCurrency(amount: number | undefined): string {

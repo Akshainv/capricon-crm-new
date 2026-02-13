@@ -122,7 +122,7 @@ export class ExportReportsComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   selectFormat(formatId: string): void {
     this.selectedFormat = formatId;
@@ -151,7 +151,7 @@ export class ExportReportsComponent implements OnInit {
     setTimeout(() => {
       this.isExporting = false;
       this.downloadFile(selectedFormat!);
-      
+
       // Add to export history
       const newExport: ExportHistory = {
         id: (this.exportHistory.length + 1).toString(),
@@ -174,7 +174,7 @@ export class ExportReportsComponent implements OnInit {
     // Simulate file download
     const fileName = `${this.reportSummary.type.replace(/\s+/g, '_')}_${new Date().getTime()}${format.extension}`;
     console.log('Downloading file:', fileName);
-    
+
     // In production, this would trigger actual file download
     // const blob = new Blob([data], { type: format.mimeType });
     // const url = window.URL.createObjectURL(blob);

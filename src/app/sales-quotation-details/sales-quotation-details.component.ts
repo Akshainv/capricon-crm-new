@@ -59,7 +59,7 @@ export class SalesQuotationDetailsComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadQuotationData();
@@ -68,7 +68,7 @@ export class SalesQuotationDetailsComponent implements OnInit {
   loadQuotationData(): void {
     // Get quotation ID from route params
     const quotationId = this.route.snapshot.paramMap.get('id');
-    
+
     if (quotationId) {
       // Load from localStorage based on ID
       this.loadFromStorage(quotationId);
@@ -112,7 +112,7 @@ export class SalesQuotationDetailsComponent implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
+    return date.toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'

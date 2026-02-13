@@ -28,16 +28,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   ];
 
   // Check if the request URL is a public endpoint
-  const isPublicEndpoint = publicEndpoints.some(endpoint => 
+  const isPublicEndpoint = publicEndpoints.some(endpoint =>
     req.url.includes(endpoint)
   );
 
   // Clone the request and add authorization header if not a public endpoint
   let authReq = req;
-  
+
   if (!isPublicEndpoint) {
     const token = authService.getToken();
-    
+
     if (token) {
       authReq = req.clone({
         setHeaders: {
@@ -56,7 +56,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           // Unauthorized - Invalid or expired token
           console.error('Unauthorized access - Token invalid or expired');
           authService.logout();
-          router.navigate(['/login'], { 
+          router.navigate(['/login'], {
             queryParams: { returnUrl: router.url },
             queryParamsHandling: 'merge'
           });
@@ -65,7 +65,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         case 403:
           // Forbidden - User doesn't have permission or pending approval
           console.error('Access forbidden');
-          
+
           // Check if it's an employee pending approval
           if (error.error?.message?.includes('pending approval')) {
             alert('Your account is pending admin approval. Please wait for approval to access the system.');

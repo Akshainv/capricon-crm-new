@@ -31,11 +31,11 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   currentUserId: string = '';
   isSalesExecutive: boolean = false;
-  
+
   Math = Math;
-  
+
   milestones: Milestone[] = [];
-  
+
   private refreshSubscription?: Subscription;
 
   constructor(
@@ -43,7 +43,7 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     private router: Router,
     private projectService: ProjectService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const currentUser = this.authService.currentUserValue;
@@ -54,7 +54,7 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     this.projectId = this.route.snapshot.paramMap.get('id');
     if (this.projectId) {
       this.loadProjectData(this.projectId);
-      
+
       this.refreshSubscription = interval(30000).subscribe(() => {
         if (this.projectId) {
           this.loadProjectData(this.projectId, true);
@@ -73,13 +73,13 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     if (!silent) {
       this.loading = true;
     }
-    
+
     this.projectService.getProjectById(id).subscribe({
       next: (project) => {
         this.project = project;
         this.isSalesExecutive = this.currentUserId === project.assignedTo;
         this.generateMilestones(project);
-        
+
         if (!silent) {
           this.loading = false;
         }
@@ -235,8 +235,8 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     const currentIndex = this.milestones.findIndex(m => m.key === milestone.key);
     const totalMilestones = this.milestones.length;
     const newProgress = Math.round(((currentIndex + 1) / totalMilestones) * 100);
-    const nextMilestone = currentIndex < this.milestones.length - 1 
-      ? this.milestones[currentIndex + 1] 
+    const nextMilestone = currentIndex < this.milestones.length - 1
+      ? this.milestones[currentIndex + 1]
       : null;
 
     const isHandoverMilestone = milestone.key === 'handover';
@@ -247,12 +247,12 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
       completedMilestone: milestone.key,
       currentMilestone: finalCurrentMilestone,
       progressPercentage: finalProgress,
-      progressNotes: isHandoverMilestone 
-        ? `${milestone.title} completed - Project finished successfully!` 
+      progressNotes: isHandoverMilestone
+        ? `${milestone.title} completed - Project finished successfully!`
         : `${milestone.title} completed`,
       issuesEncountered: '',
-      nextSteps: isHandoverMilestone 
-        ? 'Project completed successfully' 
+      nextSteps: isHandoverMilestone
+        ? 'Project completed successfully'
         : (nextMilestone ? `Starting ${nextMilestone.title}` : 'Project completed'),
       updatedBy: this.currentUserId,
       milestoneStatus: 'completed',
@@ -265,7 +265,7 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
       next: (updatedProject) => {
         this.project = updatedProject;
         this.generateMilestones(updatedProject);
-        this.milestones = this.milestones.map(m => ({...m}));
+        this.milestones = this.milestones.map(m => ({ ...m }));
         this.loading = false;
 
         if (isHandoverMilestone || updatedProject.projectStatus === 'completed') {
@@ -379,10 +379,10 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
     if (typeof Toastify !== 'undefined') {
-      const backgroundColor = 
+      const backgroundColor =
         type === 'success' ? 'linear-gradient(to right, #00b09b, #96c93d)' :
-        type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
-        'linear-gradient(to right, #667eea, #764ba2)';
+          type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
+            'linear-gradient(to right, #667eea, #764ba2)';
 
       Toastify({
         text: message,

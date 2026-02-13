@@ -42,11 +42,11 @@ export class SalesCalendarComponent implements OnInit {
 
   currentDate: Date = new Date();
   viewMode: 'month' | 'week' | 'day' = 'month';
-  
+
   calendarDays: CalendarDay[] = [];
   weekDays: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  monthNames: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 
-                          'July', 'August', 'September', 'October', 'November', 'December'];
+  monthNames: string[] = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
 
   events: CalendarEvent[] = [];
 
@@ -62,7 +62,7 @@ export class SalesCalendarComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForm();
@@ -72,7 +72,7 @@ export class SalesCalendarComponent implements OnInit {
 
   loadMockEvents(): void {
     const today = new Date();
-    
+
     this.events = [
       {
         id: '1',
@@ -217,12 +217,12 @@ export class SalesCalendarComponent implements OnInit {
   generateMonthView(): void {
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
-    
+
     this.calendarDays = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -230,7 +230,7 @@ export class SalesCalendarComponent implements OnInit {
     for (let i = 0; i < 42; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      
+
       const dayEvents = this.getEventsForDate(date);
 
       this.calendarDays.push({
@@ -245,7 +245,7 @@ export class SalesCalendarComponent implements OnInit {
   generateWeekView(): void {
     const startOfWeek = new Date(this.currentDate);
     startOfWeek.setDate(this.currentDate.getDate() - this.currentDate.getDay());
-    
+
     this.calendarDays = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -253,7 +253,7 @@ export class SalesCalendarComponent implements OnInit {
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
-      
+
       const dayEvents = this.getEventsForDate(date);
 
       this.calendarDays.push({
@@ -268,7 +268,7 @@ export class SalesCalendarComponent implements OnInit {
   generateDayView(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const dayEvents = this.getEventsForDate(this.currentDate);
 
     this.calendarDays = [{
@@ -287,8 +287,8 @@ export class SalesCalendarComponent implements OnInit {
 
   isSameDay(date1: Date, date2: Date): boolean {
     return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate();
   }
 
   changeView(mode: 'month' | 'week' | 'day'): void {
@@ -347,7 +347,7 @@ export class SalesCalendarComponent implements OnInit {
 
   toggleAddForm(date?: Date): void {
     this.showAddForm = !this.showAddForm;
-    
+
     if (this.showAddForm) {
       if (date) {
         this.selectedDate = date;
@@ -383,10 +383,10 @@ export class SalesCalendarComponent implements OnInit {
   onSubmit(): void {
     if (this.eventForm.valid) {
       const formData = this.eventForm.value;
-      
+
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
-      
+
       if (!formData.allDay && formData.startTime && formData.endTime) {
         const [startHours, startMinutes] = formData.startTime.split(':');
         const [endHours, endMinutes] = formData.endTime.split(':');
@@ -422,7 +422,7 @@ export class SalesCalendarComponent implements OnInit {
       this.events.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
       this.generateCalendar();
       this.toggleAddForm();
-      
+
       alert('Event added successfully!');
     } else {
       alert('Please fill in all required fields');
@@ -461,10 +461,10 @@ export class SalesCalendarComponent implements OnInit {
   }
 
   formatTime(date: Date): string {
-    return new Date(date).toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return new Date(date).toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
   }
 

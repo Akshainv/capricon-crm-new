@@ -366,6 +366,14 @@ export class LeadsService {
     );
   }
 
+  getMetaLeads(): Observable<Lead[]> {
+    return this.getAllLeads().pipe(
+      map(leads => leads.filter(lead =>
+        lead.leadSource === 'Social Media' || (lead.notes && lead.notes.includes('Meta Leadgen ID'))
+      ))
+    );
+  }
+
   getMyLeads(): Observable<Lead[]> {
     const currentUser = this.authService.currentUserValue;
     if (!currentUser || !currentUser.userId) {

@@ -467,6 +467,18 @@
   box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
 }
 
+.btn-send {
+  background: rgba(212, 179, 71, 0.2);
+  color: #d4b347;
+}
+
+.btn-send:hover {
+  background: rgba(212, 179, 71, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(212, 179, 71, 0.3);
+}
+
+
 /* REMOVED: .btn-pdf, .btn-email, .btn-edit, .btn-approve styles - not needed for admin */
 
 /* Empty State */

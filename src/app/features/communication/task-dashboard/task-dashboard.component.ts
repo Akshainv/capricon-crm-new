@@ -29,13 +29,13 @@ interface Project {
 export class TaskDashboardComponent implements OnInit {
   taskForm!: FormGroup;
   loading: boolean = false;
-  
+
   // Search states
   employeeSearchTerm: string = '';
   projectSearchTerm: string = '';
   showEmployeeDropdown: boolean = false;
   showProjectDropdown: boolean = false;
-  
+
   selectedEmployee: Employee | null = null;
   selectedProject: Project | null = null;
 
@@ -67,7 +67,7 @@ export class TaskDashboardComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForm();

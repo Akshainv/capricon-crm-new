@@ -14,12 +14,12 @@
 
   <!-- Stats Summary -->
   <div class="stats-grid">
-    <div class="stat-card clickable" (click)="setFilterStatus('Pending')">
+    <div class="stat-card clickable" (click)="setFilterStatus('All')">
       <div class="stat-icon total-quotes">
         <i class="fas fa-file-invoice"></i>
       </div>
       <div class="stat-content">
-        <div class="stat-label">Total Quotations</div>
+        <div class="stat-label">All Quotations</div>
         <div class="stat-value">{{ totalQuotations }}</div>
       </div>
     </div>
@@ -43,6 +43,16 @@
         <div class="stat-value">{{ rejectedCount }}</div>
       </div>
     </div>
+
+    <div class="stat-card clickable" (click)="setFilterStatus('Deal')">
+      <div class="stat-icon sent-to-client" style="background: rgba(96, 165, 250, 0.1); color: #60a5fa;">
+        <i class="fas fa-handshake"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Deal</div>
+        <div class="stat-value">{{ dealCount }}</div>
+      </div>
+    </div>
   </div>
 
   <!-- Search & Filter Section -->
@@ -52,9 +62,11 @@
       <div class="status-filter">
         <select [(ngModel)]="selectedStatus" (change)="setFilterStatus($any($event.target).value)"
           class="status-select">
+          <option value="All">All</option>
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
           <option value="Rejected">Rejected</option>
+          <option value="Deal">Deal</option>
         </select>
       </div>
 
@@ -132,12 +144,14 @@
             <td class="text-center">
               <!-- Status Label Logic -->
               <div class="status-display" [ngClass]="{
-                    'status-pending': ($any(quote).status?.toLowerCase() === 'sent' || $any(quote).status?.toLowerCase() === 'pending' || $any(quote).status?.toLowerCase() === 'draft'), 
+                    'status-pending': ($any(quote).status?.toLowerCase() === 'pending' || $any(quote).status?.toLowerCase() === 'draft'), 
                     'status-approved': $any(quote).status?.toLowerCase() === 'approved', 
-                    'status-rejected': $any(quote).status?.toLowerCase() === 'rejected'
+                    'status-rejected': $any(quote).status?.toLowerCase() === 'rejected',
+                    'status-sent': $any(quote).status?.toLowerCase() === 'sent'
                   }">
                 {{ ($any(quote).status?.toLowerCase() === 'approved' ? 'Approved' :
-                ($any(quote).status?.toLowerCase() === 'rejected' ? 'Rejected' : 'Sent')) }}
+                ($any(quote).status?.toLowerCase() === 'rejected' ? 'Rejected' :
+                ($any(quote).status?.toLowerCase() === 'sent' ? 'Sent' : 'Pending'))) }}
               </div>
             </td>
             <td *ngIf="selectedStatus === 'Approved'" class="text-center">
@@ -153,8 +167,8 @@
                   <i class="fas fa-eye"></i>
                 </button>
 
-                <!-- Deal Button only for Approved -->
-                <button class="action-btn btn-deal" *ngIf="$any(quote).status?.toLowerCase() === 'approved'"
+                <!-- Convert to Deal Button only for Sent status -->
+                <button class="action-btn btn-deal" *ngIf="$any(quote).status?.toLowerCase() === 'sent'"
                   (click)="convertToDeal(getQuotationId(quote))" title="Convert to Deal">
                   <i class="fas fa-handshake"></i>
                 </button>

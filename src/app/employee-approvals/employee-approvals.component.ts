@@ -29,7 +29,7 @@ interface EmployeeRegistration {
 export class EmployeeApprovalsComponent implements OnInit {
   filterStatus: string = 'pending';
   searchQuery: string = '';
-  
+
   totalRegistrations: number = 0;
   pendingCount: number = 0;
   approvedCount: number = 0;
@@ -38,12 +38,12 @@ export class EmployeeApprovalsComponent implements OnInit {
   allEmployees: EmployeeRegistration[] = [];
   filteredEmployees: EmployeeRegistration[] = [];
   selectedEmployee: EmployeeRegistration | null = null;
-  
+
   currentPage: number = 1;
   itemsPerPage: number = 7;
   totalPages: number = 0;
   paginatedEmployees: EmployeeRegistration[] = [];
-  
+
   showDetailModal: boolean = false;
   isLoading: boolean = false;
 
@@ -55,12 +55,12 @@ export class EmployeeApprovalsComponent implements OnInit {
     private router: Router,
     private employeeService: EmployeeService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const currentUser = this.authService.currentUserValue;
     this.currentAdminName = currentUser?.email || 'Admin';
-    
+
     this.loadEmployees();
   }
 
@@ -81,7 +81,7 @@ export class EmployeeApprovalsComponent implements OnInit {
           createdAt: emp.createdAt,
           updatedAt: emp.updatedAt
         }));
-        
+
         this.calculateStatistics();
         this.applyFilters();
         this.isLoading = false;
@@ -90,7 +90,7 @@ export class EmployeeApprovalsComponent implements OnInit {
         console.error('Error loading employees:', error);
         this.isLoading = false;
         this.showToast('Failed to load employee registrations. Please try again.', 'error');
-        
+
         if (error.status === 401) {
           this.showToast('Session expired. Please login again.', 'warning');
           setTimeout(() => this.authService.logout(), 2000);
@@ -117,7 +117,7 @@ export class EmployeeApprovalsComponent implements OnInit {
 
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(emp => 
+      filtered = filtered.filter(emp =>
         emp.fullName.toLowerCase().includes(query) ||
         emp.email.toLowerCase().includes(query) ||
         emp.phoneNumber.includes(query) ||
@@ -167,7 +167,7 @@ export class EmployeeApprovalsComponent implements OnInit {
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisible = 5;
-    
+
     if (this.totalPages <= maxVisible) {
       for (let i = 1; i <= this.totalPages; i++) {
         pages.push(i);
@@ -195,7 +195,7 @@ export class EmployeeApprovalsComponent implements OnInit {
         pages.push(this.totalPages);
       }
     }
-    
+
     return pages;
   }
 
@@ -331,17 +331,17 @@ export class EmployeeApprovalsComponent implements OnInit {
     this.employeeService.deleteEmployee(employee._id).subscribe({
       next: (response: any) => {
         console.log('Employee deleted:', response);
-        
+
         const index = this.allEmployees.findIndex(e => e._id === employee._id);
         if (index > -1) {
           this.allEmployees.splice(index, 1);
         }
-        
+
         this.calculateStatistics();
         this.applyFilters();
         this.closeDetailModal();
         this.isLoading = false;
-        
+
         this.showToast('Employee record deleted permanently.', 'success');
       },
       error: (error: any) => {
@@ -396,12 +396,12 @@ export class EmployeeApprovalsComponent implements OnInit {
     if (!date) {
       return 'N/A';
     }
-    
+
     const now = new Date();
     const targetDate = new Date(date);
     const diff = now.getTime() - targetDate.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) {
       const hours = Math.floor(diff / (1000 * 60 * 60));
       if (hours === 0) {
@@ -424,11 +424,11 @@ export class EmployeeApprovalsComponent implements OnInit {
 
   showToast(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
     if (typeof Toastify !== 'undefined') {
-      const backgroundColor = 
+      const backgroundColor =
         type === 'success' ? 'linear-gradient(to right, #00b09b, #96c93d)' :
-        type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
-        type === 'warning' ? 'linear-gradient(to right, #f39c12, #e67e22)' :
-        'linear-gradient(to right, #667eea, #764ba2)';
+          type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
+            type === 'warning' ? 'linear-gradient(to right, #f39c12, #e67e22)' :
+              'linear-gradient(to right, #667eea, #764ba2)';
 
       Toastify({
         text: message,

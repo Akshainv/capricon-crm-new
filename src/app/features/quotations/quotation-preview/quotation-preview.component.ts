@@ -5,7 +5,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { PdfGenerationService } from '../../../core/services/pdf-generation.service';
-import { QuotationService } from '../../../services/quotation.service';
+import { QuotationService, Quotation } from '../../../services/quotation.service';
+
+declare var Toastify: any;
 
 interface QuotationItem {
   product: {
@@ -83,6 +85,7 @@ interface QuotationData {
     rate: string;
   }[];
   gstRate?: number;
+  elevatorTypeImage?: string;
 }
 
 @Component({
@@ -199,19 +202,35 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
     }
 
     try {
-      console.log(`Capturing ${elementId}...`);
+      console.log(`📸 Capturing ${elementId}...`);
+
+      // Small delay to ensure any dynamic content/fonts are settled
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const canvas = await html2canvas(element, {
-        scale: 3,
+        scale: 2, // Scale 2 is sufficient for high quality and much lighter than scale 3
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Ensure the element is visible in the clone for capture
+          const clonedEl = clonedDoc.getElementById(elementId);
+          if (clonedEl) {
+            clonedEl.style.position = 'relative';
+            clonedEl.style.left = '0';
+            clonedEl.style.top = '0';
+            clonedEl.style.visibility = 'visible';
+            clonedEl.style.display = 'block';
+          }
+        }
       });
-      return canvas.toDataURL('image/png', 1.0);
+      return canvas.toDataURL('image/png', 0.9); // Slight compression helps with payload size
     } catch (error) {
-      console.error(`Error capturing ${elementId}:`, error);
+      console.error(`❌ Error capturing ${elementId}:`, error);
       return null;
     }
   }
+
 
   async loadQuotationData(): Promise<void> {
     // 1. Try navigation state
@@ -363,6 +382,7 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
         { slNo: 4, description: 'After Installation & Commissioning', rate: '10%' }
       ],
       gstRate: gstRate,
+      elevatorTypeImage: q.elevatorTypeImage || '',
     };
   }
 
@@ -521,5 +541,158 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
   setPreviewMode(mode: 'pdf' | 'html'): void {
     this.previewMode = mode;
     this.cdr.detectChanges();
+  }
+
+  // --- SEND TO CLIENT LOGIC ---
+  sendToClient(): void {
+    if (!this.quotationData) return;
+    const email = this.quotationData.customer?.email;
+
+    if (!email) {
+      this.showToast('Customer email is missing.', 'error');
+      return;
+    }
+
+    if (typeof Toastify !== 'undefined') {
+      const container = document.createElement('div');
+      container.style.textAlign = 'center';
+      container.style.padding = '10px';
+
+      const msgEl = document.createElement('div');
+      msgEl.style.fontWeight = '600';
+      msgEl.style.marginBottom = '8px';
+      msgEl.innerText = 'Send Quotation?';
+      container.appendChild(msgEl);
+
+      const subMsgEl = document.createElement('div');
+      subMsgEl.style.fontSize = '12px';
+      subMsgEl.style.marginBottom = '15px';
+      subMsgEl.style.opacity = '0.9';
+      subMsgEl.innerText = `Send quotation to ${email}`;
+      container.appendChild(subMsgEl);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.style.display = 'flex';
+      btnContainer.style.gap = '10px';
+      btnContainer.style.justifyContent = 'center';
+
+      const toast = Toastify({
+        node: container,
+        duration: -1,
+        close: true,
+        gravity: "top",
+        position: "center",
+        stopOnFocus: true,
+        style: {
+          background: "#60a5fa",
+          borderRadius: "12px",
+          padding: "15px",
+          textAlign: "center",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+        }
+      }).showToast();
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.innerText = 'Send';
+      confirmBtn.style.padding = '8px 20px';
+      confirmBtn.style.background = 'white';
+      confirmBtn.style.color = '#60a5fa';
+      confirmBtn.style.border = 'none';
+      confirmBtn.style.borderRadius = '6px';
+      confirmBtn.style.cursor = 'pointer';
+      confirmBtn.style.fontWeight = '700';
+      confirmBtn.style.fontSize = '13px';
+      confirmBtn.addEventListener('click', () => {
+        toast.hideToast();
+        this.proceedSendToClient();
+      });
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.innerText = 'Cancel';
+      cancelBtn.style.padding = '8px 20px';
+      cancelBtn.style.background = 'rgba(255,255,255,0.2)';
+      cancelBtn.style.color = 'white';
+      cancelBtn.style.border = 'none';
+      cancelBtn.style.borderRadius = '6px';
+      cancelBtn.style.cursor = 'pointer';
+      cancelBtn.style.fontWeight = '600';
+      cancelBtn.style.fontSize = '13px';
+      cancelBtn.addEventListener('click', () => toast.hideToast());
+
+      btnContainer.appendChild(confirmBtn);
+      btnContainer.appendChild(cancelBtn);
+      container.appendChild(btnContainer);
+    } else {
+      if (confirm(`Send quotation to ${email}?`)) {
+        this.proceedSendToClient();
+      }
+    }
+  }
+
+  private async proceedSendToClient(): Promise<void> {
+    if (!this.quotationData) return;
+
+    // We need the database ID of the quotation
+    // Since this is the preview page, we should have it from the local data or navigation
+    const id = (this.quotationData as any).id || (this.quotationData as any)._id;
+
+    if (!id) {
+      this.showToast('Unable to identify quotation ID for sending.', 'error');
+      return;
+    }
+
+    this.isLoadingPdf = true; // Reusing loading state
+    const email = this.quotationData.customer.email;
+
+    try {
+      // 📸 Capture all relevant pages to ensure exact sync with preview
+      console.log('📸 Capturing preview images for sending...');
+      const page1Img = await this.capturePageById('page1-template');
+      const page4Img = await this.capturePageById('page4-template');
+      const page9Img = await this.capturePageById('page9-template');
+
+      const sendData = {
+        ...this.quotationData,
+        page1Image: page1Img,
+        page4Image: page4Img,
+        page9Image: page9Img
+      };
+
+      this.quotationService.sendQuotationWithPDF(id, email, sendData).subscribe({
+        next: (response) => {
+          this.isLoadingPdf = false;
+          this.showToast(`Quotation sent to ${email} successfully!`, 'success');
+        },
+        error: (error) => {
+          this.isLoadingPdf = false;
+          console.error('Error sending email:', error);
+          this.showToast('Failed to send email. Please try again.', 'error');
+        }
+      });
+    } catch (error) {
+      this.isLoadingPdf = false;
+      console.error('Error in proceedSendToClient:', error);
+      this.showToast('An error occurred while preparing the quotation.', 'error');
+    }
+  }
+
+
+  private showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+    if (typeof Toastify !== 'undefined') {
+      let backgroundColor = '#60a5fa';
+      if (type === 'success') backgroundColor = '#22c55e';
+      if (type === 'error') backgroundColor = '#ef4444';
+
+      Toastify({
+        text: message,
+        duration: 4000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        style: { background: backgroundColor, borderRadius: "8px" }
+      }).showToast();
+    } else {
+      alert(message);
+    }
   }
 }

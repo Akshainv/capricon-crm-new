@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { QuotationService } from '../../../services/quotation.service';
 
 interface Quotation {
   id: string;
@@ -13,11 +14,12 @@ interface Quotation {
   elevatorType: string;
   floors: number;
   amount: number;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected';
+  status: string;
   createdDate: Date;
   validUntil: Date;
   createdBy: string;
 }
+
 
 @Component({
   selector: 'app-quotation-list',
@@ -30,78 +32,7 @@ export class QuotationListComponent implements OnInit {
   searchTerm: string = '';
   statusFilter: string = '';
 
-  quotations: Quotation[] = [
-    {
-      id: '1',
-      quoteNumber: 'QT-2024-001',
-      customerName: 'John Smith',
-      email: 'john@example.com',
-      phone: '+91 9876543210',
-      elevatorType: '8-Floor Passenger',
-      floors: 8,
-      amount: 1829000,
-      status: 'sent',
-      createdDate: new Date('2024-10-02'),
-      validUntil: new Date('2024-11-02'),
-      createdBy: 'Rajesh Kumar'
-    },
-    {
-      id: '2',
-      quoteNumber: 'QT-2024-002',
-      customerName: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      phone: '+91 9876543211',
-      elevatorType: '5-Floor Home Lift',
-      floors: 5,
-      amount: 850000,
-      status: 'accepted',
-      createdDate: new Date('2024-10-01'),
-      validUntil: new Date('2024-11-01'),
-      createdBy: 'Amit Shah'
-    },
-    {
-      id: '3',
-      quoteNumber: 'QT-2024-003',
-      customerName: 'Michael Brown',
-      email: 'michael@example.com',
-      phone: '+91 9876543212',
-      elevatorType: '12-Floor Goods',
-      floors: 12,
-      amount: 2500000,
-      status: 'draft',
-      createdDate: new Date('2024-09-28'),
-      validUntil: new Date('2024-10-28'),
-      createdBy: 'Priya Sharma'
-    },
-    {
-      id: '4',
-      quoteNumber: 'QT-2024-004',
-      customerName: 'Emily Davis',
-      email: 'emily@example.com',
-      phone: '+91 9876543213',
-      elevatorType: '6-Floor Hospital',
-      floors: 6,
-      amount: 1950000,
-      status: 'sent',
-      createdDate: new Date('2024-10-05'),
-      validUntil: new Date('2024-11-05'),
-      createdBy: 'Vikram Singh'
-    },
-    {
-      id: '5',
-      quoteNumber: 'QT-2024-005',
-      customerName: 'David Wilson',
-      email: 'david@example.com',
-      phone: '+91 9876543214',
-      elevatorType: '10-Floor Commercial',
-      floors: 10,
-      amount: 2200000,
-      status: 'rejected',
-      createdDate: new Date('2024-09-25'),
-      validUntil: new Date('2024-10-25'),
-      createdBy: 'Rajesh Kumar'
-    }
-  ];
+  quotations: Quotation[] = [];
 
   filteredQuotations: Quotation[] = [];
   paginatedQuotations: Quotation[] = [];
@@ -110,21 +41,53 @@ export class QuotationListComponent implements OnInit {
   currentPage: number = 1;
   pageSize: number = 7;
   totalPages: number = 0;
+  isLoading: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private quotationService: QuotationService
+  ) { }
 
   ngOnInit(): void {
-    this.filteredQuotations = [...this.quotations];
-    this.updatePagination();
+    this.loadQuotations();
   }
+
+  loadQuotations(): void {
+    this.isLoading = true;
+    this.quotationService.getAllQuotations().subscribe({
+      next: (response: any) => {
+        this.quotations = (response.data as any[]).map(q => ({
+          id: q._id || q.id,
+          quoteNumber: q.quoteNumber,
+          customerName: q.customerName,
+          email: q.customerEmail,
+          phone: q.customerPhone,
+          elevatorType: q.elevatorType,
+          floors: q.noOfStops || 2,
+          amount: q.totalCost || 0,
+          status: q.status || 'draft',
+          createdDate: new Date(q.createdAt),
+          validUntil: new Date(q.validUntil),
+          createdBy: q.createdBy || 'System'
+        }));
+        this.filterQuotations();
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        console.error('Error fetching quotations:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
 
   // Getter methods for stats - REMOVED draftCount
   get sentCount(): number {
-    return this.quotations.filter(q => q.status === 'sent').length;
+    return this.quotations.filter(q => q.status === 'sent' || q.status === 'delivered').length;
   }
 
   get acceptedCount(): number {
-    return this.quotations.filter(q => q.status === 'accepted').length;
+    return this.quotations.filter(q => q.status === 'accepted' || q.status === 'approved').length;
   }
 
   get totalValue(): number {
@@ -133,7 +96,7 @@ export class QuotationListComponent implements OnInit {
 
   filterQuotations(): void {
     this.filteredQuotations = this.quotations.filter(quote => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         quote.customerName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         quote.quoteNumber.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         quote.email.toLowerCase().includes(this.searchTerm.toLowerCase());
@@ -178,12 +141,51 @@ export class QuotationListComponent implements OnInit {
     this.router.navigate(['/quotations', id]);
   }
 
-  deleteQuotation(id: string): void {
-    if (confirm('Are you sure you want to delete this quotation?')) {
-      this.quotations = this.quotations.filter(q => q.id !== id);
-      this.filterQuotations();
+  sendQuotation(quote: any): void {
+    if (confirm(`Send quotation ${quote.quoteNumber} to ${quote.email}?`)) {
+      this.isLoading = true;
+
+      // Fetch full quotation data first to ensure all fields are present
+      this.quotationService.getQuotationById(quote.id).subscribe({
+        next: (response: any) => {
+          const fullData = this.quotationService.formatQuotationForFrontend(response.data);
+
+          this.quotationService.sendQuotationWithPDF(quote.id, quote.email, fullData).subscribe({
+            next: () => {
+              this.isLoading = false;
+              alert(`Quotation sent to ${quote.email} successfully!`);
+              this.loadQuotations(); // Refresh to update status
+            },
+            error: (err: any) => {
+              this.isLoading = false;
+              console.error('Error sending quotation:', err);
+              alert('Failed to send quotation. Please try again.');
+            }
+          });
+        },
+        error: (err: any) => {
+          this.isLoading = false;
+          console.error('Error fetching full quotation data:', err);
+          alert('Failed to prepare quotation for sending.');
+        }
+      });
     }
   }
+
+  deleteQuotation(id: string): void {
+    if (confirm('Are you sure you want to delete this quotation?')) {
+      this.quotationService.deleteQuotation(id).subscribe({
+        next: () => {
+          this.loadQuotations();
+        },
+        error: (err: any) => {
+          console.error('Error deleting quotation:', err);
+          alert('Failed to delete quotation.');
+        }
+      });
+    }
+  }
+
 
   getStatusClass(status: string): string {
     return `status-${status}`;
@@ -204,7 +206,7 @@ export class QuotationListComponent implements OnInit {
   }
 
   formatDate(date: Date): string {
-    return date.toLocaleDateString('en-IN', { 
+    return date.toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'

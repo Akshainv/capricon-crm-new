@@ -1,0 +1,114 @@
+<div class="meta-leads-container">
+    <div class="header-section">
+        <div class="title-meta">
+            <h1><i class="fab fa-facebook-square"></i> Meta Lead Ads</h1>
+            <p>Manage leads coming from Facebook and Instagram campaigns</p>
+        </div>
+
+        <div class="actions-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
+                    placeholder="Search by name, email or phone...">
+            </div>
+            <button class="btn-refresh" (click)="loadMetaLeads()" [disabled]="isLoading">
+                <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-overview" *ngIf="!isLoading">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <h3>{{leads.length}}</h3>
+                <p>Total Meta Leads</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon icon-today"><i class="fas fa-calendar-day"></i></div>
+            <div class="stat-info">
+                <h3>{{displayedLeads.length}}</h3>
+                <p>Filtered Leads</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container shadow-sm">
+        <table class="table" *ngIf="!isLoading && paginatedLeads.length > 0">
+            <thead>
+                <tr>
+                    <th>Name & Contact</th>
+                    <th>Lead Details</th>
+                    <th>Meta Source info</th>
+                    <th>Date Received</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let lead of paginatedLeads" (click)="viewDetails(lead)" class="clickable-row">
+                    <td>
+                        <div class="lead-name">{{lead.fullName}}</div>
+                        <div class="lead-email"><i class="far fa-envelope"></i> {{lead.email}}</div>
+                        <div class="lead-phone"><i class="fas fa-phone-alt"></i> {{lead.phoneNumber}}</div>
+                    </td>
+                    <td>
+                        <div class="lead-company">{{lead.companyName || 'N/A'}}</div>
+                        <div class="lead-priority" [class]="'priority-' + (lead.priority || 'medium')">
+                            {{lead.priority || 'medium' | titlecase}}
+                        </div>
+                    </td>
+                    <td>
+                        <ng-container *ngIf="getMetaInfo(lead.notes) as meta">
+                            <div class="meta-campaign" *ngIf="meta['Campaign']">
+                                <strong>Campaign:</strong> {{meta['Campaign']}}
+                            </div>
+                            <div class="meta-platform" *ngIf="meta['Platform']">
+                                <strong>Platform:</strong> {{meta['Platform']}}
+                            </div>
+                            <div class="meta-id" *ngIf="meta['Meta Leadgen ID']">
+                                <small>ID: {{meta['Meta Leadgen ID']}}</small>
+                            </div>
+                        </ng-container>
+                    </td>
+                    <td>{{formatDate(lead.createdAt)}}</td>
+                    <td>
+                        <span class="status-badge" [class]="'status-' + lead.status.toLowerCase().replace(' ', '-')">
+                            {{lead.status}}
+                        </span>
+                    </td>
+                    <td class="text-center actions-cell">
+                        <button class="btn-view" (click)="$event.stopPropagation(); viewDetails(lead)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-edit" (click)="$event.stopPropagation(); editLead(lead)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="no-leads" *ngIf="!isLoading && paginatedLeads.length === 0">
+            <i class="fas fa-inbox"></i>
+            <p>No Meta leads found matching your criteria.</p>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <p>Fetching Meta leads...</p>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
+        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>

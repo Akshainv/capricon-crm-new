@@ -45,12 +45,8 @@
   <div class="filters-section">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input 
-        type="text" 
-        placeholder="Search by customer, quote number, email..." 
-        [(ngModel)]="searchTerm"
-        (input)="filterQuotations()"
-      />
+      <input type="text" placeholder="Search by customer, quote number, email..." [(ngModel)]="searchTerm"
+        (input)="filterQuotations()" />
     </div>
 
     <div class="filter-controls">
@@ -112,9 +108,13 @@
                 <button class="action-btn btn-view" (click)="viewQuotation(quote.id)" title="View">
                   <i class="fas fa-eye"></i>
                 </button>
+                <button class="action-btn btn-send" (click)="sendQuotation(quote)" title="Send to Client">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
                 <button class="action-btn btn-delete" (click)="deleteQuotation(quote.id)" title="Delete">
                   <i class="fas fa-trash"></i>
                 </button>
+
               </div>
             </td>
           </tr>

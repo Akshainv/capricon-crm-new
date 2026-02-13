@@ -85,14 +85,14 @@ export const adminGuard: CanActivateFn = (
   // User is logged in but not an admin
   console.warn('Access denied - Admin privileges required');
   alert('Access Denied: This page is only accessible to administrators.');
-  
+
   // Redirect to appropriate dashboard based on role
   if (authService.isEmployee) {
     router.navigate(['/employee/dashboard']);
   } else {
     router.navigate(['/login']);
   }
-  
+
   return false;
 };
 
@@ -144,14 +144,14 @@ export const employeeGuard: CanActivateFn = (
   // User is logged in but not an employee
   console.warn('Access denied - Employee privileges required');
   alert('Access Denied: This page is only accessible to employees.');
-  
+
   // Redirect to appropriate dashboard based on role
   if (authService.isAdmin) {
     router.navigate(['/admin/dashboard']);
   } else {
     router.navigate(['/login']);
   }
-  
+
   return false;
 };
 

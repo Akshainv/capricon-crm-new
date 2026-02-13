@@ -28,12 +28,12 @@ export class ImportLeadsComponent {
   isDragging: boolean = false;
   isProcessing: boolean = false;
   showPreview: boolean = false;
-  
+
   importedLeads: ImportedLead[] = [];
   validLeadsCount: number = 0;
   invalidLeadsCount: number = 0;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -72,7 +72,7 @@ export class ImportLeadsComponent {
       'application/vnd.ms-excel',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
-    
+
     if (!allowedTypes.includes(file.type) && !file.name.endsWith('.csv')) {
       alert('Please upload a CSV or Excel file');
       return;
@@ -88,7 +88,7 @@ export class ImportLeadsComponent {
     this.selectedFile = file;
     this.fileName = file.name;
     this.fileSize = this.formatFileSize(file.size);
-    
+
     // Process file
     this.processFile(file);
   }
@@ -97,7 +97,7 @@ export class ImportLeadsComponent {
     this.isProcessing = true;
 
     const reader = new FileReader();
-    
+
     reader.onload = (e: ProgressEvent<FileReader>) => {
       const content = e.target?.result as string;
       this.parseCSV(content);
@@ -115,7 +115,7 @@ export class ImportLeadsComponent {
 
   parseCSV(content: string): void {
     const lines = content.split('\n').filter(line => line.trim());
-    
+
     if (lines.length < 2) {
       alert('CSV file must contain headers and at least one data row');
       return;
@@ -123,11 +123,11 @@ export class ImportLeadsComponent {
 
     // Parse headers
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    
+
     // Validate required headers
     const requiredHeaders = ['name', 'email', 'phone'];
     const hasRequiredHeaders = requiredHeaders.every(h => headers.includes(h));
-    
+
     if (!hasRequiredHeaders) {
       alert(`CSV must contain these columns: ${requiredHeaders.join(', ')}`);
       return;
@@ -135,10 +135,10 @@ export class ImportLeadsComponent {
 
     // Parse data rows
     this.importedLeads = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map(v => v.trim());
-      
+
       const lead: ImportedLead = {
         name: values[headers.indexOf('name')] || '',
         email: values[headers.indexOf('email')] || '',
@@ -203,9 +203,9 @@ export class ImportLeadsComponent {
     }
 
     const validLeads = this.importedLeads.filter(l => l.status === 'valid');
-    
+
     console.log('Importing leads:', validLeads);
-    
+
     // Simulate API call
     setTimeout(() => {
       alert(`Successfully imported ${this.validLeadsCount} lead(s)!`);
@@ -216,9 +216,9 @@ export class ImportLeadsComponent {
 
   downloadTemplate(): void {
     const csvContent = 'name,email,phone,company,source,notes\n' +
-                      'John Doe,john@example.com,+91 9876543210,ABC Corp,Website,Interested in 8-floor elevator\n' +
-                      'Jane Smith,jane@example.com,+91 9876543211,XYZ Ltd,Reference,Looking for home lift';
-    
+      'John Doe,john@example.com,+91 9876543210,ABC Corp,Website,Interested in 8-floor elevator\n' +
+      'Jane Smith,jane@example.com,+91 9876543211,XYZ Ltd,Reference,Looking for home lift';
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

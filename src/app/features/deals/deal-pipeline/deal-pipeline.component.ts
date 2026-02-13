@@ -24,7 +24,7 @@ export class DealPipelineComponent implements OnInit {
     private dealService: DealService,
     private projectService: ProjectService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDeals();
@@ -118,13 +118,13 @@ export class DealPipelineComponent implements OnInit {
         this.dealService.markAsConverted(dealId, projectId).subscribe({
           next: (updatedDeal) => {
             this.loading = false;
-            
+
             this.allDeals = this.allDeals.filter(d => (d._id || d.id) !== dealId);
 
             this.showToast(`Successfully converted to project!\nProject Code: ${project.projectCode}\nProject Name: ${project.projectName}`, 'success');
 
-            this.router.navigate(['/projects'], { 
-              queryParams: { 
+            this.router.navigate(['/projects'], {
+              queryParams: {
                 newProject: projectId,
                 highlight: 'true'
               }
@@ -214,9 +214,9 @@ export class DealPipelineComponent implements OnInit {
     this.dealService.deleteDeal(dealId).subscribe({
       next: () => {
         this.loading = false;
-        
+
         this.allDeals = this.allDeals.filter(d => (d._id || d.id) !== dealId);
-        
+
         this.showToast('Deal deleted successfully!', 'success');
       },
       error: (error) => {
@@ -256,8 +256,8 @@ export class DealPipelineComponent implements OnInit {
 
   formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-IN', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -299,11 +299,11 @@ export class DealPipelineComponent implements OnInit {
 
   showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
     if (typeof Toastify !== 'undefined') {
-      const backgroundColor = 
+      const backgroundColor =
         type === 'success' ? 'linear-gradient(to right, #00b09b, #96c93d)' :
-        type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
-        type === 'warning' ? 'linear-gradient(to right, #f39c12, #e67e22)' :
-        'linear-gradient(to right, #667eea, #764ba2)';
+          type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
+            type === 'warning' ? 'linear-gradient(to right, #f39c12, #e67e22)' :
+              'linear-gradient(to right, #667eea, #764ba2)';
 
       Toastify({
         text: message,

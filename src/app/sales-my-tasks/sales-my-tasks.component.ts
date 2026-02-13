@@ -29,7 +29,7 @@ export class SalesMyTasksComponent implements OnInit {
   selectedCategory: string = 'all';
 
   // Mock data - Replace with actual service
-  currentUser = 'Rajesh Kumar'; 
+  currentUser = 'Rajesh Kumar';
 
   tasks: Task[] = [
     {
@@ -130,7 +130,7 @@ export class SalesMyTasksComponent implements OnInit {
 
   constructor(
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.filterTasks();
@@ -148,9 +148,9 @@ export class SalesMyTasksComponent implements OnInit {
       if (this.filterStatus === 'all') {
         statusMatch = task.status === 'pending';
       } else if (this.filterStatus === 'today') {
-        statusMatch = task.status === 'pending' && 
-               task.dueDate >= today && 
-               task.dueDate < tomorrow;
+        statusMatch = task.status === 'pending' &&
+          task.dueDate >= today &&
+          task.dueDate < tomorrow;
       } else if (this.filterStatus === 'upcoming') {
         statusMatch = task.status === 'pending' && task.dueDate >= tomorrow;
       } else if (this.filterStatus === 'overdue') {
@@ -240,7 +240,7 @@ export class SalesMyTasksComponent implements OnInit {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     return task.dueDate >= today && task.dueDate < tomorrow;
   }
 
@@ -258,8 +258,8 @@ export class SalesMyTasksComponent implements OnInit {
     } else if (date >= tomorrow && date < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)) {
       return `Tomorrow at ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
     } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
@@ -274,17 +274,17 @@ export class SalesMyTasksComponent implements OnInit {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     return {
-      today: this.tasks.filter(t => 
-        t.status === 'pending' && 
-        t.dueDate >= today && 
+      today: this.tasks.filter(t =>
+        t.status === 'pending' &&
+        t.dueDate >= today &&
         t.dueDate < tomorrow
       ).length,
-      upcoming: this.tasks.filter(t => 
-        t.status === 'pending' && 
+      upcoming: this.tasks.filter(t =>
+        t.status === 'pending' &&
         t.dueDate >= tomorrow
       ).length,
-      overdue: this.tasks.filter(t => 
-        t.status === 'pending' && 
+      overdue: this.tasks.filter(t =>
+        t.status === 'pending' &&
         t.dueDate < today
       ).length,
       completed: this.tasks.filter(t => t.status === 'completed').length

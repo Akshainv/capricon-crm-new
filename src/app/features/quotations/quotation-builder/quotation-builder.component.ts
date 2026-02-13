@@ -9,6 +9,7 @@ interface ElevatorType {
   name: string;
   icon: string;
   description: string;
+  imageUrl?: string;
 }
 
 interface Lead {
@@ -82,25 +83,29 @@ export class QuotationBuilderComponent implements OnInit {
       id: 'home',
       name: 'Home Lift',
       icon: '🏠',
-      description: 'Compact elevator for private homes'
+      description: 'Compact elevator for private homes',
+      imageUrl: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800'
     },
     {
       id: 'commercial',
       name: 'Commercial Elevator',
       icon: '🏬',
-      description: 'High-traffic elevators for commercial spaces'
+      description: 'High-traffic elevators for commercial spaces',
+      imageUrl: 'https://images.unsplash.com/photo-1620067611631-481107c50393?q=80&w=800'
     },
     {
       id: 'shaft-with',
       name: 'Elevator with Shaft',
       icon: '🔲',
-      description: 'Traditional elevator requiring shaft construction'
+      description: 'Traditional elevator requiring shaft construction',
+      imageUrl: 'https://images.unsplash.com/photo-1549419137-023a1a36411a?q=80&w=800'
     },
     {
       id: 'shaft-without',
       name: 'Shaftless Elevator',
       icon: '⬜',
-      description: 'Modern elevator without traditional shaft requirements'
+      description: 'Modern elevator without traditional shaft requirements',
+      imageUrl: 'https://images.unsplash.com/photo-1517404215738-15263e9f9178?q=80&w=800'
     }
   ];
 
@@ -147,7 +152,7 @@ export class QuotationBuilderComponent implements OnInit {
 
   // Get today's date in YYYY-MM-DD format
   today: string = new Date().toISOString().split('T')[0];
-  
+
   // Get default valid until date (30 days from today)
   defaultValidUntil: string = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
@@ -155,11 +160,11 @@ export class QuotationBuilderComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForm();
-    
+
     // Check if editing
     this.quotationId = this.route.snapshot.paramMap.get('id');
     if (this.quotationId) {
@@ -172,7 +177,7 @@ export class QuotationBuilderComponent implements OnInit {
     this.quotationForm = this.fb.group({
       // Lead Selection
       selectedLeadId: [''],
-      
+
       // Quote Dates
       quoteDate: [this.today, Validators.required],
       validUntil: [this.defaultValidUntil, Validators.required],
@@ -227,7 +232,7 @@ export class QuotationBuilderComponent implements OnInit {
 
     // Find the selected lead
     const selectedLead = this.leads.find(lead => lead.id === leadId);
-    
+
     if (selectedLead) {
       // Autofill customer information from lead
       this.quotationForm.patchValue({
@@ -264,23 +269,23 @@ export class QuotationBuilderComponent implements OnInit {
       specialRequirements: '',
       notes: ''
     };
-    
+
     this.quotationForm.patchValue(mockData);
   }
 
   calculatePricing(): void {
     const formValues = this.quotationForm.value;
-    
+
     if (!formValues.elevatorType || !formValues.floors) {
       return;
     }
 
     // Base price calculation (simplified)
     let base = 1000000; // Base price
-    
+
     // Price per floor
     base += formValues.floors * 150000;
-    
+
     // Elevator type multiplier
     const typeMultipliers: { [key: string]: number } = {
       'home': 0.8,
@@ -309,17 +314,17 @@ export class QuotationBuilderComponent implements OnInit {
     base += capacityPrice[formValues.capacity] || 0;
 
     this.basePrice = base;
-    
+
     // Installation cost
-    this.installationCost = formValues.includeInstallation 
-      ? formValues.floors * 25000 
+    this.installationCost = formValues.includeInstallation
+      ? formValues.floors * 25000
       : 0;
-    
+
     // AMC cost
-    this.amcCost = formValues.includeAmc 
-      ? 50000 * formValues.amcYears 
+    this.amcCost = formValues.includeAmc
+      ? 50000 * formValues.amcYears
       : 0;
-    
+
     // Calculate totals
     this.subtotal = this.basePrice + this.installationCost + this.amcCost;
     this.cgst = this.subtotal * 0.09; // 9% CGST
@@ -331,10 +336,10 @@ export class QuotationBuilderComponent implements OnInit {
     if (this.currentStep === 1) {
       // Validate customer details and dates
       const customerFields = ['quoteDate', 'validUntil', 'customerName', 'customerEmail', 'customerPhone'];
-      const isValid = customerFields.every(field => 
+      const isValid = customerFields.every(field =>
         this.quotationForm.get(field)?.valid
       );
-      
+
       if (!isValid) {
         this.markFieldsAsTouched(customerFields);
         return;
@@ -343,7 +348,7 @@ export class QuotationBuilderComponent implements OnInit {
       // Validate that validUntil is after quoteDate
       const quoteDate = new Date(this.quotationForm.get('quoteDate')?.value);
       const validUntil = new Date(this.quotationForm.get('validUntil')?.value);
-      
+
       if (validUntil <= quoteDate) {
         alert('Valid Until date must be after Quote Date');
         return;
@@ -353,10 +358,10 @@ export class QuotationBuilderComponent implements OnInit {
     if (this.currentStep === 2) {
       // Validate elevator config
       const configFields = ['elevatorType', 'floors', 'doors', 'speed', 'capacity', 'driveType', 'controlSystem'];
-      const isValid = configFields.every(field => 
+      const isValid = configFields.every(field =>
         this.quotationForm.get(field)?.valid
       );
-      
+
       if (!isValid) {
         this.markFieldsAsTouched(configFields);
         return;
@@ -388,6 +393,7 @@ export class QuotationBuilderComponent implements OnInit {
     if (this.quotationForm.valid) {
       const quotationData = {
         ...this.quotationForm.value,
+        elevatorTypeImage: this.elevatorTypes.find(t => t.id === this.quotationForm.value.elevatorType)?.imageUrl || '',
         pricing: {
           basePrice: this.basePrice,
           installationCost: this.installationCost,
@@ -400,10 +406,10 @@ export class QuotationBuilderComponent implements OnInit {
       };
 
       console.log('Quotation Data:', quotationData);
-      
+
       // Navigate to preview
-      this.router.navigate(['/quotations/preview'], { 
-        state: { quotationData } 
+      this.router.navigate(['/quotations/preview'], {
+        state: { quotationData }
       });
     }
   }
@@ -424,10 +430,10 @@ export class QuotationBuilderComponent implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
     });
   }
 }

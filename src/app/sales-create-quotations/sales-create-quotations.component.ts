@@ -407,8 +407,8 @@ export class SalesCreateQuotationComponent implements OnInit {
     const formData = this.getFormData();
     const payload = this.quotationService.formatQuotationForBackend(formData);
 
-    // ✅ FIXED: Set status to lowercase 'sent' to match backend enum
-    payload.status = 'sent';
+    // ✅ FIXED: Set status to 'draft' for new quotations to ensure they appear in the "Pending" section
+    payload.status = 'draft';
 
     console.log('📤 Final payload:', payload);
 
@@ -494,59 +494,77 @@ export class SalesCreateQuotationComponent implements OnInit {
 
   cancel(): void {
     if (typeof Toastify !== 'undefined') {
-      const toastHtml = `
-        <div style="text-align: center;">
-          <div style="font-weight: 600; margin-bottom: 8px;">Cancel Quotation?</div>
-          <div style="font-size: 13px; opacity: 0.9;">All unsaved changes will be lost</div>
-        </div>
-      `;
+      const container = document.createElement('div');
+      container.style.textAlign = 'center';
+      container.style.padding = '10px';
+
+      const msgEl = document.createElement('div');
+      msgEl.style.fontWeight = '600';
+      msgEl.style.marginBottom = '8px';
+      msgEl.innerText = 'Cancel Quotation?';
+      container.appendChild(msgEl);
+
+      const subMsgEl = document.createElement('div');
+      subMsgEl.style.fontSize = '12px';
+      subMsgEl.style.marginBottom = '15px';
+      subMsgEl.style.opacity = '0.9';
+      subMsgEl.innerText = 'All unsaved changes will be lost';
+      container.appendChild(subMsgEl);
+
+      const btnContainer = document.createElement('div');
+      btnContainer.style.display = 'flex';
+      btnContainer.style.gap = '10px';
+      btnContainer.style.justifyContent = 'center';
 
       const toast = Toastify({
-        text: toastHtml,
+        node: container,
         duration: -1,
         close: true,
         gravity: "top",
         position: "center",
         stopOnFocus: true,
-        escapeMarkup: false,
         style: {
           background: "#ef4444",
-          borderRadius: "8px",
+          borderRadius: "12px",
           fontSize: "14px",
           fontWeight: "500",
           textAlign: "center",
           maxWidth: "400px",
-          padding: "20px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-        },
-        onClick: function () { }
+          padding: "15px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+        }
       }).showToast();
 
-      setTimeout(() => {
-        const toastElement = document.querySelector('.toastify') as HTMLElement;
-        if (toastElement) {
-          const buttonsHTML = `
-            <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center;">
-              <button id="toast-confirm-cancel" style="padding: 8px 20px; background: white; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                Yes, Cancel
-              </button>
-              <button id="toast-keep-editing" style="padding: 8px 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
-                Keep Editing
-              </button>
-            </div>
-          `;
-          toastElement.insertAdjacentHTML('beforeend', buttonsHTML);
+      const confirmBtn = document.createElement('button');
+      confirmBtn.innerText = 'Yes, Cancel';
+      confirmBtn.style.padding = '8px 20px';
+      confirmBtn.style.background = 'white';
+      confirmBtn.style.color = '#ef4444';
+      confirmBtn.style.border = 'none';
+      confirmBtn.style.borderRadius = '6px';
+      confirmBtn.style.cursor = 'pointer';
+      confirmBtn.style.fontWeight = '700';
+      confirmBtn.style.fontSize = '13px';
+      confirmBtn.addEventListener('click', () => {
+        toast.hideToast();
+        this.router.navigate(['/quotations']);
+      });
 
-          document.getElementById('toast-confirm-cancel')?.addEventListener('click', () => {
-            toast.hideToast();
-            this.router.navigate(['/quotations']);
-          });
+      const cancelBtn = document.createElement('button');
+      cancelBtn.innerText = 'Keep Editing';
+      cancelBtn.style.padding = '8px 20px';
+      cancelBtn.style.background = 'rgba(255,255,255,0.2)';
+      cancelBtn.style.color = 'white';
+      cancelBtn.style.border = 'none';
+      cancelBtn.style.borderRadius = '6px';
+      cancelBtn.style.cursor = 'pointer';
+      cancelBtn.style.fontWeight = '600';
+      cancelBtn.style.fontSize = '13px';
+      cancelBtn.addEventListener('click', () => toast.hideToast());
 
-          document.getElementById('toast-keep-editing')?.addEventListener('click', () => {
-            toast.hideToast();
-          });
-        }
-      }, 100);
+      btnContainer.appendChild(confirmBtn);
+      btnContainer.appendChild(cancelBtn);
+      container.appendChild(btnContainer);
     } else {
       if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
         this.router.navigate(['/quotations']);
