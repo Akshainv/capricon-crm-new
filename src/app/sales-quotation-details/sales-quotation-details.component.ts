@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface QuotationItem {
   product: {
@@ -58,7 +59,8 @@ export class SalesQuotationDetailsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -85,7 +87,7 @@ export class SalesQuotationDetailsComponent implements OnInit {
 
     // If still no data, redirect back
     if (!this.quotationData) {
-      alert('Quotation not found');
+      this.toastr.error('Quotation not found');
       this.router.navigate(['/quotations']);
     }
   }

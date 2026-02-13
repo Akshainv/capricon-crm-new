@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-sales-settings',
@@ -30,26 +31,28 @@ export class SalesSettingsComponent {
   // Active Section
   activeSection = 'personal';
 
+  constructor(private toastr: ToastrService) { }
+
   selectSection(section: string) {
     this.activeSection = section;
   }
 
   savePersonalInfo() {
     console.log('Personal Info Saved:', this.personalInfo);
-    alert('Personal information updated successfully!');
+    this.toastr.success('Personal information updated successfully!');
   }
 
   changePassword() {
     if (this.security.newPassword !== this.security.confirmPassword) {
-      alert('New password and confirm password do not match!');
+      this.toastr.error('New password and confirm password do not match!');
       return;
     }
     if (this.security.newPassword.length < 8) {
-      alert('Password must be at least 8 characters long!');
+      this.toastr.error('Password must be at least 8 characters long!');
       return;
     }
     console.log('Password Changed');
-    alert('Password changed successfully!');
+    this.toastr.success('Password changed successfully!');
     this.security.currentPassword = '';
     this.security.newPassword = '';
     this.security.confirmPassword = '';
@@ -57,10 +60,10 @@ export class SalesSettingsComponent {
 
   saveSecurity() {
     console.log('Security Settings Saved:', this.security);
-    alert('Security settings saved successfully!');
+    this.toastr.success('Security settings saved successfully!');
   }
 
   exportMyData() {
-    alert('Exporting your personal data...');
+    this.toastr.info('Exporting your personal data...');
   }
 }
