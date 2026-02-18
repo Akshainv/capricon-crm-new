@@ -38,6 +38,7 @@ interface StatCard {
   subtitle: string;
   icon: string;
   color: string;
+  route?: string;
 }
 
 @Component({
@@ -139,7 +140,7 @@ export class DashboardHomeComponent implements OnInit {
     private authService: AuthService,
     private reportService: ReportService,
     private projectService: ProjectService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     console.log('🚀 Dashboard Component Initialized');
@@ -150,13 +151,13 @@ export class DashboardHomeComponent implements OnInit {
 
   loadUserInfo(): void {
     const storedUser = localStorage.getItem('currentUser');
-    
+
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         this.userName = user.name || user.fullName || user.username || 'User';
         this.isAdmin = user.role === 'admin';
-        
+
         console.log('✅ User Info Loaded:', this.userName);
         console.log('✅ Is Admin:', this.isAdmin);
       } catch (e) {
@@ -167,7 +168,7 @@ export class DashboardHomeComponent implements OnInit {
 
   loadReportData(): void {
     this.isLoading = true;
-    
+
     Promise.all([
       this.reportService.getAdminReports().toPromise(),
       this.projectService.getAllProjects().toPromise()
@@ -190,44 +191,48 @@ export class DashboardHomeComponent implements OnInit {
         value: this.formatCurrency(data.totalRevenue || 0),
         subtitle: `${data.projectsWon || 0} projects completed`,
         icon: 'fa-rupee-sign',
-        color: '#22c55e'
+        color: '#22c55e',
+        route: '/projects'
       },
       {
         label: 'Total Projects',
         value: data.totalProjects || 0,
         subtitle: `${data.projectsWon || 0} won`,
         icon: 'fa-project-diagram',
-        color: '#3b82f6'
+        color: '#3b82f6',
+        route: '/projects'
       },
       {
         label: 'Conversion Rate',
         value: `${data.conversionRate || 0}%`,
         subtitle: 'Overall performance',
         icon: 'fa-chart-line',
-        color: '#f59e0b'
+        color: '#f59e0b',
+        route: '/reports'
       },
       {
         label: 'Avg Deal Size',
         value: this.formatCurrency(data.avgDealSize || 0),
         subtitle: 'Per completed project',
         icon: 'fa-money-bill-wave',
-        color: '#8b5cf6'
+        color: '#8b5cf6',
+        route: '/deals'
       }
     ];
   }
 
   private processRevenueAndDealsData(projects: any[]): void {
     const completedProjects = projects.filter((p: any) => p.projectStatus === 'completed');
-    
+
     // Get last 6 months
     const months = this.getLast6Months();
-    
+
     // Calculate revenue by month
     const revenueByMonth = months.map(month => {
       const monthProjects = completedProjects.filter((p: any) => {
         const completeDate = new Date(p.actualCompletionDate || p.updatedAt);
-        return completeDate.getMonth() === month.index && 
-               completeDate.getFullYear() === month.year;
+        return completeDate.getMonth() === month.index &&
+          completeDate.getFullYear() === month.year;
       });
       return monthProjects.reduce((sum: number, p: any) => sum + p.projectValue, 0);
     });
@@ -236,8 +241,8 @@ export class DashboardHomeComponent implements OnInit {
     const dealsByMonth = months.map(month => {
       const monthProjects = completedProjects.filter((p: any) => {
         const completeDate = new Date(p.actualCompletionDate || p.updatedAt);
-        return completeDate.getMonth() === month.index && 
-               completeDate.getFullYear() === month.year;
+        return completeDate.getMonth() === month.index &&
+          completeDate.getFullYear() === month.year;
       });
       return monthProjects.length;
     });
@@ -287,7 +292,7 @@ export class DashboardHomeComponent implements OnInit {
   getLast6Months(): { label: string; index: number; year: number }[] {
     const months = [];
     const now = new Date();
-    
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
@@ -296,41 +301,45 @@ export class DashboardHomeComponent implements OnInit {
         year: date.getFullYear()
       });
     }
-    
+
     return months;
   }
 
   loadFallbackData(): void {
     console.log('⚠️ Loading fallback data');
-    
+
     this.statCards = [
       {
         label: 'Total Revenue',
         value: '₹0',
         subtitle: 'Unable to load',
         icon: 'fa-rupee-sign',
-        color: '#22c55e'
+        color: '#22c55e',
+        route: '/projects'
       },
       {
         label: 'Total Projects',
         value: 0,
         subtitle: 'Unable to load',
         icon: 'fa-project-diagram',
-        color: '#3b82f6'
+        color: '#3b82f6',
+        route: '/projects'
       },
       {
         label: 'Conversion Rate',
         value: '0%',
         subtitle: 'Unable to load',
         icon: 'fa-chart-line',
-        color: '#f59e0b'
+        color: '#f59e0b',
+        route: '/reports'
       },
       {
         label: 'Avg Deal Size',
         value: '₹0',
         subtitle: 'Unable to load',
         icon: 'fa-money-bill-wave',
-        color: '#8b5cf6'
+        color: '#8b5cf6',
+        route: '/deals'
       }
     ];
 
@@ -391,14 +400,14 @@ export class DashboardHomeComponent implements OnInit {
   // ==========================================
 
   getChartTextColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme') || 
-                        document.documentElement.getAttribute('data-theme') === 'light';
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
     return isLightMode ? '#1f2937' : 'rgba(255, 255, 255, 0.6)';
   }
 
   getChartGridColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme') || 
-                        document.documentElement.getAttribute('data-theme') === 'light';
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
     return isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(212, 179, 71, 0.1)';
   }
 
@@ -406,7 +415,7 @@ export class DashboardHomeComponent implements OnInit {
     const observer = new MutationObserver(() => {
       this.updateChartColors();
     });
-    
+
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class', 'data-theme']
@@ -419,7 +428,7 @@ export class DashboardHomeComponent implements OnInit {
       if (this.lineChartOptions.plugins.legend && this.lineChartOptions.plugins.legend.labels) {
         this.lineChartOptions.plugins.legend.labels.color = this.getChartTextColor();
       }
-      
+
       // Update axis colors
       if (this.lineChartOptions.scales['x']) {
         this.lineChartOptions.scales['x'].grid = { color: this.getChartGridColor() };
@@ -427,14 +436,14 @@ export class DashboardHomeComponent implements OnInit {
           this.lineChartOptions.scales['x'].ticks.color = this.getChartTextColor();
         }
       }
-      
+
       if (this.lineChartOptions.scales['y']) {
         this.lineChartOptions.scales['y'].grid = { color: this.getChartGridColor() };
         if (this.lineChartOptions.scales['y'].ticks) {
           this.lineChartOptions.scales['y'].ticks.color = this.getChartTextColor();
         }
       }
-      
+
       // Update chart
       if (this.chart) {
         this.chart.update();
