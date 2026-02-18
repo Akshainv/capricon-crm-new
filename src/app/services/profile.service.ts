@@ -88,15 +88,21 @@ export class ProfileService {
   // HELPER: Get HTTP Headers with JWT Token
   // ============================================
   private getHeaders(): HttpHeaders {
-    // Use access_token from AuthService (localStorage)
     const token = localStorage.getItem('access_token');
     const userId = this.getUserIdFromStorage();
 
-    return new HttpHeaders({
+    // Start with standard auth headers if available
+    let headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
-      'x-user-id': userId || '' // For backend testing
+      'Authorization': token ? `Bearer ${token}` : ''
     });
+
+    // Add/Update additional identifying headers
+    if (userId) {
+      headers = headers.set('x-user-id', userId);
+    }
+
+    return headers;
   }
 
   // ============================================

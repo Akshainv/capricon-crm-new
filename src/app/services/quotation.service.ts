@@ -170,11 +170,14 @@ export class QuotationService {
     const userId = currentUser?.userId || '';
     const userRole = currentUser?.role || '';
 
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'x-user-id': userId,
-      'x-user-role': userRole
-    });
+    // Start with standard auth headers (Authorization: Bearer ...)
+    let headers = this.authService.getAuthHeaders();
+
+    // Add/Update additional identifying headers
+    headers = headers.set('x-user-id', userId);
+    headers = headers.set('x-user-role', userRole);
+
+    return headers;
   }
 
   createQuotation(quotationData: CreateQuotationPayload): Observable<QuotationResponse> {
