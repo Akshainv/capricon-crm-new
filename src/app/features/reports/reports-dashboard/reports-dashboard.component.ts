@@ -297,30 +297,77 @@ export class ReportsDashboardComponent implements OnInit {
   }
 
   private processAggregatedData(summary: any, leads: Lead[], projects: Project[], quotations: Quotation[]): void {
-    // 1. Update Stat Cards from Backend Summary
-    // The service now returns the unwrapped data object
     const stats = summary || {};
-    // Calculate fallback counts from raw data
-    // Choose the best value for leads
-    // ✅ Use backend leadsCount if available, otherwise fallback
-    let leadsValue = stats.leadsCount ?? stats.totalLeads ?? stats.count ?? 0;
-
-    // Process "Today" leads with robust local date comparison
     const now = new Date();
-    const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
-    const todayLeadsCount = leads.filter(l => {
-      if (!l.createdAt) return false;
-      const leadDate = new Date(l.createdAt).toLocaleDateString('en-CA');
-      return leadDate === todayStr;
-    }).length;
+    const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    const thirtyDaysAgoStr = thirtyDaysAgo.toLocaleDateString('en-CA');
 
-    if (this.analysisType === 'daily' && leadsValue === 0) {
-      leadsValue = todayLeadsCount;
-    }
+    // ✅ LOCAL CALCULATION: Since we already fetch all raw data, calculate card counts here
+    // This fixes the "0" issue when backend aggregation mismatches with local data/timezones.
+
+    // 1. Calculate Leads Count
+    const relevantLeads = leads.filter(l => {
+      // Filter by Employee if selected
+      if (this.selectedEmployeeId !== 'all') {
+        if (!this.compareIds(l.assignedTo, this.selectedEmployeeId) && !this.compareIds(l.createdBy, this.selectedEmployeeId)) return false;
+      }
+
+      if (!l.createdAt) return this.analysisType === 'total';
+      const leadDate = new Date(l.createdAt).toLocaleDateString('en-CA');
+
+      if (this.analysisType === 'daily') return leadDate === todayStr;
+      if (this.analysisType === 'monthly') return leadDate >= thirtyDaysAgoStr;
+      return true; // Total
+    });
+
+    // 2. Calculate Quotations/Proposals
+    const relevantQuotes = quotations.filter(q => {
+      if (this.selectedEmployeeId !== 'all') {
+        if (!this.compareIds(q.createdBy, this.selectedEmployeeId)) return false;
+      }
+
+      if (!q.createdAt) return this.analysisType === 'total';
+      const quoteDate = new Date(q.createdAt).toLocaleDateString('en-CA');
+
+      if (this.analysisType === 'daily') return quoteDate === todayStr;
+      if (this.analysisType === 'monthly') return quoteDate >= thirtyDaysAgoStr;
+      return true;
+    });
+
+    const acceptedQuotes = relevantQuotes.filter((q: any) =>
+      q.status?.toLowerCase() === 'accepted' || q.status?.toLowerCase() === 'approved'
+    ).length;
+
+    // 3. Calculate Projects/Win Rate
+    const relevantProjects = projects.filter(p => {
+      if (this.selectedEmployeeId !== 'all') {
+        if (!this.compareIds(p.assignedTo, this.selectedEmployeeId) && !this.compareIds(p.createdBy, this.selectedEmployeeId)) return false;
+      }
+
+      if (!p.createdAt) return this.analysisType === 'total';
+      const projectDate = new Date(p.createdAt).toLocaleDateString('en-CA');
+
+      if (this.analysisType === 'daily') return projectDate === todayStr;
+      if (this.analysisType === 'monthly') return projectDate >= thirtyDaysAgoStr;
+      return true;
+    });
+
+    const wonProjects = relevantProjects.filter(p => p.projectStatus?.toLowerCase() === 'completed').length;
+    const totalRevenue = relevantProjects
+      .filter(p => p.projectStatus?.toLowerCase() === 'completed')
+      .reduce((sum, p) => sum + (p.projectValue || 0), 0);
+
+    const winRate = relevantProjects.length > 0 ? Math.round((wonProjects / relevantProjects.length) * 100) : 0;
+
+    // ✅ Fallback to Backend Stats if Local Calculation is empty (unlikely but safe)
+    let leadsValue = relevantLeads.length;
+    if (leadsValue === 0 && stats.leadsCount > 0) leadsValue = stats.leadsCount;
 
     this.statCards = [
       {
-        label: this.analysisType === 'daily' ? 'Leads Today' : 'Lead Flow',
+        label: this.analysisType === 'daily' ? 'Leads Today' : (this.analysisType === 'monthly' ? 'Monthly Leads' : 'Total Leads'),
         value: leadsValue,
         subtitle: this.analysisType === 'daily' ? 'New leads today' : (this.analysisType === 'monthly' ? 'Last 30 days' : 'Lifetime'),
         icon: 'fa-users',
@@ -328,21 +375,21 @@ export class ReportsDashboardComponent implements OnInit {
       },
       {
         label: this.analysisType === 'daily' ? 'Quotes Today' : 'Proposals',
-        value: stats.totalQuotations ?? stats.quotationsSent ?? stats.quotationsAccepted ?? 0,
-        subtitle: `${stats.quotationsAccepted ?? 0} accepted`,
+        value: relevantQuotes.length,
+        subtitle: `${acceptedQuotes} accepted`,
         icon: 'fa-file-invoice',
         color: '#818cf8'
       },
       {
         label: 'Project Win Rate',
-        value: `${stats.conversionRate ?? 0}%`,
-        subtitle: `${stats.projectsWon ?? stats.dealsWon ?? 0} deals won`,
+        value: `${winRate}%`,
+        subtitle: `${wonProjects} deals won`,
         icon: 'fa-project-diagram',
         color: '#a855f7'
       },
       {
-        label: this.analysisType === 'daily' ? 'Daily Revenue' : 'Realized Revenue',
-        value: this.formatCurrency(stats.totalRevenue ?? 0),
+        label: this.analysisType === 'daily' ? 'Today Revenue' : 'Realized Revenue',
+        value: this.formatCurrency(totalRevenue || stats.totalRevenue || 0),
         subtitle: 'From completed deals',
         icon: 'fa-rupee-sign',
         color: '#d4b347'
@@ -351,7 +398,7 @@ export class ReportsDashboardComponent implements OnInit {
 
     // Force chart update after data processing
     setTimeout(() => {
-      this.updateChartColors(); // This also calls this.revenueChart?.update()
+      this.updateChartColors();
     }, 300);
 
     // Force chart update after state changes
