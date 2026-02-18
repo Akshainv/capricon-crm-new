@@ -73,7 +73,7 @@ export class SalesMyPerformanceComponent implements OnInit {
     { month: 'Dec', revenue: 4500000, deals: 18 }
   ];
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     this.loadPerformanceData();
