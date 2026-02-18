@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-deal-form',
@@ -54,7 +55,8 @@ export class DealFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -134,9 +136,9 @@ export class DealFormComponent implements OnInit {
         this.isSubmitting = false;
 
         if (this.isEditMode) {
-          alert('Deal updated successfully!');
+          this.toastr.success('Deal updated successfully!');
         } else {
-          alert('Deal created successfully!');
+          this.toastr.success('Deal created successfully!');
         }
 
         this.router.navigate(['/deals']);
@@ -163,6 +165,8 @@ export class DealFormComponent implements OnInit {
   cancel(): void {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
       this.router.navigate(['/deals']);
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 

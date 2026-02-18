@@ -1,7 +1,8 @@
 // src/app/guards/auth.guard.ts
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 /**
  * ====================================================================
@@ -67,6 +68,7 @@ export const adminGuard: CanActivateFn = (
 ) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const toastr = inject(ToastrService);
 
   // Check if user is logged in
   if (!authService.isLoggedIn) {
@@ -84,7 +86,7 @@ export const adminGuard: CanActivateFn = (
 
   // User is logged in but not an admin
   console.warn('Access denied - Admin privileges required');
-  alert('Access Denied: This page is only accessible to administrators.');
+  toastr.error('Access Denied: This page is only accessible to administrators.');
 
   // Redirect to appropriate dashboard based on role
   if (authService.isEmployee) {
@@ -126,6 +128,7 @@ export const employeeGuard: CanActivateFn = (
 ) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const toastr = inject(ToastrService);
 
   // Check if user is logged in
   if (!authService.isLoggedIn) {
@@ -143,7 +146,7 @@ export const employeeGuard: CanActivateFn = (
 
   // User is logged in but not an employee
   console.warn('Access denied - Employee privileges required');
-  alert('Access Denied: This page is only accessible to employees.');
+  toastr.error('Access Denied: This page is only accessible to employees.');
 
   // Redirect to appropriate dashboard based on role
   if (authService.isAdmin) {

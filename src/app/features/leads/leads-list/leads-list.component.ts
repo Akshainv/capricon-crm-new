@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { LeadsService, Lead } from '../../../lead.service';
 import { EmployeeService, Employee } from '../../../../employee/employee.service';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 interface DisplayLead {
   id: string;
@@ -57,7 +58,8 @@ export class LeadsListComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private leadsService: LeadsService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -226,12 +228,15 @@ export class LeadsListComponent implements OnInit, OnDestroy {
         next: () => {
           console.log(`Lead ${leadId} deleted`);
           this.loadLeads();
+          this.toastr.success('Lead deleted successfully');
         },
         error: (err: any) => {
           console.error('Delete error:', err);
-          alert('Failed to delete lead');
+          this.toastr.error('Failed to delete lead');
         }
       });
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 
@@ -254,7 +259,7 @@ export class LeadsListComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error updating status from Admin view:', err);
-        alert('Failed to update lead status');
+        this.toastr.error('Failed to update lead status');
         // Refresh to revert UI if needed
         this.loadLeads();
       }

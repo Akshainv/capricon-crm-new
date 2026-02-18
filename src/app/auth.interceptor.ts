@@ -3,7 +3,8 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 /**
  * HTTP Interceptor for Authentication
@@ -17,6 +18,7 @@ import { AuthService } from './auth.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const toastr = inject(ToastrService);
 
   // List of public endpoints that don't require authentication
   const publicEndpoints = [
@@ -68,11 +70,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
           // Check if it's an employee pending approval
           if (error.error?.message?.includes('pending approval')) {
-            alert('Your account is pending admin approval. Please wait for approval to access the system.');
+            toastr.warning('Your account is pending admin approval. Please wait for approval to access the system.');
             authService.logout();
             router.navigate(['/login']);
           } else {
-            alert('You do not have permission to access this resource.');
+            toastr.error('You do not have permission to access this resource.');
           }
           break;
 
@@ -84,13 +86,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         case 500:
           // Internal Server Error
           console.error('Server error:', error.message);
-          alert('An error occurred on the server. Please try again later.');
+          toastr.error('An error occurred on the server. Please try again later.');
           break;
 
         case 0:
           // Network error (server not reachable)
           console.error('Network error - Unable to connect to server');
-          alert('Unable to connect to the server. Please check your internet connection.');
+          toastr.error('Unable to connect to the server. Please check your internet connection.');
           break;
 
         default:

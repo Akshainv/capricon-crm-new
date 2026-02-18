@@ -68,6 +68,25 @@
     outline: none;
 }
 
+.btn-assign {
+    padding: 10px 20px;
+    background: var(--accent-gold);
+    border: 1px solid var(--accent-gold);
+    border-radius: 8px;
+    color: #000;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-assign:hover {
+    background: transparent;
+    color: var(--accent-gold);
+}
+
 .btn-refresh {
     padding: 10px 20px;
     background: var(--bg-card);

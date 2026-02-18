@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DealService, Deal } from '../../../services/deal.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface Activity {
   id: string;
@@ -41,7 +42,8 @@ export class DealDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private dealService: DealService
+    private dealService: DealService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -218,15 +220,17 @@ export class DealDetailComponent implements OnInit {
       if (this.dealId) {
         this.dealService.deleteDeal(this.dealId).subscribe({
           next: () => {
-            alert('Deal deleted successfully!');
+            this.toastr.success('Deal deleted successfully!');
             this.router.navigate(['/deals']);
           },
           error: (error) => {
             console.error('Error deleting deal:', error);
-            alert('Failed to delete deal. Please try again.');
+            this.toastr.error('Failed to delete deal. Please try again.');
           }
         });
       }
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 

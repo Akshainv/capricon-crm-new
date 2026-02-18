@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { EmployeeService } from '../../employee/employee.service';
 import { AuthService } from '../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var Toastify: any;
 
@@ -54,7 +55,8 @@ export class EmployeeApprovalsComponent implements OnInit {
   constructor(
     private router: Router,
     private employeeService: EmployeeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -321,6 +323,8 @@ export class EmployeeApprovalsComponent implements OnInit {
     } else {
       if (confirm(`Are you sure you want to permanently delete ${employee.fullName}? This action cannot be undone.`)) {
         this.proceedDeleteEmployee(employee);
+      } else {
+        this.showToast('Delete cancelled', 'info');
       }
     }
   }
@@ -445,7 +449,10 @@ export class EmployeeApprovalsComponent implements OnInit {
         }
       }).showToast();
     } else {
-      alert(message);
+      if (type === 'success') this.toastr.success(message);
+      else if (type === 'error') this.toastr.error(message);
+      else if (type === 'warning') this.toastr.warning(message);
+      else this.toastr.info(message);
     }
   }
 }

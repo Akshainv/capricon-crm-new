@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LeadsService, Lead } from '../lead.service';
 import { AuthService } from '../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface Deal {
   id: string;
@@ -51,7 +52,8 @@ export class SalesMyDealsComponent implements OnInit {
   constructor(
     public router: Router,
     private leadsService: LeadsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -283,11 +285,11 @@ export class SalesMyDealsComponent implements OnInit {
       next: () => {
         this.organizeDeals();
         this.draggedDeal = null;
-        alert('Deal status updated successfully!');
+        this.toastr.success('Deal status updated successfully!');
       },
       error: (error: any) => {
         console.error('Error updating deal status:', error);
-        alert('Failed to update deal status. Reverting.');
+        this.toastr.error('Failed to update deal status. Reverting.');
         // Revert on error
         deal.status = oldStatus;
         this.organizeDeals();

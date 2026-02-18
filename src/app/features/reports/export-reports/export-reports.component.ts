@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface ExportFormat {
   id: string;
@@ -112,7 +113,10 @@ export class ExportReportsComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private toastr: ToastrService
+  ) {
     // Check if report data was passed from custom report builder
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state?.['reportData']) {
@@ -138,7 +142,7 @@ export class ExportReportsComponent implements OnInit {
 
   onExport(): void {
     if (!this.selectedFormat) {
-      alert('Please select an export format');
+      this.toastr.warning('Please select an export format');
       return;
     }
 
@@ -163,7 +167,7 @@ export class ExportReportsComponent implements OnInit {
       };
       this.exportHistory.unshift(newExport);
 
-      alert(`Report exported successfully as ${selectedFormat!.name}!`);
+      this.toastr.success(`Report exported successfully as ${selectedFormat!.name}!`);
     }, 2000);
 
     // TODO: Replace with actual export API call
@@ -186,19 +190,19 @@ export class ExportReportsComponent implements OnInit {
 
   onPrint(): void {
     console.log('Printing report...');
-    alert('Print dialog would open here');
+    this.toastr.info('Print dialog would open here');
     // window.print();
   }
 
   onEmail(): void {
     console.log('Emailing report...');
-    alert('Email dialog would open here');
+    this.toastr.info('Email dialog would open here');
     // Open email modal or navigate to email form
   }
 
   downloadHistoryItem(item: ExportHistory): void {
     console.log('Re-downloading:', item.reportName);
-    alert(`Downloading ${item.reportName}...`);
+    this.toastr.info(`Downloading ${item.reportName}...`);
   }
 
   deleteHistoryItem(item: ExportHistory): void {
@@ -206,7 +210,10 @@ export class ExportReportsComponent implements OnInit {
       const index = this.exportHistory.indexOf(item);
       if (index > -1) {
         this.exportHistory.splice(index, 1);
+        this.toastr.success('Item deleted from history.');
       }
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 

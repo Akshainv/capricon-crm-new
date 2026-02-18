@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DealService, Deal } from '../../../services/deal.service';
 import { ProjectService } from '../../../services/project.service';
 import { AuthService } from '../../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var Toastify: any;  // For Toastify
 
@@ -23,7 +24,8 @@ export class DealPipelineComponent implements OnInit {
     public router: Router,
     private dealService: DealService,
     private projectService: ProjectService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -102,6 +104,8 @@ export class DealPipelineComponent implements OnInit {
     } else {
       if (confirm(`Convert "${this.getDealTitle(deal)}" to a project?\n\nThis will create a new project and mark this deal as converted.`)) {
         this.proceedConvertToProject(deal);
+      } else {
+        this.toastr.info('Conversion cancelled');
       }
     }
   }
@@ -121,7 +125,7 @@ export class DealPipelineComponent implements OnInit {
 
             this.allDeals = this.allDeals.filter(d => (d._id || d.id) !== dealId);
 
-            this.showToast(`Successfully converted to project!\nProject Code: ${project.projectCode}\nProject Name: ${project.projectName}`, 'success');
+            this.showToast('Successfully converted to project!', 'success');
 
             this.router.navigate(['/projects'], {
               queryParams: {
@@ -203,6 +207,8 @@ export class DealPipelineComponent implements OnInit {
     } else {
       if (confirm(`Are you sure you want to delete the deal "${this.getDealTitle(deal)}"? This action cannot be undone.`)) {
         this.proceedDeleteDeal(deal);
+      } else {
+        this.toastr.info('Delete cancelled');
       }
     }
   }
@@ -320,7 +326,7 @@ export class DealPipelineComponent implements OnInit {
         }
       }).showToast();
     } else {
-      alert(message);
+      this.toastr.info(message);
     }
   }
 }

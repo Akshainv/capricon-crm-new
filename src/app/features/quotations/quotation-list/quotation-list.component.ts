@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { QuotationService } from '../../../services/quotation.service';
 
 interface Quotation {
@@ -45,7 +46,8 @@ export class QuotationListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private quotationService: QuotationService
+    private quotationService: QuotationService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -153,22 +155,24 @@ export class QuotationListComponent implements OnInit {
           this.quotationService.sendQuotationWithPDF(quote.id, quote.email, fullData).subscribe({
             next: () => {
               this.isLoading = false;
-              alert(`Quotation sent to ${quote.email} successfully!`);
+              this.toastr.success(`Quotation sent to ${quote.email} successfully!`);
               this.loadQuotations(); // Refresh to update status
             },
             error: (err: any) => {
               this.isLoading = false;
               console.error('Error sending quotation:', err);
-              alert('Failed to send quotation. Please try again.');
+              this.toastr.error('Failed to send quotation. Please try again.');
             }
           });
         },
         error: (err: any) => {
           this.isLoading = false;
           console.error('Error fetching full quotation data:', err);
-          alert('Failed to prepare quotation for sending.');
+          this.toastr.error('Failed to prepare quotation for sending.');
         }
       });
+    } else {
+      this.toastr.info('Sending cancelled');
     }
   }
 
@@ -177,12 +181,15 @@ export class QuotationListComponent implements OnInit {
       this.quotationService.deleteQuotation(id).subscribe({
         next: () => {
           this.loadQuotations();
+          this.toastr.success('Quotation deleted successfully');
         },
         error: (err: any) => {
           console.error('Error deleting quotation:', err);
-          alert('Failed to delete quotation.');
+          this.toastr.error('Failed to delete quotation.');
         }
       });
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 

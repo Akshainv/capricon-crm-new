@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface CalendarEvent {
   id: string;
@@ -61,7 +62,8 @@ export class SalesCalendarComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -399,7 +401,7 @@ export class SalesCalendarComponent implements OnInit {
 
       // Validate end date is after start date
       if (endDate < startDate) {
-        alert('End date/time must be after start date/time');
+        this.toastr.warning('End date/time must be after start date/time');
         return;
       }
 
@@ -423,9 +425,9 @@ export class SalesCalendarComponent implements OnInit {
       this.generateCalendar();
       this.toggleAddForm();
 
-      alert('Event added successfully!');
+      this.toastr.success('Event added successfully!');
     } else {
-      alert('Please fill in all required fields');
+      this.toastr.warning('Please fill in all required fields');
     }
   }
 
@@ -444,6 +446,7 @@ export class SalesCalendarComponent implements OnInit {
       this.events = this.events.filter(e => e.id !== eventId);
       this.generateCalendar();
       this.closeEventDetails();
+      this.toastr.success('Event deleted successfully');
     }
   }
 
@@ -452,7 +455,7 @@ export class SalesCalendarComponent implements OnInit {
     if (event) {
       event.status = 'completed';
       this.generateCalendar();
-      alert('Event marked as completed!');
+      this.toastr.success('Event marked as completed!');
     }
   }
 

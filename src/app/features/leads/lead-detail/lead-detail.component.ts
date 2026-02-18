@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface Activity {
   id: string;
@@ -87,7 +88,8 @@ export class LeadDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -120,7 +122,10 @@ export class LeadDetailComponent implements OnInit {
   deleteLead(): void {
     if (confirm('Are you sure you want to delete this lead?')) {
       console.log('Deleting lead:', this.leadId);
+      this.toastr.success('Lead deleted successfully!');
       this.router.navigate(['/leads']);
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 

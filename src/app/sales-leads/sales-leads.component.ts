@@ -107,17 +107,17 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
       if (this.assignedLeads.length > 0) {
         console.log('📋 Assigned Leads Details:');
         this.assignedLeads.forEach((lead, index) => {
-          console.log(`  ${index + 1}. ${lead.fullName}`);
+          console.log(`  ${index + 1}. ${lead.fullName} (${lead._id})`);
           console.log(`     - Status: ${lead.status}`);
-          console.log(`     - AssignedTo: ${lead.assignedTo}`);
+          console.log(`     - AssignedTo ID: ${typeof lead.assignedTo === 'object' ? (lead.assignedTo as any)._id : lead.assignedTo}`);
           console.log(`     - CreatedBy: ${lead.createdBy}`);
           console.log(`     - IsConverted: ${lead.isConverted}`);
         });
       } else {
-        console.log('⚠️ No assigned leads found!');
+        console.warn('⚠️ No assigned leads found even after fallback check!');
         console.log('Debugging info:');
-        console.log('  - Current user ID:', currentUser?.userId);
-        console.log('  - Check backend logs for assignment details');
+        console.log('  - Current user Login ID:', currentUser?.userId);
+        console.log('  - Current user Object ID (if any):', (currentUser as any)._id);
       }
       console.log('==============================================');
 

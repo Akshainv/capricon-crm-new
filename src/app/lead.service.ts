@@ -1,7 +1,7 @@
 // src/app/lead.service.ts (Frontend) - RESTORED VERSION
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, Subject } from 'rxjs';
+import { Observable, throwError, Subject, forkJoin, of } from 'rxjs';
 import { catchError, map, tap, delay, switchMap } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
 import { environment } from '../environments/environment';
@@ -119,48 +119,18 @@ export class LeadsService {
    */
   getLeadsCreatedByMe(): Observable<Lead[]> {
     const currentUser = this.authService.currentUserValue;
-    if (!currentUser || !currentUser.userId) {
-      console.error('User not logged in or userId not found');
+    if (!currentUser) {
+      console.error('User not logged in');
       return throwError(() => new Error('User not logged in'));
     }
 
-    const userId = String(currentUser.userId).trim().toLowerCase();
-    console.log('==============================================');
-    console.log('🔍 Fetching leads CREATED by userId:', userId);
-    console.log('==============================================');
+    const userId = (currentUser.userId || (currentUser as any)._id || '').toString();
+    const userEmail = currentUser.email || '';
+    console.log('🔍 Fetching leads CREATED by (direct API):', { userId, userEmail });
 
-    return this.getAllLeads().pipe(
-      map(allLeads => {
-        console.log('📦 Total leads from backend:', allLeads.length);
-
-        const createdLeads = allLeads.filter(lead => {
-          const leadCreatedBy = String(lead.createdBy || '').trim().toLowerCase();
-          const leadAssignedTo = String(lead.assignedTo || '').trim().toLowerCase();
-
-          const isCreatedByMe = leadCreatedBy === userId;
-          const notConverted = !lead.isConverted;
-
-          console.log('─────────────────────────────────────────────');
-          console.log(`📝 Lead: ${lead.fullName}`);
-          console.log(`   createdBy: "${leadCreatedBy}"`);
-          console.log(`   userId: "${userId}"`);
-          console.log(`   assignedTo: "${leadAssignedTo}"`);
-          console.log(`   status: ${lead.status}`);
-          console.log(`   isConverted: ${lead.isConverted}`);
-          console.log(`   ✅ isCreatedByMe: ${isCreatedByMe}`);
-          console.log(`   ✅ notConverted: ${notConverted}`);
-          console.log(`   🎯 Will show in Created Leads: ${isCreatedByMe && notConverted}`);
-
-          return isCreatedByMe && notConverted;
-        });
-
-        console.log('==============================================');
-        console.log('✅ Filtered CREATED leads:', createdLeads.length);
-        console.log('Created leads:', createdLeads);
-        console.log('==============================================');
-
-        return createdLeads;
-      }),
+    return this.http.get<ApiResponse<Lead[]>>(`${this.apiUrl}/created-by/${userId}`, this.getHeaders()).pipe(
+      map(response => response.data || []),
+      tap(leads => console.log('✅ Received CREATED leads:', leads.length)),
       catchError(this.handleError)
     );
   }
@@ -171,66 +141,50 @@ export class LeadsService {
    */
   getLeadsAssignedToMe(): Observable<Lead[]> {
     const currentUser = this.authService.currentUserValue;
-    if (!currentUser || !currentUser.userId) {
-      console.error('User not logged in or userId not found');
+    if (!currentUser) {
+      console.error('User not logged in');
       return throwError(() => new Error('User not logged in'));
     }
 
-    // ✅ CRITICAL FIX: Normalize userId - trim, lowercase, remove any special characters
-    const userId = String(currentUser.userId).trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
-    console.log('==============================================');
-    console.log('🔍 Fetching leads ASSIGNED to userId:', userId);
-    console.log('User ID type:', typeof userId);
-    console.log('User ID length:', userId.length);
-    console.log('User ID char codes:', Array.from(userId).map(c => c.charCodeAt(0)));
-    console.log('==============================================');
+    const userId = (currentUser.userId || (currentUser as any)._id || '').toString();
+    const userEmail = currentUser.email || '';
+    console.log('🔍 Fetching leads ASSIGNED to (Merged Strategy):', { userId, userEmail });
 
-    return this.getAllLeads().pipe(
-      map(allLeads => {
-        console.log('📦 Total leads from backend:', allLeads.length);
-
-        const assignedLeads = allLeads.filter(lead => {
-          // ✅ CRITICAL FIX: Normalize both IDs the same way for comparison
-          const leadAssignedTo = String(lead.assignedTo || '').trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
-          const leadCreatedBy = String(lead.createdBy || '').trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
-
-          // ✅ ENHANCED: Multiple comparison methods
-          const isAssignedToMe =
-            leadAssignedTo === userId || // Exact match
-            leadAssignedTo.includes(userId) || // Contains match
-            userId.includes(leadAssignedTo) || // Reverse contains
-            this.compareIds(leadAssignedTo, userId); // Flexible comparison
-
+    // Fetch from BOTH specialized API and local filter to ensure no leads are missed
+    return forkJoin({
+      apiLeads: this.http.get<ApiResponse<Lead[]>>(`${this.apiUrl}/assigned-to/${userId}`, this.getHeaders()).pipe(
+        map(response => response.data || []),
+        catchError(err => {
+          console.error('❌ API assigned-to error:', err);
+          return of([]);
+        })
+      ),
+      localLeads: this.getAllLeads().pipe(
+        map(allLeads => allLeads.filter(lead => {
+          const isMatch = this.compareIds(lead.assignedTo, userId);
           const notConverted = !lead.isConverted;
-          const hasAssignedTo = leadAssignedTo && leadAssignedTo.length > 0;
+          return isMatch && notConverted;
+        })),
+        catchError(err => {
+          console.error('❌ Local filtering error:', err);
+          return of([]);
+        })
+      )
+    }).pipe(
+      map(({ apiLeads, localLeads }) => {
+        // combine and de-duplicate by _id
+        const combined = [...apiLeads, ...localLeads];
+        const uniqueLeadsMap = new Map<string, Lead>();
 
-          console.log('─────────────────────────────────────────────');
-          console.log(`📝 Lead: ${lead.fullName}`);
-          console.log(`   Raw assignedTo: "${lead.assignedTo}" (type: ${typeof lead.assignedTo})`);
-          console.log(`   Normalized assignedTo: "${leadAssignedTo}" (length: ${leadAssignedTo.length})`);
-          console.log(`   assignedTo char codes:`, Array.from(leadAssignedTo).map(c => c.charCodeAt(0)));
-          console.log(`   Raw createdBy: "${lead.createdBy}"`);
-          console.log(`   Normalized createdBy: "${leadCreatedBy}"`);
-          console.log(`   Normalized userId: "${userId}" (length: ${userId.length})`);
-          console.log(`   status: ${lead.status}`);
-          console.log(`   isConverted: ${lead.isConverted}`);
-          console.log(`   ✅ hasAssignedTo: ${hasAssignedTo}`);
-          console.log(`   ✅ isAssignedToMe (exact): ${leadAssignedTo === userId}`);
-          console.log(`   ✅ isAssignedToMe (contains): ${leadAssignedTo.includes(userId)}`);
-          console.log(`   ✅ isAssignedToMe (flexible): ${this.compareIds(leadAssignedTo, userId)}`);
-          console.log(`   ✅ isAssignedToMe (final): ${isAssignedToMe}`);
-          console.log(`   ✅ notConverted: ${notConverted}`);
-          console.log(`   🎯 Will show in Assigned Leads: ${isAssignedToMe && notConverted && hasAssignedTo}`);
-
-          return isAssignedToMe && notConverted && hasAssignedTo;
+        combined.forEach(lead => {
+          if (lead && lead._id) {
+            uniqueLeadsMap.set(lead._id.toString(), lead);
+          }
         });
 
-        console.log('==============================================');
-        console.log('✅ Filtered ASSIGNED leads (by admin):', assignedLeads.length);
-        console.log('Assigned leads:', assignedLeads);
-        console.log('==============================================');
-
-        return assignedLeads;
+        const finalLeads = Array.from(uniqueLeadsMap.values());
+        console.log(`✅ Final Merged ASSIGNED leads count: ${finalLeads.length} (API: ${apiLeads.length}, Local: ${localLeads.length})`);
+        return finalLeads;
       }),
       catchError(this.handleError)
     );
@@ -240,14 +194,23 @@ export class LeadsService {
    * ✅ NEW: Flexible ID comparison helper
    * Handles ObjectId string differences and various formats
    */
-  private compareIds(id1: string, id2: string): boolean {
+  private compareIds(id1: any, id2: any): boolean {
     if (!id1 || !id2) return false;
 
-    // Normalize both IDs
-    const norm1 = id1.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-    const norm2 = id2.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Handle cases where ID might be a MongoDB object with _id
+    const cid1 = typeof id1 === 'object' ? (id1._id || id1.toString()) : id1;
+    const cid2 = typeof id2 === 'object' ? (id2._id || id2.toString()) : id2;
 
-    // Check if either contains the other (for partial ObjectId matches)
+    if (!cid1 || !cid2) return false;
+
+    // Normalize both IDs
+    const norm1 = String(cid1).trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const norm2 = String(cid2).trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Direct equality check
+    if (norm1 === norm2) return true;
+
+    // Check if either contains the other (for partial ObjectId matches or hex strings)
     if (norm1.length >= 20 && norm2.length >= 20) {
       // Both look like ObjectIds - compare last 12 chars (the unique part)
       const end1 = norm1.slice(-12);
@@ -255,7 +218,7 @@ export class LeadsService {
       return end1 === end2;
     }
 
-    return norm1 === norm2;
+    return false;
   }
 
   /**

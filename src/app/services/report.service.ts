@@ -1,7 +1,7 @@
 // src/app/services/report.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -44,21 +44,25 @@ export class ReportService {
   // Sales reports for individual employees
   getSalesReports(userId: string, filters?: any): Observable<any> {
     const salesFilters = { ...filters, employeeId: userId };
-    return this.http.post(
+    return this.http.post<any>(
       `${this.apiUrl}/custom`,
       salesFilters,
       this.getHeaders()
+    ).pipe(
+      map(response => response.data || response)
     );
   }
 
   // Admin reports - general summary
   getAdminReports(filters?: any): Observable<any> {
-    return this.http.get(
+    return this.http.get<any>(
       `${this.apiUrl}/summary`,
       {
         params: this.buildParams(filters),
         ...this.getHeaders()
       }
+    ).pipe(
+      map(response => response.data || response)
     );
   }
 

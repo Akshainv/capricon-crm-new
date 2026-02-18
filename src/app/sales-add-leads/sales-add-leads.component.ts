@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LeadsService, CreateLead } from '../lead.service';
 import { AuthService } from '../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var Toastify: any;
 
@@ -49,7 +50,8 @@ export class SalesAddLeadComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private leadsService: LeadsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -236,6 +238,8 @@ export class SalesAddLeadComponent implements OnInit {
         localStorage.removeItem('lead_draft_time');
       }
       this.router.navigate(['/leads']);
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 
@@ -251,7 +255,9 @@ export class SalesAddLeadComponent implements OnInit {
         source: '',
         priority: 'medium'
       };
-      this.showToast('Draft cleared', 'info');
+      this.toastr.success('Draft cleared successfully');
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 

@@ -11,6 +11,9 @@
                 <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
                     placeholder="Search by name, email or phone...">
             </div>
+            <button class="btn-assign" (click)="goToAssignLeads()">
+                <i class="fas fa-user-plus"></i> Assign Leads
+            </button>
             <button class="btn-refresh" (click)="loadMetaLeads()" [disabled]="isLoading">
                 <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
             </button>

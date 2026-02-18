@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectService, Project } from '../../../services/project.service';
 import { AuthService } from '../../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 import { interval, Subscription } from 'rxjs';
 
 declare var Toastify: any;  // For Toastify
@@ -42,7 +43,8 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private projectService: ProjectService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -223,6 +225,8 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
     } else {
       if (confirm(`Mark "${milestone.title}" as completed?`)) {
         this.completeMilestone(milestone);
+      } else {
+        this.toastr.info('Action cancelled');
       }
     }
   }
@@ -399,7 +403,7 @@ export class ProjectTrackingComponent implements OnInit, OnDestroy {
         }
       }).showToast();
     } else {
-      alert(message);
+      this.toastr.info(message);
     }
   }
 }

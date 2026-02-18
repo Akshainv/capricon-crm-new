@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { QuotationService, Quotation } from '../services/quotation.service';
 import { DealService } from '../services/deal.service';
 import { AuthService } from '../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var Toastify: any;
 
@@ -39,7 +40,8 @@ export class SalesMyQuotationsComponent implements OnInit {
     private router: Router,
     private quotationService: QuotationService,
     private dealService: DealService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -355,7 +357,9 @@ export class SalesMyQuotationsComponent implements OnInit {
         }
       }).showToast();
     } else {
-      console.log(`[${type.toUpperCase()}] ${message}`);
+      if (type === 'success') this.toastr.success(message);
+      else if (type === 'error') this.toastr.error(message);
+      else this.toastr.info(message);
     }
   }
 
@@ -436,6 +440,8 @@ export class SalesMyQuotationsComponent implements OnInit {
     } else {
       if (confirm(message)) {
         onConfirm();
+      } else {
+        this.toastr.info('Action cancelled');
       }
     }
   }

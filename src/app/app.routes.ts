@@ -93,7 +93,6 @@ export const routes: Routes = [
       // Lead Management (Sales Executive View)
       { path: 'leads', component: SalesLeadsComponent },
       { path: 'leads/add', component: SalesAddLeadComponent },
-      { path: 'leads/meta', component: MetaLeadsComponent },
       { path: 'leads/import', component: SalesImportLeadsComponent },
 
       { path: 'leads/edit/:id', component: SalesAddLeadComponent },

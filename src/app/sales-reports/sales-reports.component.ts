@@ -1,44 +1,28 @@
 // src/app/sales-reports/sales-reports.component.ts
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
-import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart, ChartConfiguration, ChartData, ChartType, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement } from 'chart.js';
+import 'chart.js/auto';
 import { ReportService } from '../services/report.service';
 import { AuthService } from '../services/auth.service';
 import { ProjectService, Project } from '../services/project.service';
-import { QuotationService } from '../services/quotation.service';
-import { LeadsService } from '../lead.service';
+import { QuotationService, Quotation } from '../services/quotation.service';
+import { LeadsService, Lead } from '../lead.service';
+
+Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
 
 
-Chart.register(
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend
-);
+// Chart.js components are registered globally via provideCharts in app.config.ts
 
 interface ReportStat {
   label: string;
   value: string | number;
   icon: string;
   color: string;
-  subtitle: string;
+  subtitle?: string;
+  trend?: number;
 }
 
 @Component({
@@ -49,7 +33,20 @@ interface ReportStat {
   styleUrls: ['./sales-reports.component.css']
 })
 export class SalesReportsComponent implements OnInit {
-  @ViewChild('revenueChart') revenueChart?: BaseChartDirective;
+  private _revenueChart?: BaseChartDirective;
+  @ViewChild(BaseChartDirective) set revenueChartDirective(content: BaseChartDirective) {
+    if (content) {
+      this._revenueChart = content;
+      console.log('📈 Sales Chart Directive Captured');
+      setTimeout(() => this._revenueChart?.update(), 100);
+    }
+  }
+
+  get revenueChart(): BaseChartDirective | undefined {
+    return this._revenueChart;
+  }
+
+  chartReady: boolean = false;
 
   loading: boolean = false;
   currentUserId: string = '';
@@ -60,14 +57,44 @@ export class SalesReportsComponent implements OnInit {
 
   public revenueChartData: ChartData<'bar'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      label: 'Monthly Revenue (₹L)',
-      backgroundColor: '#d4b347',
-      hoverBackgroundColor: '#c9a642',
-      borderRadius: 6,
-      borderWidth: 0
-    }]
+    datasets: [
+      {
+        data: [],
+        label: 'Revenue (₹L)',
+        backgroundColor: '#d4b347',
+        hoverBackgroundColor: '#c9a642',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y'
+      },
+      {
+        data: [],
+        label: 'Leads',
+        backgroundColor: '#22d3ee',
+        hoverBackgroundColor: '#06b6d4',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      },
+      {
+        data: [],
+        label: 'Quotations',
+        backgroundColor: '#818cf8',
+        hoverBackgroundColor: '#6366f1',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      },
+      {
+        data: [],
+        label: 'Won Projects',
+        backgroundColor: '#22c55e',
+        hoverBackgroundColor: '#16a34a',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      }
+    ]
   };
 
   public revenueChartOptions: ChartConfiguration['options'] = {
@@ -96,9 +123,22 @@ export class SalesReportsComponent implements OnInit {
         ticks: { color: this.getChartTextColor() }
       },
       y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
         grid: { color: this.getChartGridColor() },
         ticks: { color: this.getChartTextColor() },
-        beginAtZero: true
+        beginAtZero: true,
+        title: { display: true, text: 'Revenue (₹L)', color: '#d4b347' }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        grid: { drawOnChartArea: false },
+        ticks: { color: this.getChartTextColor() },
+        beginAtZero: true,
+        title: { display: true, text: 'Counts', color: '#818cf8' }
       }
     }
   };
@@ -111,7 +151,8 @@ export class SalesReportsComponent implements OnInit {
     private projectService: ProjectService,
     private quotationService: QuotationService,
     private leadsService: LeadsService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -129,28 +170,62 @@ export class SalesReportsComponent implements OnInit {
       console.error('No user ID found');
       return;
     }
-
     this.loading = true;
+    const now = new Date();
+    let startDate: string | undefined;
+    let endDate: string | undefined;
 
-    Promise.all([
-      this.leadsService.getAllLeads().toPromise(),
-      this.quotationService.getAllQuotations().toPromise(),
-      this.projectService.getProjectsBySalesExecutive(this.currentUserId).toPromise()
-    ]).then(([allLeads, quotesResponse, projects]) => {
-      const myLeads = (allLeads || []).filter(l =>
-        l.assignedTo === this.currentUserId || l.createdBy === this.currentUserId
-      );
+    if (this.analysisType === 'daily') {
+      startDate = now.toISOString().split('T')[0];
+      // ✅ FIX: Include the whole day by setting end date to tomorrow's start or tonight's end
+      const tomorrow = new Date();
+      tomorrow.setDate(now.getDate() + 1);
+      endDate = tomorrow.toISOString().split('T')[0];
+    } else if (this.analysisType === 'monthly') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      startDate = thirtyDaysAgo.toISOString().split('T')[0];
+    }
 
-      const allQuotes = quotesResponse?.data || [];
-      const myQuotes = Array.isArray(allQuotes)
-        ? allQuotes.filter((q: any) => q.createdBy === this.currentUserId || q.userId === this.currentUserId)
-        : [];
+    const filters = { startDate, endDate };
 
-      this.processSalesReportData(myLeads, myQuotes, projects || []);
+    // Use ReportService to get aggregated sales data
+    const salesReport$ = this.reportService.getSalesReports(this.currentUserId, filters).toPromise();
+    // Raw data for the trend chart
+    const projects$ = this.projectService.getProjectsBySalesExecutive(this.currentUserId).toPromise();
+    const leads$ = this.leadsService.getLeadsCreatedByMe().toPromise();
+    const assignedLeads$ = this.leadsService.getLeadsAssignedToMe().toPromise();
+    const quotations$ = this.quotationService.getAllQuotations().toPromise();
+
+    Promise.all([salesReport$, projects$, leads$, assignedLeads$, quotations$]).then(([reportResponse, projects, leads, assignedLeads, quotesResponse]) => {
+      const report = (reportResponse as any);
+      const stats = report.summary || {};
+
+      const allMyLeads = [...(leads || []), ...(assignedLeads || [])];
+      // Filter quotes by current user
+      const quotes = (quotesResponse as any)?.data || [];
+      const myQuotes = (Array.isArray(quotes) ? quotes : [quotes]).filter((q: any) => q.createdBy === this.currentUserId);
+
       this.loading = false;
+      this.cdr.detectChanges();
+
+      // ✅ Process trend and update chart AFTER loading is false
+      this.processSalesReportData(stats, projects || []);
+      const completedProjects = (projects || []).filter(p => p.projectStatus?.toLowerCase() === 'completed');
+      this.processRevenueTrend(completedProjects, allMyLeads, myQuotes);
+      this.cdr.detectChanges();
+
+      // Final force update
+      setTimeout(() => {
+        if (this.revenueChart) {
+          console.log('📈 Final update for Sales Revenue Chart');
+          this.revenueChart.update();
+        }
+      }, 300);
     }).catch(error => {
       console.error('❌ Error loading sales reports:', error);
       this.loading = false;
+      this.initializeDefaultStats();
     });
   }
 
@@ -159,121 +234,148 @@ export class SalesReportsComponent implements OnInit {
     this.loadReportsData();
   }
 
-  private processSalesReportData(leads: any[], quotes: any[], projects: any[]): void {
-    let filteredLeads = [...leads];
-    let filteredQuotes = [...quotes];
-    let filteredProjects = [...projects];
+  private initializeDefaultStats(): void {
+    this.stats = [
+      { label: 'My Leads', value: 0, icon: 'fa-users', color: '#22d3ee', trend: 0 },
+      { label: 'Proposals', value: 0, icon: 'fa-file-invoice', color: '#818cf8', trend: 0 },
+      { label: 'Win Rate', value: '0%', icon: 'fa-handshake', color: '#a855f7', trend: 0 },
+      { label: 'Revenue', value: '₹0', icon: 'fa-rupee-sign', color: '#d4b347', trend: 0 }
+    ];
+  }
 
-    // Period filtering for Stat Cards
-    const now = new Date();
-    const todayISO = now.toISOString().split('T')[0];
-
-    if (this.analysisType === 'daily') {
-      filteredLeads = filteredLeads.filter(l => {
-        const date = l.createdAt ? new Date(l.createdAt).toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-      filteredQuotes = filteredQuotes.filter(q => {
-        const dateObj = q.createdAt ? new Date(q.createdAt) : (q.quoteDate ? new Date(q.quoteDate) : null);
-        const date = dateObj ? dateObj.toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-      filteredProjects = filteredProjects.filter(p => {
-        const dateObj = p.createdAt ? new Date(p.createdAt) : (p.startDate ? new Date(p.startDate) : null);
-        const date = dateObj ? dateObj.toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-    } else if (this.analysisType === 'monthly') {
-      // ✅ 30-DAY ROLLING WINDOW: Show records from the last 30 days
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(now.getDate() - 30);
-
-      filteredLeads = filteredLeads.filter(l => {
-        const date = l.createdAt ? new Date(l.createdAt) : null;
-        return date && date >= thirtyDaysAgo;
-      });
-      filteredQuotes = filteredQuotes.filter(q => {
-        const date = q.createdAt ? new Date(q.createdAt) : (q.date ? new Date(q.date) : null);
-        return date && date >= thirtyDaysAgo;
-      });
-      filteredProjects = filteredProjects.filter(p => {
-        const date = p.createdAt ? new Date(p.createdAt) : (p.startDate ? new Date(p.startDate) : null);
-        return date && date >= thirtyDaysAgo;
-      });
-    }
-
-    const completedProjects = filteredProjects.filter(p => p.projectStatus === 'completed');
-    const totalRevenue = completedProjects.reduce((sum, p) => sum + (p.projectValue || 0), 0);
-
-    const labelPrefix = this.analysisType === 'daily' ? 'Daily' : (this.analysisType === 'monthly' ? 'Monthly' : 'Total');
+  private processSalesReportData(reportStats: any, projects: Project[]): void {
+    // 1. Map backend summary to stats cards
+    // The service now returns the unwrapped summary object
+    const stats = reportStats || {};
 
     this.stats = [
       {
-        label: `${labelPrefix} Revenue`,
-        value: this.formatCurrency(totalRevenue),
-        icon: 'fa-rupee-sign',
-        color: '#22c55e',
-        subtitle: `${completedProjects.length} projects completed`
-      },
-      {
-        label: `${labelPrefix} Leads`,
-        value: filteredLeads.length,
+        label: 'My Leads',
+        value: stats.leadsCount ?? stats.totalDeals ?? stats.totalProjects ?? 0,
         icon: 'fa-users',
-        color: '#3b82f6',
-        subtitle: `${filteredLeads.filter(l => l.status === 'CS Executed').length} executed`
+        color: '#22d3ee',
+        subtitle: 'New opportunities',
+        trend: 10
       },
       {
-        label: `${labelPrefix} Quotations`,
-        value: filteredQuotes.length,
+        label: 'Proposals',
+        value: stats.totalQuotations ?? stats.quotationsSent ?? 0,
         icon: 'fa-file-invoice',
-        color: '#d4b347',
-        subtitle: `${filteredQuotes.filter(q => q.status === 'approved' || q.status === 'Approved').length} approved`
+        color: '#818cf8',
+        subtitle: `${stats.quotationsAccepted ?? 0} accepted`,
+        trend: 5
       },
       {
-        label: `${labelPrefix} Projects`,
-        value: filteredProjects.length,
-        icon: 'fa-project-diagram',
-        color: '#94a3b8',
-        subtitle: `${filteredProjects.filter(p => p.projectStatus === 'ongoing' || p.projectStatus === 'not_started' || p.projectStatus === 'in_progress').length} ongoing`
+        label: 'Win Rate',
+        value: `${stats.conversionRate ?? 0}%`,
+        icon: 'fa-handshake',
+        color: '#a855f7',
+        subtitle: `${stats.dealsWon ?? stats.projectsWon ?? 0} deals won`,
+        trend: 15
+      },
+      {
+        label: 'Revenue',
+        value: this.formatCurrency(stats.totalRevenue ?? 0),
+        icon: 'fa-rupee-sign',
+        color: '#d4b347',
+        subtitle: 'Realized business',
+        trend: 25
       }
     ];
 
-    // Chart logic (always shows 6+ months trend, but based on all my projects)
-    const trendProjects = projects.filter(p => p.projectStatus === 'completed');
-    this.processRevenueTrend(trendProjects, projects);
-
-    setTimeout(() => {
-      this.revenueChart?.update();
-    }, 100);
+    this.cdr.detectChanges();
   }
 
-  private processRevenueTrend(completedProjects: any[], allProjects: any[]): void {
-    const intervals = this.getTrendIntervals(allProjects);
-    const revenueByInterval = intervals.map(interval => {
+  private processRevenueTrend(completedProjects: any[], allLeads: any[], allQuotes: any[]): void {
+    const intervals = this.getTrendIntervals(completedProjects);
+
+    const revenueData = intervals.map(interval => {
       const intervalProjects = completedProjects.filter(p => {
         const date = new Date(p.createdAt || p.startDate);
+        if (isNaN(date.getTime())) return false;
         if (this.analysisType === 'daily') {
-          return date.getDate() === interval.day &&
-            date.getMonth() === interval.index &&
-            date.getFullYear() === interval.year;
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
         } else {
-          return date.getMonth() === interval.index &&
-            date.getFullYear() === interval.year;
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
         }
       });
       return intervalProjects.reduce((sum, p) => sum + (p.projectValue || 0), 0);
     });
 
+    const leadData = intervals.map(interval => {
+      return allLeads.filter(l => {
+        if (!l.createdAt) return false;
+        const date = new Date(l.createdAt);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
+    const quoteData = intervals.map(interval => {
+      return allQuotes.filter(q => {
+        if (!q.createdAt) return false;
+        const date = new Date(q.createdAt);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
+    const projectsWonData = intervals.map(interval => {
+      return completedProjects.filter(p => {
+        const date = new Date(p.createdAt || p.startDate);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
     this.revenueChartData = {
       labels: intervals.map(m => m.label),
-      datasets: [{
-        data: revenueByInterval.map(r => parseFloat((r / 100000).toFixed(1))),
-        label: this.analysisType === 'total' ? 'Total Revenue Growth (₹L)' : (this.analysisType === 'daily' ? 'Daily Revenue (₹L)' : 'Monthly Revenue (₹L)'),
-        backgroundColor: '#d4b347',
-        hoverBackgroundColor: '#c9a642',
-        borderRadius: 6,
-        borderWidth: 0
-      }]
+      datasets: [
+        {
+          data: revenueData.map(r => parseFloat((r / 100000).toFixed(1))),
+          label: 'Revenue (₹L)',
+          backgroundColor: '#d4b347',
+          hoverBackgroundColor: '#c9a642',
+          borderRadius: 6,
+          yAxisID: 'y'
+        },
+        {
+          data: leadData,
+          label: 'Leads',
+          backgroundColor: '#22d3ee',
+          hoverBackgroundColor: '#06b6d4',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        },
+        {
+          data: quoteData,
+          label: 'Quotations',
+          backgroundColor: '#818cf8',
+          hoverBackgroundColor: '#6366f1',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        },
+        {
+          data: projectsWonData,
+          label: 'Won Projects',
+          backgroundColor: '#22c55e',
+          hoverBackgroundColor: '#11998e',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        }
+      ]
     };
   }
 

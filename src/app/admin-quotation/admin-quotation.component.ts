@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { QuotationService, Quotation } from '../services/quotation.service';
 import { AuthService } from '../services/auth.service';
 import { EmployeeService, Employee } from '../../employee/employee.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'app-admin-quotation',
@@ -36,7 +37,8 @@ export class AdminQuotationComponent implements OnInit {
         private router: Router,
         private quotationService: QuotationService,
         private authService: AuthService,
-        private employeeService: EmployeeService
+        private employeeService: EmployeeService,
+        private toastr: ToastrService
     ) { }
 
     ngOnInit(): void {
@@ -225,7 +227,7 @@ export class AdminQuotationComponent implements OnInit {
     viewQuotation(id: string | undefined): void {
         try {
             if (!id) {
-                alert('Invalid quotation ID');
+                this.toastr.error('Invalid quotation ID');
                 return;
             }
 
@@ -248,18 +250,18 @@ export class AdminQuotationComponent implements OnInit {
                         try { localStorage.setItem('quotationPreview', JSON.stringify(previewData)); } catch (e) { }
                         this.router.navigate(['/admin/quotations/preview'], { state: { quotationData: previewData } });
                     } else {
-                        alert('Quotation data not found');
+                        this.toastr.error('Quotation data not found');
                     }
                 },
                 error: (err) => {
                     this.loading = false;
                     console.error('Error fetching quotation:', err);
-                    alert('Failed to load quotation. Please try again.');
+                    this.toastr.error('Failed to load quotation. Please try again.');
                 }
             });
         } catch (err) {
             console.error('Unexpected error in viewQuotation:', err);
-            alert('An unexpected error occurred. Check console for details.');
+            this.toastr.error('An unexpected error occurred. Check console for details.');
         }
     }
 
@@ -333,7 +335,7 @@ export class AdminQuotationComponent implements OnInit {
 
     deleteQuotation(id: string | undefined): void {
         if (!id) {
-            alert('Invalid quotation ID');
+            this.toastr.error('Invalid quotation ID');
             return;
         }
 
@@ -341,22 +343,24 @@ export class AdminQuotationComponent implements OnInit {
         if (confirm(`Are you sure you want to delete quotation ${quotation?.quoteNumber}?`)) {
             const quotationId = quotation?._id || quotation?.id;
             if (!quotationId) {
-                alert('Invalid quotation ID');
+                this.toastr.error('Invalid quotation ID');
                 return;
             }
 
             this.quotationService.deleteQuotation(quotationId).subscribe({
                 next: (response) => {
                     if (response.statusCode === 200) {
-                        alert('Quotation deleted successfully!');
+                        this.toastr.success('Quotation deleted successfully!');
                         this.loadQuotations();
                     }
                 },
                 error: (error) => {
                     console.error('Error deleting quotation:', error);
-                    alert('Failed to delete quotation. Please try again.');
+                    this.toastr.error('Failed to delete quotation. Please try again.');
                 }
             });
+        } else {
+            this.toastr.info('Deletion cancelled');
         }
     }
 
@@ -422,7 +426,7 @@ export class AdminQuotationComponent implements OnInit {
                 this.loading = false;
                 console.error('❌ Error updating status:', error);
                 console.error('❌ Error details:', error.error);
-                alert('Failed to update status. Please try again.');
+                this.toastr.error('Failed to update status. Please try again.');
             }
         });
     }

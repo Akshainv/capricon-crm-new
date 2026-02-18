@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var AOS: any;
 declare var Toastify: any;
@@ -24,8 +25,9 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private toastr: ToastrService
+  ) { }
 
   ngOnInit() {
     // Check if user is already logged in
@@ -85,7 +87,7 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.email, this.password).subscribe({
       next: (response) => {
         console.log('Login successful:', response);
-        
+
         // Handle "Remember Me" functionality
         if (this.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -96,7 +98,7 @@ export class LoginComponent implements OnInit {
         }
 
         this.isLoading = false;
-        
+
         // Show success toast
         this.showToast('Login successful! Redirecting...', 'success');
 
@@ -111,7 +113,7 @@ export class LoginComponent implements OnInit {
 
         // Handle different error scenarios with appropriate messages
         let errorMsg = 'An error occurred. Please try again.';
-        
+
         if (error.status === 401) {
           errorMsg = 'Invalid email or password. Please try again.';
         } else if (error.status === 403) {
@@ -123,7 +125,7 @@ export class LoginComponent implements OnInit {
         } else if (error.error?.message) {
           errorMsg = error.error.message;
         }
-        
+
         this.showToast(errorMsg, 'error');
       }
     });
@@ -132,10 +134,10 @@ export class LoginComponent implements OnInit {
   // Toastify notification method
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
     if (typeof Toastify !== 'undefined') {
-      const backgroundColor = 
+      const backgroundColor =
         type === 'success' ? 'linear-gradient(to right, #00b09b, #96c93d)' :
-        type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
-        'linear-gradient(to right, #667eea, #764ba2)';
+          type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
+            'linear-gradient(to right, #667eea, #764ba2)';
 
       Toastify({
         text: message,
@@ -151,6 +153,10 @@ export class LoginComponent implements OnInit {
           fontWeight: "500"
         }
       }).showToast();
+    } else {
+      if (type === 'success') this.toastr.success(message);
+      else if (type === 'error') this.toastr.error(message);
+      else this.toastr.info(message);
     }
   }
 }

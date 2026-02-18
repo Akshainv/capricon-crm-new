@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface ReportTemplate {
   id: string;
@@ -102,7 +103,8 @@ export class CustomReportBuilderComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -165,7 +167,7 @@ export class CustomReportBuilderComponent implements OnInit {
       // Simulate report generation
       setTimeout(() => {
         this.isGenerating = false;
-        alert('Report generated successfully!');
+        this.toastr.success('Report generated successfully!');
         // Navigate to export page or download
         this.router.navigate(['/reports/export'], {
           state: { reportData }
@@ -188,7 +190,7 @@ export class CustomReportBuilderComponent implements OnInit {
       };
 
       console.log('Saving template:', templateData);
-      alert('Report template saved successfully!');
+      this.toastr.success('Report template saved successfully!');
 
       // TODO: Save to localStorage or API
     }
@@ -196,7 +198,10 @@ export class CustomReportBuilderComponent implements OnInit {
 
   cancel(): void {
     if (confirm('Are you sure? Any unsaved changes will be lost.')) {
+      this.toastr.info('Changes discarded.');
       this.router.navigate(['/reports']);
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 

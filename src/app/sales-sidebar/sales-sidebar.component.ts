@@ -47,7 +47,6 @@ export class SalesSidebarComponent implements OnInit, OnDestroy {
       title: 'Lead Management',
       items: [
         { icon: 'fa-users', label: 'My Leads', route: '/leads' },
-        { icon: 'fab fa-facebook-f', label: 'Meta Leads', route: '/leads/meta' },
         { icon: 'fa-file-import', label: 'Import Leads', route: '/leads/import' }
       ]
     },

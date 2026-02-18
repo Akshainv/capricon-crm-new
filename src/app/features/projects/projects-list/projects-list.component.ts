@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { ProjectService, Project } from '../../../services/project.service';
 import { EmployeeService, Employee } from '../../../../employee/employee.service';
 
@@ -29,7 +30,8 @@ export class ProjectsListComponent implements OnInit {
     public router: Router,
     private route: ActivatedRoute,
     private projectService: ProjectService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -70,7 +72,7 @@ export class ProjectsListComponent implements OnInit {
       error: (error) => {
         console.error('Error loading projects:', error);
         this.loading = false;
-        alert('Failed to load projects. Please try again.');
+        this.toastr.error('Failed to load projects. Please try again.');
       }
     });
   }

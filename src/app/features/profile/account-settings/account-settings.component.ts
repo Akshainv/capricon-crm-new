@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-account-settings',
@@ -11,6 +12,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./account-settings.component.css']
 })
 export class AccountSettingsComponent {
+  constructor(private toastr: ToastrService) { }
   // General Settings only
   settings = {
     companyName: 'Inspite Tech',
@@ -33,6 +35,6 @@ export class AccountSettingsComponent {
 
   saveGeneralSettings() {
     console.log('General Settings Saved:', this.settings);
-    alert('General settings saved successfully!');
+    this.toastr.success('General settings saved successfully!');
   }
 }

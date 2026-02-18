@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface Deal {
   id: string;
@@ -55,7 +56,8 @@ export class ProjectConversionComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) {
     // Get deal data from navigation state
     const navigation = this.router.getCurrentNavigation();
@@ -75,7 +77,7 @@ export class ProjectConversionComponent implements OnInit {
 
     if (!this.dealData) {
       // If no deal data, redirect back to deals
-      alert('No deal selected. Please select a won deal to convert.');
+      this.toastr.warning('No deal selected. Please select a won deal to convert.');
       this.router.navigate(['/deals']);
     }
   }
@@ -173,7 +175,7 @@ export class ProjectConversionComponent implements OnInit {
       // Simulate API call
       setTimeout(() => {
         this.isSubmitting = false;
-        alert('Project created successfully!');
+        this.toastr.success('Project created successfully!');
         this.router.navigate(['/projects']);
       }, 1500);
 
@@ -181,7 +183,7 @@ export class ProjectConversionComponent implements OnInit {
       // this.projectService.createProject(projectData).subscribe(...)
     } else {
       if (this.selectedMembers.length === 0) {
-        alert('Please select at least one team member');
+        this.toastr.warning('Please select at least one team member');
       }
       this.markFormGroupTouched(this.conversionForm);
     }
@@ -197,6 +199,8 @@ export class ProjectConversionComponent implements OnInit {
   cancel(): void {
     if (confirm('Are you sure? Project conversion will be cancelled.')) {
       this.router.navigate(['/deals']);
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 

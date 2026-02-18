@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 
 interface Employee {
   id: string;
@@ -66,7 +67,8 @@ export class TaskDashboardComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -174,14 +176,14 @@ export class TaskDashboardComponent implements OnInit {
       // Simulate API call
       setTimeout(() => {
         this.loading = false;
-        alert(`Task assigned to ${taskData.assignedToName} successfully!\nDescription: ${taskData.description}`);
+        this.toastr.success(`Task assigned to ${taskData.assignedToName} successfully!`, `Description: ${taskData.description}`);
         this.resetForm();
       }, 1000);
     } else {
       if (!this.selectedEmployee) {
-        alert('Please select an employee to assign the task.');
+        this.toastr.warning('Please select an employee to assign the task.');
       } else {
-        alert('Please enter a task description.');
+        this.toastr.warning('Please enter a task description.');
       }
     }
   }
@@ -199,6 +201,8 @@ export class TaskDashboardComponent implements OnInit {
   cancel(): void {
     if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
       this.router.navigate(['/tasks']);
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 }

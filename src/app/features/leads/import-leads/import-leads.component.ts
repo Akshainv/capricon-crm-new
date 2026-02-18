@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface ImportedLead {
   name: string;
@@ -33,7 +34,10 @@ export class ImportLeadsComponent {
   validLeadsCount: number = 0;
   invalidLeadsCount: number = 0;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private toastr: ToastrService
+  ) { }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -74,14 +78,14 @@ export class ImportLeadsComponent {
     ];
 
     if (!allowedTypes.includes(file.type) && !file.name.endsWith('.csv')) {
-      alert('Please upload a CSV or Excel file');
+      this.toastr.error('Please upload a CSV or Excel file');
       return;
     }
 
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert('File size must be less than 5MB');
+      this.toastr.error('File size must be less than 5MB');
       return;
     }
 
@@ -106,7 +110,7 @@ export class ImportLeadsComponent {
     };
 
     reader.onerror = () => {
-      alert('Error reading file');
+      this.toastr.error('Error reading file');
       this.isProcessing = false;
     };
 
@@ -117,7 +121,7 @@ export class ImportLeadsComponent {
     const lines = content.split('\n').filter(line => line.trim());
 
     if (lines.length < 2) {
-      alert('CSV file must contain headers and at least one data row');
+      this.toastr.error('CSV file must contain headers and at least one data row');
       return;
     }
 
@@ -129,7 +133,7 @@ export class ImportLeadsComponent {
     const hasRequiredHeaders = requiredHeaders.every(h => headers.includes(h));
 
     if (!hasRequiredHeaders) {
-      alert(`CSV must contain these columns: ${requiredHeaders.join(', ')}`);
+      this.toastr.error(`CSV must contain these columns: ${requiredHeaders.join(', ')}`);
       return;
     }
 
@@ -198,7 +202,7 @@ export class ImportLeadsComponent {
 
   importLeads(): void {
     if (this.validLeadsCount === 0) {
-      alert('No valid leads to import');
+      this.toastr.warning('No valid leads to import');
       return;
     }
 
@@ -208,7 +212,7 @@ export class ImportLeadsComponent {
 
     // Simulate API call
     setTimeout(() => {
-      alert(`Successfully imported ${this.validLeadsCount} lead(s)!`);
+      this.toastr.success(`Successfully imported ${this.validLeadsCount} lead(s)!`);
       const redirect = this.router.url.startsWith('/admin') ? '/admin/leads' : '/leads';
       this.router.navigate([redirect]);
     }, 1000);

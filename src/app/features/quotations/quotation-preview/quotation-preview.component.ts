@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -117,7 +118,8 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
     private pdfService: PdfGenerationService,
     private quotationService: QuotationService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastr: ToastrService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -190,7 +192,7 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
       link.click();
     } catch (error) {
       console.error('Error downloading official PDF:', error);
-      alert('Failed to generate official PDF template. Please ensure the template exists in assets/templates/');
+      this.toastr.error('Failed to generate official PDF template. Please ensure the template exists in assets/templates/');
     }
   }
 
@@ -270,7 +272,7 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
       }
     }
 
-    alert('No quotation data found');
+    this.toastr.warning('No quotation data found');
     this.close();
   }
 
@@ -548,8 +550,8 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
     if (!this.quotationData) return;
     const email = this.quotationData.customer?.email;
 
-    if (!email) {
-      this.showToast('Customer email is missing.', 'error');
+    if (!email || !this.isValidEmailFormat(email)) {
+      this.showToast('Invalid or missing customer email address.', 'error');
       return;
     }
 
@@ -625,8 +627,15 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
     } else {
       if (confirm(`Send quotation to ${email}?`)) {
         this.proceedSendToClient();
+      } else {
+        this.toastr.info('Sending cancelled');
       }
     }
+  }
+
+  private isValidEmailFormat(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
   private async proceedSendToClient(): Promise<void> {
@@ -641,8 +650,14 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoadingPdf = true; // Reusing loading state
     const email = this.quotationData.customer.email;
+
+    if (!email || !this.isValidEmailFormat(email)) {
+      this.showToast('Invalid customer email address.', 'error');
+      return;
+    }
+
+    this.isLoadingPdf = true; // Reusing loading state
 
     try {
       // 📸 Capture all relevant pages to ensure exact sync with preview
@@ -666,7 +681,8 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.isLoadingPdf = false;
           console.error('Error sending email:', error);
-          this.showToast('Failed to send email. Please try again.', 'error');
+          const errorMsg = error.error?.message || 'Failed to send email. Please try again.';
+          this.showToast(errorMsg, 'error');
         }
       });
     } catch (error) {
@@ -692,7 +708,7 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
         style: { background: backgroundColor, borderRadius: "8px" }
       }).showToast();
     } else {
-      alert(message);
+      this.toastr.info(message);
     }
   }
 }

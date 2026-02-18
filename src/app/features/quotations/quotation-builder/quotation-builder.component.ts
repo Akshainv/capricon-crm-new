@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface ElevatorType {
   id: string;
@@ -159,7 +160,8 @@ export class QuotationBuilderComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -350,7 +352,7 @@ export class QuotationBuilderComponent implements OnInit {
       const validUntil = new Date(this.quotationForm.get('validUntil')?.value);
 
       if (validUntil <= quoteDate) {
-        alert('Valid Until date must be after Quote Date');
+        this.toastr.warning('Valid Until date must be after Quote Date');
         return;
       }
     }

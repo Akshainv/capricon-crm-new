@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { LeadsService, Lead } from '../../../lead.service';
 import { EmployeeService, Employee } from '../../../../employee/employee.service';
 import { AuthService } from '../../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface LeadDisplay {
   id: string;
@@ -44,7 +45,8 @@ export class LeadAssignmentComponent implements OnInit {
     private router: Router,
     private leadsService: LeadsService,
     private employeeService: EmployeeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -99,7 +101,7 @@ export class LeadAssignmentComponent implements OnInit {
           next: (allLeads: Lead[]) => {
             this.salesPersons = employees.map(emp => {
               const activeLeadsCount = allLeads.filter(
-                lead => lead.assignedTo === emp._id &&
+                lead => this.compareIds(lead.assignedTo, emp._id) &&
                   lead.status !== 'CS Executed'
               ).length;
 
@@ -159,15 +161,14 @@ export class LeadAssignmentComponent implements OnInit {
     }
   }
 
-  // ✅ CRITICAL FIX: Add delay to allow backend to complete updates
   onSubmit(): void {
     if (this.assignmentForm.invalid) {
-      alert('Please select a sales person');
+      this.toastr.warning('Please select a sales person');
       return;
     }
 
     if (this.selectedCount === 0) {
-      alert('Please select at least one lead to assign');
+      this.toastr.warning('Please select at least one lead to assign');
       return;
     }
 
@@ -193,25 +194,16 @@ export class LeadAssignmentComponent implements OnInit {
         console.log('Frontend: Assignment response received:', response);
         console.log('==============================================');
 
-        // ✅ CRITICAL FIX: Add delay to ensure backend MongoDB writes are persisted
-        // Wait 800ms before triggering refresh to allow backend updates to complete
         setTimeout(() => {
           console.log('Frontend: Triggering refresh after delay...');
-
-          // Trigger real-time update for all subscribed components
           this.leadsService.leadsUpdated.next();
-
           this.isLoading = false;
-
-          alert(`Successfully assigned ${this.selectedCount} lead(s) to ${this.getSelectedSalesPersonName()}`);
-
-          // Reset form and reload unassigned leads
+          this.toastr.success(`Successfully assigned ${this.selectedCount} lead(s) to ${this.getSelectedSalesPersonName()}`);
           this.assignmentForm.reset();
           this.selectAll = false;
           this.loadUnassignedLeads();
-
           console.log('Frontend: Refresh completed');
-        }, 800); // 800ms delay to ensure backend persistence
+        }, 800);
       },
       error: (error) => {
         console.error('==============================================');
@@ -219,7 +211,7 @@ export class LeadAssignmentComponent implements OnInit {
         console.error('==============================================');
         this.isLoading = false;
         this.errorMessage = 'Failed to assign leads. Please try again.';
-        alert('Failed to assign leads: ' + (error.message || 'Unknown error'));
+        this.toastr.error('Failed to assign leads: ' + (error.message || 'Unknown error'));
       }
     });
   }
@@ -240,12 +232,12 @@ export class LeadAssignmentComponent implements OnInit {
 
   autoAssign(): void {
     if (this.selectedCount === 0) {
-      alert('Please select at least one lead first');
+      this.toastr.warning('Please select at least one lead first');
       return;
     }
 
     if (this.salesPersons.length === 0) {
-      alert('No sales team members available');
+      this.toastr.warning('No sales team members available');
       return;
     }
 
@@ -257,6 +249,14 @@ export class LeadAssignmentComponent implements OnInit {
       salesPerson: leastBusySalesPerson.id
     });
 
-    alert(`Auto-assigned to ${leastBusySalesPerson.name} (${leastBusySalesPerson.activeLeads} active leads)`);
+    this.toastr.info(`Auto-assigned to ${leastBusySalesPerson.name} (${leastBusySalesPerson.activeLeads} active leads)`);
+  }
+
+  private compareIds(id1: any, id2: any): boolean {
+    if (!id1 || !id2) return false;
+    const cid1 = typeof id1 === 'object' ? id1._id : id1;
+    const cid2 = typeof id2 === 'object' ? id2._id : id2;
+    if (!cid1 || !cid2) return false;
+    return String(cid1).toLowerCase().trim() === String(cid2).toLowerCase().trim();
   }
 }

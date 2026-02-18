@@ -37,7 +37,7 @@
     <p>Loading performance data...</p>
   </div>
 
-  <div *ngIf="!loading" class="dashboard-content">
+  <div [hidden]="loading" class="dashboard-content">
     <!-- Stat Cards Grid -->
     <div class="stats-grid">
       <div *ngFor="let stat of stats" class="stat-card-glass"
@@ -66,11 +66,8 @@
       <div class="chart-card">
         <div class="chart-header">
           <div class="chart-title">
-            <h3>Revenue Growth Pulse</h3>
-            <p>Visualizing your closed business value over time (₹ Lakhs)</p>
-          </div>
-          <div class="chart-legend">
-            <span class="legend-item"><span class="dot gold"></span> Revenue</span>
+            <h3>Performance Pulse</h3>
+            <p>Comprehensive analysis of leads, quotations, won projects, and revenue metrics</p>
           </div>
         </div>
         <div class="chart-container">

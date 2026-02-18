@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface Task {
   id: string;
@@ -129,7 +130,8 @@ export class SalesMyTasksComponent implements OnInit {
   ];
 
   constructor(
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -192,6 +194,7 @@ export class SalesMyTasksComponent implements OnInit {
     if (task && confirm(`Are you sure you want to delete the task "${task.title}"?`)) {
       this.tasks = this.tasks.filter(t => t.id !== taskId);
       this.filterTasks();
+      this.toastr.success('Task deleted successfully');
       console.log(`Task ${taskId} deleted successfully`);
     }
   }

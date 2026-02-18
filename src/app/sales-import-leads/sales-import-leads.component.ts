@@ -6,6 +6,7 @@ import { LeadsService, CreateLead } from '../lead.service';
 import { AuthService } from '../services/auth.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
 import * as XLSX from 'xlsx';
 
 declare var Toastify: any;  // For Toastify alerts
@@ -60,7 +61,8 @@ export class SalesImportLeadsComponent implements OnInit {
   constructor(
     private router: Router,
     private leadsService: LeadsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -305,7 +307,7 @@ export class SalesImportLeadsComponent implements OnInit {
       if (confirm(`Ready to import ${this.fullData.length} lead(s)? This will create new leads in the system.`)) {
         this.proceedWithImport();
       } else {
-        this.showToast('Import cancelled', 'info');
+        this.toastr.info('Import cancelled');
       }
     }
   }
@@ -447,7 +449,9 @@ export class SalesImportLeadsComponent implements OnInit {
         }
       }).showToast();
     } else {
-      alert(message);
+      if (type === 'success') this.toastr.success(message);
+      else if (type === 'error') this.toastr.error(message);
+      else this.toastr.info(message);
     }
   }
 }

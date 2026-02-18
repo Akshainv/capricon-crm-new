@@ -40,10 +40,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
       ]
     },
     {
+      title: 'Reports',
+      items: [
+        { icon: 'fa-chart-bar', label: 'Report Dashboard', route: '/admin/reports' }
+      ]
+    },
+    {
       title: 'Sales',
       items: [
         { icon: 'fa-users', label: 'Leads', route: '/admin/leads' },
         { icon: 'fa-user-plus', label: 'Assign Leads', route: '/admin/leads/assign' },
+        { icon: 'fab fa-facebook-f', label: 'Meta Leads', route: '/admin/leads/meta' },
         { icon: 'fa-file-invoice', label: 'Quotation', route: '/admin/admin-quotations' },
         { icon: 'fa-handshake', label: 'Deals', route: '/admin/deals' }
       ]
@@ -52,12 +59,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       title: 'Management',
       items: [
         { icon: 'fa-project-diagram', label: 'Projects', route: '/admin/projects' }
-      ]
-    },
-    {
-      title: 'Reports',
-      items: [
-        { icon: 'fa-chart-bar', label: 'Report Dashboard', route: '/admin/reports' }
       ]
     }
   ];

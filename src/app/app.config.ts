@@ -4,14 +4,17 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }), 
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(),
     provideAnimations(),
+    provideCharts(withDefaultRegisterables()),
     provideToastr({
       timeOut: 3000,
       positionClass: 'toast-top-right',

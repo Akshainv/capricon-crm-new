@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface StageHistory {
   stage: string;
@@ -169,7 +170,8 @@ export class SalesDealDetailsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -210,14 +212,16 @@ export class SalesDealDetailsComponent implements OnInit {
 
   downloadDocument(doc: Document): void {
     console.log('Downloading:', doc.name);
-    alert(`Downloading ${doc.name}...`);
+    this.toastr.info(`Downloading ${doc.name}...`);
   }
 
   updateStage(newStage: string): void {
     const confirmUpdate = confirm(`Move deal to ${newStage} stage?`);
     if (confirmUpdate) {
       this.dealDetails.status = newStage;
-      alert('Deal stage updated successfully!');
+      this.toastr.success('Deal stage updated successfully!');
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 
@@ -229,6 +233,8 @@ export class SalesDealDetailsComponent implements OnInit {
           deal: this.dealDetails
         }
       });
+    } else {
+      this.toastr.info('Action cancelled');
     }
   }
 

@@ -7,6 +7,7 @@ import { ProjectService, Project as BackendProject } from '../services/project.s
 import { EmployeeService, Employee } from '../../employee/employee.service';
 import { AuthService } from '../services/auth.service';
 import { interval, Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 interface Project {
   id: string;
@@ -55,7 +56,8 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
     public router: Router,
     private projectService: ProjectService,
     private employeeService: EmployeeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -117,7 +119,7 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
         console.error('Error loading projects:', error);
         if (!silent) {
           this.loading = false;
-          alert('Failed to load projects. Please try again.');
+          this.toastr.error('Failed to load projects. Please try again.');
         }
       }
     });

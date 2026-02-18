@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { QuotationService, CreateQuotationPayload } from '../services/quotation.service';
 import { LeadsService, Lead as LeadFromApi } from '../lead.service';
+import { ToastrService } from 'ngx-toastr';
 
 declare var Toastify: any;
 
@@ -137,7 +138,8 @@ export class SalesCreateQuotationComponent implements OnInit {
   constructor(
     private router: Router,
     private quotationService: QuotationService,
-    private leadsService: LeadsService
+    private leadsService: LeadsService,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
@@ -568,6 +570,8 @@ export class SalesCreateQuotationComponent implements OnInit {
     } else {
       if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
         this.router.navigate(['/quotations']);
+      } else {
+        this.toastr.info('Action cancelled');
       }
     }
   }
@@ -678,7 +682,7 @@ export class SalesCreateQuotationComponent implements OnInit {
         }
       }).showToast();
     } else {
-      alert(message);
+      this.toastr.info(message);
     }
   }
 }

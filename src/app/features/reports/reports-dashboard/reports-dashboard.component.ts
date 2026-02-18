@@ -1,47 +1,20 @@
 // src/app/features/reports/reports-dashboard/reports-dashboard.component.ts - REDESIGNED
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
-import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  BarController,
-  ArcElement,
-  PieController,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+import { Chart, ChartConfiguration, ChartData, ChartType, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement } from 'chart.js';
+import 'chart.js/auto';
 import { ReportService } from '../../../services/report.service';
 import { ProjectService, Project } from '../../../services/project.service';
 import { LeadsService, Lead } from '../../../lead.service';
 import { QuotationService, Quotation } from '../../../services/quotation.service';
 import { EmployeeService, Employee } from '../../../../employee/employee.service';
 
-Chart.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  BarController,
-  ArcElement,
-  PieController,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement);
+
+// Chart.js components are registered globally via provideCharts in app.config.ts
 
 interface StatCard {
   label: string;
@@ -67,7 +40,21 @@ interface EmployeeDailyStats {
   styleUrls: ['./reports-dashboard.component.css']
 })
 export class ReportsDashboardComponent implements OnInit {
-  @ViewChild('revenueChart') revenueChart?: BaseChartDirective;
+  private _revenueChart?: BaseChartDirective;
+  @ViewChild(BaseChartDirective) set revenueChartDirective(content: BaseChartDirective) {
+    if (content) {
+      this._revenueChart = content;
+      console.log('📈 Admin Chart Directive Captured');
+      // Trigger a final update when the directive is first available
+      setTimeout(() => this._revenueChart?.update(), 100);
+    }
+  }
+
+  get revenueChart(): BaseChartDirective | undefined {
+    return this._revenueChart;
+  }
+
+  chartReady: boolean = false;
 
   loading: boolean = false;
 
@@ -86,14 +73,44 @@ export class ReportsDashboardComponent implements OnInit {
   // Performance Trend Chart Data
   public revenueChartData: ChartData<'bar'> = {
     labels: [],
-    datasets: [{
-      data: [],
-      label: 'Monthly Revenue (₹L)',
-      backgroundColor: '#d4b347',
-      hoverBackgroundColor: '#c9a642',
-      borderRadius: 6,
-      borderWidth: 0,
-    }]
+    datasets: [
+      {
+        data: [],
+        label: 'Revenue (₹L)',
+        backgroundColor: '#d4b347',
+        hoverBackgroundColor: '#c9a642',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y'
+      },
+      {
+        data: [],
+        label: 'Leads',
+        backgroundColor: '#22d3ee',
+        hoverBackgroundColor: '#06b6d4',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      },
+      {
+        data: [],
+        label: 'Quotations',
+        backgroundColor: '#818cf8',
+        hoverBackgroundColor: '#6366f1',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      },
+      {
+        data: [],
+        label: 'Won Projects',
+        backgroundColor: '#22c55e',
+        hoverBackgroundColor: '#16a34a',
+        borderRadius: 6,
+        borderWidth: 0,
+        yAxisID: 'y1'
+      }
+    ]
   };
 
   public revenueChartOptions: ChartConfiguration['options'] = {
@@ -109,16 +126,13 @@ export class ReportsDashboardComponent implements OnInit {
         }
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#d4b347',
         bodyColor: '#fff',
         borderColor: '#d4b347',
         borderWidth: 1,
         padding: 12,
-        displayColors: false,
-        callbacks: {
-          label: (context) => ` Revenue: ₹${context.parsed.y} L`
-        }
+        displayColors: true
       }
     },
     scales: {
@@ -127,9 +141,22 @@ export class ReportsDashboardComponent implements OnInit {
         ticks: { color: this.getChartTextColor(), font: { size: 11 } }
       },
       y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
         grid: { color: this.getChartGridColor(), drawTicks: false },
         ticks: { color: this.getChartTextColor(), padding: 10 },
-        beginAtZero: true
+        beginAtZero: true,
+        title: { display: true, text: 'Revenue (₹L)', color: '#d4b347' }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        grid: { drawOnChartArea: false }, // Only show grid lines for the main Y axis
+        ticks: { color: this.getChartTextColor(), padding: 10 },
+        beginAtZero: true,
+        title: { display: true, text: 'Counts', color: '#818cf8' }
       }
     }
   };
@@ -142,7 +169,8 @@ export class ReportsDashboardComponent implements OnInit {
     private leadsService: LeadsService,
     private quotationService: QuotationService,
     private employeeService: EmployeeService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -188,127 +216,159 @@ export class ReportsDashboardComponent implements OnInit {
 
   loadReportData(): void {
     this.loading = true;
+    const now = new Date();
+    let startDate: string | undefined;
+    let endDate: string | undefined;
 
-    // Concurrently fetch data from all relevant services with type safety
+    if (this.analysisType === 'daily') {
+      startDate = now.toISOString().split('T')[0];
+      // ✅ FIX: Include the whole day by setting end date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(now.getDate() + 1);
+      endDate = tomorrow.toISOString().split('T')[0];
+    } else if (this.analysisType === 'monthly') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      startDate = thirtyDaysAgo.toISOString().split('T')[0];
+    }
+
+    const filters: any = { startDate, endDate };
+    if (this.selectedEmployeeId !== 'all') {
+      filters.employeeId = this.selectedEmployeeId;
+    }
+
+    // Fetch aggregated data from backend AND raw data for the employee list/trend
+    const summary$ = this.reportService.getAdminReports(filters).toPromise();
     const leads$ = this.leadsService.getAllLeads().toPromise();
-    const quotes$ = this.quotationService.getAllQuotations().toPromise();
     const projects$ = this.projectService.getAllProjects().toPromise();
+    const quotations$ = this.quotationService.getAllQuotations().toPromise();
 
-    Promise.all([leads$, quotes$, projects$]).then(([leads, quotationResponse, projects]) => {
-      // Extract quotations array from response object
-      const quotations = (quotationResponse as any)?.data;
-      const quotationArray = Array.isArray(quotations) ? quotations : (quotations ? [quotations] : []);
+    // ✅ FIX: Use allSettled so the dashboard doesn't fail completely if one service is down
+    Promise.allSettled([summary$, leads$, projects$, quotations$]).then((results) => {
+      const summaryResponse = results[0].status === 'fulfilled' ? results[0].value : null;
+      const leads = results[1].status === 'fulfilled' ? results[1].value : [];
+      const projects = results[2].status === 'fulfilled' ? results[2].value : [];
+      const quotesResponse = results[3].status === 'fulfilled' ? results[3].value : null;
 
-      this.processAggregatedData(leads || [], quotationArray, projects || []);
+      const summary = (summaryResponse as any);
+      const quotes = (quotesResponse as any)?.data || [];
+      const quotesArray = Array.isArray(quotes) ? quotes : [quotes];
+
       this.loading = false;
+      this.cdr.detectChanges();
+
+      // ✅ Process data after loading is false and DOM is updated
+      setTimeout(() => {
+        const safeLeads = leads || [];
+        const safeProjects = projects || [];
+        const safeQuotes = quotesArray || [];
+
+        const filteredLeads = this.selectedEmployeeId === 'all' ? safeLeads : safeLeads.filter(l => this.compareIds(l.assignedTo, this.selectedEmployeeId) || this.compareIds(l.createdBy, this.selectedEmployeeId));
+        const filteredQuotes = this.selectedEmployeeId === 'all' ? safeQuotes : safeQuotes.filter((q: any) => this.compareIds(q.createdBy, this.selectedEmployeeId));
+        const filteredProjects = this.selectedEmployeeId === 'all' ? safeProjects : safeProjects.filter(p => this.compareIds(p.assignedTo, this.selectedEmployeeId) || this.compareIds(p.createdBy, this.selectedEmployeeId));
+
+        this.processAggregatedData(summary, safeLeads, safeProjects, safeQuotes);
+        this.updateTrendChart(filteredProjects.filter(p => p.projectStatus?.toLowerCase() === 'completed'), filteredLeads, filteredQuotes);
+        this.cdr.detectChanges();
+
+        // Final force update
+        setTimeout(() => {
+          if (this.revenueChart) {
+            console.log('📈 Final update for Admin Revenue Chart');
+            this.revenueChart.update();
+          }
+        }, 300);
+      }, 100);
     }).catch(error => {
       console.error('❌ Error loading dashboard data:', error);
       this.loading = false;
+      // Initialize with empty cards on error to avoid blank screen
+      this.statCards = this.getDefaultStatCards();
     });
   }
 
-  private processAggregatedData(leads: Lead[], quotations: Quotation[], projects: Project[]): void {
-    // 1. Filter by Employee if selected
-    let filteredLeads = leads;
-    let filteredQuotes = quotations;
-    let filteredProjects = projects;
+  private getDefaultStatCards(): StatCard[] {
+    return [
+      { label: 'Leads', value: 0, subtitle: 'No data', icon: 'fa-users', color: '#22d3ee' },
+      { label: 'Proposals', value: 0, subtitle: 'No data', icon: 'fa-file-invoice', color: '#818cf8' },
+      { label: 'Win Rate', value: '0%', subtitle: 'No deals', icon: 'fa-project-diagram', color: '#a855f7' },
+      { label: 'Revenue', value: '₹0', subtitle: 'No revenue', icon: 'fa-rupee-sign', color: '#d4b347' }
+    ];
+  }
 
-    if (this.selectedEmployeeId !== 'all') {
-      filteredLeads = leads.filter(l => l.assignedTo === this.selectedEmployeeId);
-      filteredQuotes = quotations.filter(q => q.createdBy === this.selectedEmployeeId);
-      filteredProjects = projects.filter(p => p.assignedTo === this.selectedEmployeeId || p.createdBy === this.selectedEmployeeId);
-    }
+  private processAggregatedData(summary: any, leads: Lead[], projects: Project[], quotations: Quotation[]): void {
+    // 1. Update Stat Cards from Backend Summary
+    // The service now returns the unwrapped data object
+    const stats = summary || {};
+    // Calculate fallback counts from raw data
+    // Choose the best value for leads
+    // ✅ Use backend leadsCount if available, otherwise fallback
+    let leadsValue = stats.leadsCount ?? stats.totalLeads ?? stats.count ?? 0;
 
-    // 2. Separate data for Stat Cards (potentially period-filtered) and Trend Chart (always 6-month trend)
-    const trendProjects = filteredProjects; // Trend chart data should only be filtered by employee
-
-    // Apply period filtering only for Stat Cards if "Daily" or "Monthly" selected
+    // Process "Today" leads with robust local date comparison
     const now = new Date();
-    const todayISO = now.toISOString().split('T')[0];
+    const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+    const todayLeadsCount = leads.filter(l => {
+      if (!l.createdAt) return false;
+      const leadDate = new Date(l.createdAt).toLocaleDateString('en-CA');
+      return leadDate === todayStr;
+    }).length;
 
-    if (this.analysisType === 'daily') {
-      filteredLeads = filteredLeads.filter(l => {
-        const date = l.createdAt ? new Date(l.createdAt).toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-      filteredQuotes = filteredQuotes.filter(q => {
-        const dateObj = q.createdAt ? new Date(q.createdAt) : ((q as any).quoteDate ? new Date((q as any).quoteDate) : null);
-        const date = dateObj ? dateObj.toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-      filteredProjects = filteredProjects.filter(p => {
-        const dateObj = p.createdAt ? new Date(p.createdAt) : (p.startDate ? new Date(p.startDate) : null);
-        const date = dateObj ? dateObj.toISOString().split('T')[0] : null;
-        return date === todayISO;
-      });
-    } else if (this.analysisType === 'monthly') {
-      // ✅ 30-DAY ROLLING WINDOW: Show records from the last 30 days
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(now.getDate() - 30);
-
-      filteredLeads = filteredLeads.filter(l => {
-        const date = l.createdAt ? new Date(l.createdAt) : null;
-        return date && date >= thirtyDaysAgo;
-      });
-      filteredQuotes = filteredQuotes.filter(q => {
-        const date = q.createdAt ? new Date(q.createdAt) : ((q as any).quoteDate ? new Date((q as any).quoteDate) : null);
-        return date && date >= thirtyDaysAgo;
-      });
-      filteredProjects = filteredProjects.filter(p => {
-        const date = p.createdAt ? new Date(p.createdAt) : (p.startDate ? new Date(p.startDate) : null);
-        return date && date >= thirtyDaysAgo;
-      });
+    if (this.analysisType === 'daily' && leadsValue === 0) {
+      leadsValue = todayLeadsCount;
     }
 
-    // 3. Calculate Metrics for Stat Cards
-    const totalLeads = filteredLeads.length;
-    const totalQuotes = filteredQuotes.length;
-    const totalProjects = filteredProjects.length;
-
-    // ✅ FIX: Use lowercase 'approved' to match schema
-    const approvedQuotes = filteredQuotes.filter(q => q.status === 'approved' || q.status === 'Approved');
-    const currentCompletedProjects = filteredProjects.filter(p => p.projectStatus === 'completed');
-    const totalRevenue = currentCompletedProjects.reduce((sum, p) => sum + (p.projectValue || 0), 0);
-
-    const winRate = totalProjects > 0 ? Math.round((currentCompletedProjects.length / totalProjects) * 100) : 0;
-
-    // 4. Update Stat Cards
     this.statCards = [
       {
         label: this.analysisType === 'daily' ? 'Leads Today' : 'Lead Flow',
-        value: totalLeads,
-        subtitle: this.analysisType === 'daily' ? 'New leads today' : (this.analysisType === 'monthly' ? 'New leads this month' : 'Lifetime leads'),
+        value: leadsValue,
+        subtitle: this.analysisType === 'daily' ? 'New leads today' : (this.analysisType === 'monthly' ? 'Last 30 days' : 'Lifetime'),
         icon: 'fa-users',
         color: '#22d3ee'
       },
       {
         label: this.analysisType === 'daily' ? 'Quotes Today' : 'Proposals',
-        value: totalQuotes,
-        subtitle: `${approvedQuotes.length} approved`,
+        value: stats.totalQuotations ?? stats.quotationsSent ?? stats.quotationsAccepted ?? 0,
+        subtitle: `${stats.quotationsAccepted ?? 0} accepted`,
         icon: 'fa-file-invoice',
         color: '#818cf8'
       },
       {
         label: 'Project Win Rate',
-        value: `${winRate}%`,
-        subtitle: `${currentCompletedProjects.length} projects won`,
+        value: `${stats.conversionRate ?? 0}%`,
+        subtitle: `${stats.projectsWon ?? stats.dealsWon ?? 0} deals won`,
         icon: 'fa-project-diagram',
         color: '#a855f7'
       },
       {
         label: this.analysisType === 'daily' ? 'Daily Revenue' : 'Realized Revenue',
-        value: this.formatCurrency(totalRevenue),
+        value: this.formatCurrency(stats.totalRevenue ?? 0),
         subtitle: 'From completed deals',
         icon: 'fa-rupee-sign',
         color: '#d4b347'
       }
     ];
 
-    // 5. Update Trend Chart using all employee projects (for 6-month history)
-    const trendCompletedProjects = trendProjects.filter(p => p.projectStatus === 'completed');
+    // Force chart update after data processing
+    setTimeout(() => {
+      this.updateChartColors(); // This also calls this.revenueChart?.update()
+    }, 300);
+
+    // Force chart update after state changes
+    setTimeout(() => {
+      this.updateChartColors();
+    }, 200);
+
+
+    // 2. Filter raw projects by employee for Trend Chart
+    let trendProjects = projects;
+    if (this.selectedEmployeeId !== 'all') {
+      trendProjects = projects.filter(p => p.assignedTo === this.selectedEmployeeId || p.createdBy === this.selectedEmployeeId);
+    }
+    const trendCompletedProjects = trendProjects.filter(p => p.projectStatus?.toLowerCase() === 'completed');
     this.updateTrendChart(trendCompletedProjects);
 
-    // 6. Calculate Employee Daily Performance if "Daily" is selected
+    // 3. Calculate Employee Daily Performance if "Daily" is selected
     if (this.analysisType === 'daily') {
       this.calculateEmployeeDailyStats(leads, quotations, projects);
     } else {
@@ -318,18 +378,27 @@ export class ReportsDashboardComponent implements OnInit {
 
   private calculateEmployeeDailyStats(leads: Lead[], quotations: Quotation[], projects: Project[]): void {
     const now = new Date();
-    const todayISO = now.toISOString().split('T')[0];
+    const todayStr = now.toLocaleDateString('en-CA'); // Local YYYY-MM-DD
 
-    const todayLeads = leads.filter(l => l.createdAt && new Date(l.createdAt).toISOString().split('T')[0] === todayISO);
-    const todayQuotes = quotations.filter(q => q.createdAt && new Date(q.createdAt).toISOString().split('T')[0] === todayISO);
-    const todayProjects = projects.filter(p => p.createdAt && new Date(p.createdAt).toISOString().split('T')[0] === todayISO && p.projectStatus === 'completed');
+    const todayLeads = leads.filter(l => {
+      if (!l.createdAt) return false;
+      return new Date(l.createdAt).toLocaleDateString('en-CA') === todayStr;
+    });
+    const todayQuotes = quotations.filter(q => {
+      if (!q.createdAt) return false;
+      return new Date(q.createdAt).toLocaleDateString('en-CA') === todayStr;
+    });
+    const todayProjects = projects.filter(p => {
+      if (!p.createdAt) return false;
+      return new Date(p.createdAt).toLocaleDateString('en-CA') === todayStr && p.projectStatus === 'completed';
+    });
 
     this.employeeDailyStats = this.employees.map(emp => {
-      // ✅ FIX: Credit to either assignedTo OR createdBy if they are the same person (sales)
-      const empLeads = todayLeads.filter(l => l.assignedTo === emp._id || l.createdBy === emp._id).length;
-      const empQuotes = todayQuotes.filter(q => q.createdBy === emp._id || (q as any).userId === emp._id).length;
+      // ✅ Use robust comparison for IDs that might be objects or strings
+      const empLeads = todayLeads.filter(l => this.compareIds(l.assignedTo, emp._id) || this.compareIds(l.createdBy, emp._id)).length;
+      const empQuotes = todayQuotes.filter(q => this.compareIds(q.createdBy, emp._id) || this.compareIds((q as any).userId, emp._id)).length;
       const empRevenue = todayProjects
-        .filter(p => p.assignedTo === emp._id || p.createdBy === emp._id)
+        .filter(p => this.compareIds(p.assignedTo, emp._id) || this.compareIds(p.createdBy, emp._id))
         .reduce((sum, p) => sum + (p.projectValue || 0), 0);
 
       return {
@@ -343,38 +412,107 @@ export class ReportsDashboardComponent implements OnInit {
       .sort((a, b) => b.revenue - a.revenue || b.leads - a.leads);
   }
 
-  private updateTrendChart(completedProjects: Project[]): void {
+  private updateTrendChart(completedProjects: Project[], allLeads: Lead[] = [], allQuotes: Quotation[] = []): void {
     const intervals = this.getTrendIntervals(completedProjects);
-    const revenueByInterval = intervals.map(interval => {
+
+    // Calculate Data for each interval
+    const revenueData = intervals.map(interval => {
       const intervalProjects = completedProjects.filter(p => {
-        const date = new Date(p.createdAt || p.updatedAt!);
+        const date = new Date(p.createdAt || p.updatedAt! || p.startDate);
+        if (isNaN(date.getTime())) return false;
         if (this.analysisType === 'daily') {
-          return date.getDate() === interval.day &&
-            date.getMonth() === interval.index &&
-            date.getFullYear() === interval.year;
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
         } else {
-          return date.getMonth() === interval.index &&
-            date.getFullYear() === interval.year;
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
         }
       });
       return intervalProjects.reduce((sum, p) => sum + (p.projectValue || 0), 0);
     });
 
+    const leadData = intervals.map(interval => {
+      return allLeads.filter(l => {
+        if (!l.createdAt) return false;
+        const date = new Date(l.createdAt);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
+    const quoteData = intervals.map(interval => {
+      return allQuotes.filter(q => {
+        if (!q.createdAt) return false;
+        const date = new Date(q.createdAt);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
+    const projectsWonData = intervals.map(interval => {
+      return completedProjects.filter(p => {
+        const date = new Date(p.createdAt || p.updatedAt! || p.startDate);
+        if (isNaN(date.getTime())) return false;
+        if (this.analysisType === 'daily') {
+          return date.getDate() === interval.day && date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        } else {
+          return date.getMonth() === interval.index && date.getFullYear() === interval.year;
+        }
+      }).length;
+    });
+
     this.revenueChartData = {
       labels: intervals.map(m => m.label),
-      datasets: [{
-        data: revenueByInterval.map(r => parseFloat((r / 100000).toFixed(1))),
-        label: this.analysisType === 'total' ? 'Total Revenue Growth (₹L)' : (this.analysisType === 'daily' ? 'Daily Revenue (₹L)' : 'Monthly Revenue (₹L)'),
-        backgroundColor: '#d4b347',
-        hoverBackgroundColor: '#c9a642',
-        borderRadius: 6,
-        borderWidth: 0
-      }]
+      datasets: [
+        {
+          data: revenueData.map(r => parseFloat((r / 100000).toFixed(1))),
+          label: 'Revenue (₹L)',
+          backgroundColor: '#d4b347',
+          hoverBackgroundColor: '#c9a642',
+          borderRadius: 6,
+          yAxisID: 'y'
+        },
+        {
+          data: leadData,
+          label: 'Leads',
+          backgroundColor: '#22d3ee',
+          hoverBackgroundColor: '#06b6d4',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        },
+        {
+          data: quoteData,
+          label: 'Quotations',
+          backgroundColor: '#818cf8',
+          hoverBackgroundColor: '#6366f1',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        },
+        {
+          data: projectsWonData,
+          label: 'Won Projects',
+          backgroundColor: '#22c55e',
+          hoverBackgroundColor: '#16a34a',
+          borderRadius: 6,
+          yAxisID: 'y1'
+        }
+      ]
     };
 
     setTimeout(() => {
-      this.revenueChart?.update();
-    }, 100);
+      if (this.revenueChart) {
+        console.log('📈 Updating Admin Revenue Chart');
+        this.revenueChart.update();
+      } else {
+        console.warn('⚠️ Admin Revenue Chart directive not found for update');
+      }
+    }, 500);
   }
 
   private getTrendIntervals(projects: Project[] = []): { label: string; index: number; year: number; day?: number }[] {
@@ -417,7 +555,7 @@ export class ReportsDashboardComponent implements OnInit {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       intervals.push({
         label: date.toLocaleString('en-US', { month: 'short' }) +
-          (count > 6 ? ` ${date.getFullYear().toString().slice(-2)}` : ''),
+          (count > 6 ? ` ${date.getFullYear().toString().slice(-2)} ` : ''),
         index: date.getMonth(),
         year: date.getFullYear()
       });
@@ -428,7 +566,7 @@ export class ReportsDashboardComponent implements OnInit {
   formatCurrency(amount: number): string {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
     if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)} L`;
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return `₹${amount.toLocaleString('en-IN')} `;
   }
 
   getChartTextColor(): string {
@@ -462,5 +600,13 @@ export class ReportsDashboardComponent implements OnInit {
       }
     }
     this.revenueChart?.update();
+  }
+
+  private compareIds(id1: any, id2: any): boolean {
+    if (!id1 || !id2) return false;
+    const cid1 = typeof id1 === 'object' ? id1._id : id1;
+    const cid2 = typeof id2 === 'object' ? id2._id : id2;
+    if (!cid1 || !cid2) return false;
+    return String(cid1).toLowerCase().trim() === String(cid2).toLowerCase().trim();
   }
 }

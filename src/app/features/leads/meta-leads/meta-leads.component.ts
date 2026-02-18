@@ -111,7 +111,11 @@ export class MetaLeadsComponent implements OnInit, OnDestroy {
     }
 
     viewDetails(lead: Lead): void {
-        this.router.navigate(['/leads', lead._id]);
+        this.router.navigate(['/admin/leads', lead._id]);
+    }
+
+    goToAssignLeads(): void {
+        this.router.navigate(['/admin/leads/assign']);
     }
 
     editLead(lead: Lead): void {

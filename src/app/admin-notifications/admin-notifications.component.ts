@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 interface Notification {
   id: number;
@@ -26,7 +27,10 @@ export class AdminNotificationsComponent implements OnInit {
   filteredNotifications: Notification[] = [];
   activeFilter: 'all' | 'unread' | 'read' = 'all';
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private toastr: ToastrService
+  ) { }
 
   ngOnInit(): void {
     this.loadNotifications();
@@ -171,6 +175,9 @@ export class AdminNotificationsComponent implements OnInit {
     if (confirm('Are you sure you want to delete this notification?')) {
       this.notifications = this.notifications.filter(n => n.id !== id);
       this.applyFilter();
+      this.toastr.success('Notification deleted');
+    } else {
+      this.toastr.info('Deletion cancelled');
     }
   }
 
