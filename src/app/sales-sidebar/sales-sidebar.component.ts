@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ThemeService } from '../core/services/theme.service';
 import { AuthService } from '../services/auth.service';
+import { ProfileService, User } from '../services/profile.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -35,6 +36,7 @@ export class SalesSidebarComponent implements OnInit, OnDestroy {
   // Sales user info
   userName: string = 'Sales Executive';
   userRole: string = 'Sales Team';
+  profileImage: string = 'assets/images/logo1.png';
 
   menuSections: MenuSection[] = [
     {
@@ -80,6 +82,7 @@ export class SalesSidebarComponent implements OnInit, OnDestroy {
     public themeService: ThemeService,
     private router: Router,
     private authService: AuthService,
+    private profileService: ProfileService,
     private toastr: ToastrService
   ) {
     console.log('Sales Sidebar: Constructor called');
@@ -94,6 +97,23 @@ export class SalesSidebarComponent implements OnInit, OnDestroy {
       this.userName = user.name || 'Sales Executive';
       this.userRole = user.role || 'Sales Team';
     }
+
+    // Subscribe to profile updates
+    this.profileService.user$.subscribe(user => {
+      if (user) {
+        this.userName = user.fullName || this.userName;
+        this.profileImage = user.profileImage || this.profileImage;
+      }
+    });
+
+    // Fetch profile
+    this.profileService.getProfile().subscribe({
+      next: (user) => {
+        this.userName = user.fullName || this.userName;
+        this.profileImage = user.profileImage || 'assets/images/logo1.png';
+      },
+      error: (err) => console.error('Sales Sidebar: Failed to load profile', err)
+    });
 
     this.themeService.theme$
       .pipe(takeUntil(this.destroy$))

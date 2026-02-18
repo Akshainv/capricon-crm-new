@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ProfileService, User } from '../services/profile.service';
 import { ToastrService } from 'ngx-toastr';
 import { ThemeService } from '../core/services/theme.service';
 import { NotificationService, Notification } from '../services/notification.service';
@@ -24,11 +25,13 @@ export class SalesHeaderComponent implements OnInit, OnDestroy {
   userEmail: string = 'sales@inspitetech.com';
   userRole: string = 'Sales Team';
   userInitials: string = 'SE';
+  profileImage: string | null = null;
 
   constructor(
     public themeService: ThemeService,
     private router: Router,
     private authService: AuthService,
+    private profileService: ProfileService,
     private toastr: ToastrService,
     public notificationService: NotificationService
   ) { }
@@ -57,6 +60,26 @@ export class SalesHeaderComponent implements OnInit, OnDestroy {
       this.userRole = user.role || 'Sales Team';
       this.userInitials = this.getInitials(this.userName);
     }
+
+    // Subscribe to profile updates
+    this.profileService.user$.subscribe(user => {
+      if (user) {
+        this.userName = user.fullName || this.userName;
+        this.userEmail = user.email || this.userEmail;
+        this.profileImage = user.profileImage || null;
+        this.userInitials = this.getInitials(this.userName);
+      }
+    });
+
+    // Fetch profile
+    this.profileService.getProfile().subscribe({
+      next: (user) => {
+        this.userName = user.fullName || this.userName;
+        this.profileImage = user.profileImage || null;
+        this.userInitials = this.getInitials(this.userName);
+      },
+      error: (err) => console.error('Sales Header: Failed to load profile', err)
+    });
   }
 
   private getInitials(name: string): string {
