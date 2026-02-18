@@ -89,20 +89,12 @@ export class ProfileService {
   // ============================================
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
-    const userId = this.getUserIdFromStorage();
 
-    // Start with standard auth headers if available
-    let headers = new HttpHeaders({
+    // Rely strictly on standard auth headers to bypass CORS preflight issues
+    return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
     });
-
-    // Add/Update additional identifying headers
-    if (userId) {
-      headers = headers.set('x-user-id', userId);
-    }
-
-    return headers;
   }
 
   // ============================================
@@ -205,8 +197,7 @@ export class ProfileService {
     const userId = this.getUserIdFromStorage();
 
     const headers = new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : '',
-      'x-user-id': userId || ''
+      'Authorization': token ? `Bearer ${token}` : ''
     });
 
     return this.http.post<ApiResponse>(

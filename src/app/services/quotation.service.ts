@@ -166,18 +166,8 @@ export class QuotationService {
   ) { }
 
   private getHeadersWithUser(): HttpHeaders {
-    const currentUser = this.authService.currentUserValue;
-    const userId = currentUser?.userId || '';
-    const userRole = currentUser?.role || '';
-
-    // Start with standard auth headers (Authorization: Bearer ...)
-    let headers = this.authService.getAuthHeaders();
-
-    // Add/Update additional identifying headers
-    headers = headers.set('x-user-id', userId);
-    headers = headers.set('x-user-role', userRole);
-
-    return headers;
+    // Rely strictly on standard Authorization header to bypass CORS preflight issues
+    return this.authService.getAuthHeaders();
   }
 
   createQuotation(quotationData: CreateQuotationPayload): Observable<QuotationResponse> {
