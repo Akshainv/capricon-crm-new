@@ -75,7 +75,10 @@ export class AuthService {
   }
 
   public getToken(): string | null {
-    return localStorage.getItem('access_token');
+    // Check multiple possible keys for maximum compatibility
+    return localStorage.getItem('access_token') ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('auth_token');
   }
 
   login(email: string, password: string): Observable<LoginResponse> {

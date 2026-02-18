@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 // ============================================
 // INTERFACES & MODELS
@@ -82,15 +83,17 @@ export class ProfileService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
 
   // ============================================
   // HELPER: Get HTTP Headers with JWT Token
   // ============================================
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
+    const token = this.authService.getToken();
 
-    // Rely strictly on standard auth headers to bypass CORS preflight issues
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
