@@ -195,7 +195,7 @@ export class SalesReportsComponent implements OnInit {
     const projects$ = this.projectService.getProjectsBySalesExecutive(this.currentUserId).toPromise();
     const leads$ = this.leadsService.getLeadsCreatedByMe().toPromise();
     const assignedLeads$ = this.leadsService.getLeadsAssignedToMe().toPromise();
-    const quotations$ = this.quotationService.getAllQuotations().toPromise();
+    const quotations$ = this.quotationService.getAllQuotations(undefined, undefined, startDate, endDate).toPromise();
 
     Promise.all([salesReport$, projects$, leads$, assignedLeads$, quotations$]).then(([reportResponse, projects, leads, assignedLeads, quotesResponse]) => {
       const report = (reportResponse as any);
@@ -459,31 +459,48 @@ export class SalesReportsComponent implements OnInit {
   }
 
   updateChartColors(): void {
+    const textColor = this.getChartTextColor();
+    const gridColor = this.getChartGridColor();
+
     if (this.revenueChartOptions && this.revenueChartOptions.plugins && this.revenueChartOptions.scales) {
       // Update legend color
       if (this.revenueChartOptions.plugins.legend && this.revenueChartOptions.plugins.legend.labels) {
-        this.revenueChartOptions.plugins.legend.labels.color = this.getChartTextColor();
+        this.revenueChartOptions.plugins.legend.labels.color = textColor;
       }
 
       // Update axis colors
-      if (this.revenueChartOptions.scales['x']) {
-        this.revenueChartOptions.scales['x'].grid = { color: this.getChartGridColor() };
-        if (this.revenueChartOptions.scales['x'].ticks) {
-          this.revenueChartOptions.scales['x'].ticks.color = this.getChartTextColor();
+      const scales = this.revenueChartOptions.scales as any;
+      if (scales.x) {
+        scales.x.grid = { color: gridColor };
+        if (scales.x.ticks) {
+          scales.x.ticks.color = textColor;
         }
       }
 
-      if (this.revenueChartOptions.scales['y']) {
-        this.revenueChartOptions.scales['y'].grid = { color: this.getChartGridColor() };
-        if (this.revenueChartOptions.scales['y'].ticks) {
-          this.revenueChartOptions.scales['y'].ticks.color = this.getChartTextColor();
+      if (scales.y) {
+        scales.y.grid = { color: gridColor };
+        if (scales.y.ticks) {
+          scales.y.ticks.color = textColor;
         }
+        if (scales.y.title) scales.y.title.color = isLightMode() ? '#d4b347' : '#d4b347';
+      }
+
+      if (scales.y1) {
+        if (scales.y1.ticks) {
+          scales.y1.ticks.color = textColor;
+        }
+        if (scales.y1.title) scales.y1.title.color = isLightMode() ? '#818cf8' : '#818cf8';
       }
 
       // Update chart
       if (this.revenueChart) {
         this.revenueChart.update();
       }
+    }
+
+    function isLightMode() {
+      return document.documentElement.classList.contains('light-theme') ||
+        document.documentElement.getAttribute('data-theme') === 'light';
     }
   }
 }

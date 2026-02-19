@@ -177,13 +177,19 @@ export class QuotationService {
     return this.http.post<QuotationResponse>(this.apiUrl, quotationData, { headers });
   }
 
-  getAllQuotations(status?: string, search?: string): Observable<QuotationResponse> {
+  getAllQuotations(status?: string, search?: string, startDate?: string, endDate?: string): Observable<QuotationResponse> {
     let params = new HttpParams();
     if (status) {
       params = params.set('status', status);
     }
     if (search) {
       params = params.set('search', search);
+    }
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+    if (endDate) {
+      params = params.set('endDate', endDate);
     }
 
     const headers = this.getHeadersWithUser();

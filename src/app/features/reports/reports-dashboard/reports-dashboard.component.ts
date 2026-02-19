@@ -241,7 +241,7 @@ export class ReportsDashboardComponent implements OnInit {
     const summary$ = this.reportService.getAdminReports(filters).toPromise();
     const leads$ = this.leadsService.getAllLeads().toPromise();
     const projects$ = this.projectService.getAllProjects().toPromise();
-    const quotations$ = this.quotationService.getAllQuotations().toPromise();
+    const quotations$ = this.quotationService.getAllQuotations(undefined, undefined, startDate, endDate).toPromise();
 
     // ✅ FIX: Use allSettled so the dashboard doesn't fail completely if one service is down
     Promise.allSettled([summary$, leads$, projects$, quotations$]).then((results) => {
@@ -325,7 +325,8 @@ export class ReportsDashboardComponent implements OnInit {
     // 2. Calculate Quotations/Proposals
     const relevantQuotes = quotations.filter(q => {
       if (this.selectedEmployeeId !== 'all') {
-        if (!this.compareIds(q.createdBy, this.selectedEmployeeId)) return false;
+        const creatorId = typeof q.createdBy === 'object' ? (q.createdBy as any)._id : q.createdBy;
+        if (!this.compareIds(creatorId, this.selectedEmployeeId)) return false;
       }
 
       if (!q.createdAt) return this.analysisType === 'total';
@@ -433,7 +434,9 @@ export class ReportsDashboardComponent implements OnInit {
     });
     const todayQuotes = quotations.filter(q => {
       if (!q.createdAt) return false;
-      return new Date(q.createdAt).toLocaleDateString('en-CA') === todayStr;
+      // Already filtered by backend, but double check for robustness
+      const quoteDate = new Date(q.createdAt).toLocaleDateString('en-CA');
+      return quoteDate === todayStr;
     });
     const todayProjects = projects.filter(p => {
       if (!p.createdAt) return false;
@@ -443,7 +446,11 @@ export class ReportsDashboardComponent implements OnInit {
     this.employeeDailyStats = this.employees.map(emp => {
       // ✅ Use robust comparison for IDs that might be objects or strings
       const empLeads = todayLeads.filter(l => this.compareIds(l.assignedTo, emp._id) || this.compareIds(l.createdBy, emp._id)).length;
-      const empQuotes = todayQuotes.filter(q => this.compareIds(q.createdBy, emp._id) || this.compareIds((q as any).userId, emp._id)).length;
+      const empQuotes = todayQuotes.filter(q => {
+        const creatorId = typeof q.createdBy === 'object' ? (q.createdBy as any)._id : q.createdBy;
+        const userId = typeof (q as any).userId === 'object' ? (q as any).userId._id : (q as any).userId;
+        return this.compareIds(creatorId, emp._id) || this.compareIds(userId, emp._id);
+      }).length;
       const empRevenue = todayProjects
         .filter(p => this.compareIds(p.assignedTo, emp._id) || this.compareIds(p.createdBy, emp._id))
         .reduce((sum, p) => sum + (p.projectValue || 0), 0);
@@ -617,36 +624,61 @@ export class ReportsDashboardComponent implements OnInit {
   }
 
   getChartTextColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme');
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
     return isLightMode ? '#1f2937' : 'rgba(255, 255, 255, 0.6)';
   }
 
   getChartGridColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme');
-    return isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(212, 179, 71, 0.1)';
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
+    return isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(212, 179, 71, 0.1)';
   }
 
   setupThemeListener(): void {
     const observer = new MutationObserver(() => this.updateChartColors());
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-theme']
+    });
   }
 
   updateChartColors(): void {
+    const textColor = this.getChartTextColor();
+    const gridColor = this.getChartGridColor();
+
     if (this.revenueChartOptions?.plugins?.legend?.labels) {
-      this.revenueChartOptions.plugins.legend.labels.color = this.getChartTextColor();
+      this.revenueChartOptions.plugins.legend.labels.color = textColor;
     }
+
     if (this.revenueChartOptions?.scales) {
       const scales = this.revenueChartOptions.scales as any;
+
+      // X Axis
       if (scales.x) {
-        scales.x.grid.color = this.getChartGridColor();
-        scales.x.ticks.color = this.getChartTextColor();
+        scales.x.grid.color = gridColor;
+        scales.x.ticks.color = textColor;
       }
+
+      // Y Axis (Revenue)
       if (scales.y) {
-        scales.y.grid.color = this.getChartGridColor();
-        scales.y.ticks.color = this.getChartTextColor();
+        scales.y.grid.color = gridColor;
+        scales.y.ticks.color = textColor;
+        if (scales.y.title) scales.y.title.color = isLightMode() ? '#d4b347' : '#d4b347';
+      }
+
+      // Y1 Axis (Counts)
+      if (scales.y1) {
+        scales.y1.ticks.color = textColor;
+        if (scales.y1.title) scales.y1.title.color = isLightMode() ? '#818cf8' : '#818cf8';
       }
     }
     this.revenueChart?.update();
+
+    function isLightMode() {
+      return document.documentElement.classList.contains('light-theme') ||
+        document.documentElement.getAttribute('data-theme') === 'light';
+    }
   }
 
   private compareIds(id1: any, id2: any): boolean {
