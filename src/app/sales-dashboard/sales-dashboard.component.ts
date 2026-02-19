@@ -6,6 +6,7 @@ import { DashboardService } from '../services/dashboard.service';
 import { AuthService } from '../services/auth.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import 'chart.js/auto';
 import {
   Chart,
   CategoryScale,
@@ -138,7 +139,7 @@ export class SalesDashboardComponent implements OnInit {
     private router: Router,
     private dashboardService: DashboardService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     console.log('🚀 Sales Dashboard Component Initialized');
@@ -175,15 +176,15 @@ export class SalesDashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.isLoading = true;
-    
+
     console.log('🔵 ========== LOADING SALES DASHBOARD ==========');
     console.log('🔵 Calling dashboardService.getSalesDashboard()');
     console.log('='.repeat(60));
-    
+
     this.dashboardService.getSalesDashboard({ period: 'thisMonth' }).subscribe({
       next: (response) => {
         console.log('📦 Raw API Response:', response);
-        
+
         if (!response.success || !response.data) {
           console.error('❌ Invalid response structure');
           this.loadFallbackData();
@@ -192,13 +193,13 @@ export class SalesDashboardComponent implements OnInit {
         }
 
         const data = response.data;
-        
+
         console.log('📊 SALES DASHBOARD DATA:');
         console.log('  - Stats:', data.stats);
         console.log('='.repeat(60));
 
         this.mapBackendDataToFrontend(data);
-        
+
         this.isLoading = false;
         console.log('✅ SALES DASHBOARD LOADED SUCCESSFULLY');
       },
@@ -216,18 +217,18 @@ export class SalesDashboardComponent implements OnInit {
 
     // ✅ FIXED: Correctly extract the numeric value from totalQuotations
     const quotationsValue = data.stats.totalQuotations?.value;
-    const quotationsCount = typeof quotationsValue === 'number' 
-      ? quotationsValue.toString() 
+    const quotationsCount = typeof quotationsValue === 'number'
+      ? quotationsValue.toString()
       : (quotationsValue || '0').toString();
 
     const leadsValue = data.stats.myLeads?.value;
-    const leadsCount = typeof leadsValue === 'number' 
-      ? leadsValue.toString() 
+    const leadsCount = typeof leadsValue === 'number'
+      ? leadsValue.toString()
       : (leadsValue || '0').toString();
 
     const projectsValue = data.stats.myProjects?.value;
-    const projectsCount = typeof projectsValue === 'number' 
-      ? projectsValue.toString() 
+    const projectsCount = typeof projectsValue === 'number'
+      ? projectsValue.toString()
       : (projectsValue || '0').toString();
 
     console.log('🔍 Extracted values:');
@@ -237,27 +238,27 @@ export class SalesDashboardComponent implements OnInit {
 
     // ✅ Map 3 key stats for sales executive
     this.stats = [
-      { 
-        icon: 'fa-file-invoice', 
-        label: 'Total Quotations', 
+      {
+        icon: 'fa-file-invoice',
+        label: 'Total Quotations',
         value: quotationsCount,
-        change: data.stats.totalQuotations?.change || 'No data', 
+        change: data.stats.totalQuotations?.change || 'No data',
         trend: data.stats.totalQuotations?.trend || 'neutral',
         route: '/sales-my-quotations'
       },
-      { 
-        icon: 'fa-users', 
-        label: 'My Leads', 
+      {
+        icon: 'fa-users',
+        label: 'My Leads',
         value: leadsCount,
-        change: data.stats.myLeads?.change || 'No data', 
+        change: data.stats.myLeads?.change || 'No data',
         trend: data.stats.myLeads?.trend || 'neutral',
         route: '/sales-leads'
       },
-      { 
-        icon: 'fa-project-diagram', 
-        label: 'My Projects', 
+      {
+        icon: 'fa-project-diagram',
+        label: 'My Projects',
         value: projectsCount,
-        change: data.stats.myProjects?.change || 'No data', 
+        change: data.stats.myProjects?.change || 'No data',
         trend: data.stats.myProjects?.trend || 'neutral',
         route: '/sales-my-projects'
       }
@@ -266,7 +267,7 @@ export class SalesDashboardComponent implements OnInit {
     console.log('✅ Stats mapped:', this.stats.length, 'cards');
     console.log('📊 Card values:');
     this.stats.forEach((stat, i) => {
-      console.log(`  Card ${i+1}: ${stat.label} = ${stat.value} (${stat.change})`);
+      console.log(`  Card ${i + 1}: ${stat.label} = ${stat.value} (${stat.change})`);
     });
 
     // ✅ Build chart from backend data
@@ -326,29 +327,29 @@ export class SalesDashboardComponent implements OnInit {
 
   loadFallbackData(): void {
     console.log('⚠️ Loading fallback data');
-    
+
     this.stats = [
-      { 
-        icon: 'fa-file-invoice', 
-        label: 'Total Quotations', 
-        value: '0', 
-        change: 'Unable to load', 
+      {
+        icon: 'fa-file-invoice',
+        label: 'Total Quotations',
+        value: '0',
+        change: 'Unable to load',
         trend: 'neutral',
         route: '/sales-my-quotations'
       },
-      { 
-        icon: 'fa-users', 
-        label: 'My Leads', 
-        value: '0', 
-        change: 'Unable to load', 
+      {
+        icon: 'fa-users',
+        label: 'My Leads',
+        value: '0',
+        change: 'Unable to load',
         trend: 'neutral',
         route: '/sales-leads'
       },
-      { 
-        icon: 'fa-project-diagram', 
-        label: 'My Projects', 
-        value: '0', 
-        change: 'Unable to load', 
+      {
+        icon: 'fa-project-diagram',
+        label: 'My Projects',
+        value: '0',
+        change: 'Unable to load',
         trend: 'neutral',
         route: '/sales-my-projects'
       }
@@ -397,7 +398,7 @@ export class SalesDashboardComponent implements OnInit {
   getLast6Months(): { label: string; index: number; year: number }[] {
     const months = [];
     const now = new Date();
-    
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
@@ -406,7 +407,7 @@ export class SalesDashboardComponent implements OnInit {
         year: date.getFullYear()
       });
     }
-    
+
     return months;
   }
 
@@ -427,14 +428,14 @@ export class SalesDashboardComponent implements OnInit {
   // ==========================================
 
   getChartTextColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme') || 
-                        document.documentElement.getAttribute('data-theme') === 'light';
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
     return isLightMode ? '#1f2937' : 'rgba(255, 255, 255, 0.6)';
   }
 
   getChartGridColor(): string {
-    const isLightMode = document.documentElement.classList.contains('light-theme') || 
-                        document.documentElement.getAttribute('data-theme') === 'light';
+    const isLightMode = document.documentElement.classList.contains('light-theme') ||
+      document.documentElement.getAttribute('data-theme') === 'light';
     return isLightMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(212, 179, 71, 0.1)';
   }
 
@@ -443,7 +444,7 @@ export class SalesDashboardComponent implements OnInit {
     const observer = new MutationObserver(() => {
       this.updateChartColors();
     });
-    
+
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class', 'data-theme']
@@ -456,21 +457,21 @@ export class SalesDashboardComponent implements OnInit {
       if (this.lineChartOptions.plugins.legend && this.lineChartOptions.plugins.legend.labels) {
         this.lineChartOptions.plugins.legend.labels.color = this.getChartTextColor();
       }
-      
-      // WITH THIS:
-if (this.lineChartOptions.scales['x']) {
-  this.lineChartOptions.scales['x'].grid = { color: this.getChartGridColor() };
-  if (this.lineChartOptions.scales['x'].ticks) {
-    this.lineChartOptions.scales['x'].ticks.color = this.getChartTextColor();
-  }
-}
 
-if (this.lineChartOptions.scales['y']) {
-  this.lineChartOptions.scales['y'].grid = { color: this.getChartGridColor() };
-  if (this.lineChartOptions.scales['y'].ticks) {
-    this.lineChartOptions.scales['y'].ticks.color = this.getChartTextColor();
-  }
-}
+      // WITH THIS:
+      if (this.lineChartOptions.scales['x']) {
+        this.lineChartOptions.scales['x'].grid = { color: this.getChartGridColor() };
+        if (this.lineChartOptions.scales['x'].ticks) {
+          this.lineChartOptions.scales['x'].ticks.color = this.getChartTextColor();
+        }
+      }
+
+      if (this.lineChartOptions.scales['y']) {
+        this.lineChartOptions.scales['y'].grid = { color: this.getChartGridColor() };
+        if (this.lineChartOptions.scales['y'].ticks) {
+          this.lineChartOptions.scales['y'].ticks.color = this.getChartTextColor();
+        }
+      }
       // Update chart
       if (this.chart) {
         this.chart.update();
