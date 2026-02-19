@@ -196,9 +196,17 @@ export class AuthService {
 
   getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    return new HttpHeaders({
+    const userId = this.currentUserValue?.userId;
+
+    let headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
+
+    if (userId) {
+      headers = headers.set('x-user-id', userId);
+    }
+
+    return headers;
   }
 }
