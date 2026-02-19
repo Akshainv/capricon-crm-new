@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterHereComponent } from './register-here/register-here.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { authGuard } from './auth.guard';
 
 // Dashboard Imports
 import { DashboardHomeComponent } from './features/dashboard/dashboard-home/dashboard-home.component';
@@ -75,6 +76,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       // ========================================
       // 👨‍💼 SALES EXECUTIVE ROUTES

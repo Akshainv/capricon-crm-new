@@ -93,11 +93,21 @@ export class ProfileService {
   // ============================================
   private getHeaders(): HttpHeaders {
     const token = this.authService.getToken();
+    const userId = this.getUserIdFromStorage();
 
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
     });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (userId) {
+      headers = headers.set('x-user-id', userId);
+    }
+
+    return headers;
   }
 
   // ============================================
@@ -196,12 +206,16 @@ export class ProfileService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const token = localStorage.getItem('access_token');
+    const token = this.authService.getToken();
     const userId = this.getUserIdFromStorage();
 
-    const headers = new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : ''
-    });
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (userId) {
+      headers = headers.set('x-user-id', userId);
+    }
 
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/upload-avatar`,
