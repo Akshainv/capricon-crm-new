@@ -204,13 +204,16 @@ export class SalesReportsComponent implements OnInit {
       const allMyLeads = [...(leads || []), ...(assignedLeads || [])];
       // Filter quotes by current user
       const quotes = (quotesResponse as any)?.data || [];
-      const myQuotes = (Array.isArray(quotes) ? quotes : [quotes]).filter((q: any) => q.createdBy === this.currentUserId);
+      const myQuotes = (Array.isArray(quotes) ? quotes : [quotes]).filter((q: any) => {
+        const creatorId = typeof q.createdBy === 'object' ? q.createdBy._id : q.createdBy;
+        return creatorId && String(creatorId).toLowerCase().trim() === String(this.currentUserId).toLowerCase().trim();
+      });
 
       this.loading = false;
       this.cdr.detectChanges();
 
       // ✅ Process trend and update chart AFTER loading is false
-      this.processSalesReportData(stats, projects || []);
+      this.processSalesReportData(stats, projects || [], myQuotes.length);
       const completedProjects = (projects || []).filter(p => p.projectStatus?.toLowerCase() === 'completed');
       this.processRevenueTrend(completedProjects, allMyLeads, myQuotes);
       this.cdr.detectChanges();
@@ -243,7 +246,7 @@ export class SalesReportsComponent implements OnInit {
     ];
   }
 
-  private processSalesReportData(reportStats: any, projects: Project[]): void {
+  private processSalesReportData(reportStats: any, projects: Project[], localQuoteCount?: number): void {
     // 1. Map backend summary to stats cards
     // The service now returns the unwrapped summary object
     const stats = reportStats || {};
@@ -259,7 +262,7 @@ export class SalesReportsComponent implements OnInit {
       },
       {
         label: 'Proposals',
-        value: stats.totalQuotations ?? stats.quotationsSent ?? 0,
+        value: localQuoteCount ?? stats.totalQuotations ?? stats.quotationsSent ?? 0,
         icon: 'fa-file-invoice',
         color: '#818cf8',
         subtitle: `${stats.quotationsAccepted ?? 0} accepted`,
