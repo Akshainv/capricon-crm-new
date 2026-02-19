@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DashboardService, SalesDashboardData } from '../services/dashboard.service';
+import { AuthService } from '../services/auth.service';
 
 interface TargetData {
   metric: string;
@@ -33,7 +35,10 @@ interface RevenueBreakdown {
 })
 export class SalesMyPerformanceComponent implements OnInit {
   selectedMonth: string = 'December 2024';
-  currentUser: string = 'John Doe';
+  currentUser: string = 'Sales Executive';
+  isLoading: boolean = false;
+  loading: boolean = false;
+  errorMessage: string = '';
 
   targetsData: TargetData[] = [
     { metric: 'Revenue Target', target: 5000000, actual: 4500000, unit: '₹', icon: 'fa-rupee-sign', color: '#22c55e' },
@@ -73,14 +78,60 @@ export class SalesMyPerformanceComponent implements OnInit {
     { month: 'Dec', revenue: 4500000, deals: 18 }
   ];
 
-  constructor() { }
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
+    this.loadUserInfo();
     this.loadPerformanceData();
   }
 
+  loadUserInfo(): void {
+    const user = this.authService.currentUserValue;
+    if (user) {
+      this.currentUser = user.fullName || user.email || 'Sales Executive';
+    }
+  }
+
   loadPerformanceData(): void {
-    console.log('Loading performance data for:', this.currentUser);
+    this.loading = true;
+    this.errorMessage = '';
+
+    console.log('📊 Loading real-time performance data for:', this.currentUser);
+
+    this.dashboardService.getSalesDashboard({ period: 'thisMonth' }).subscribe({
+      next: (response: any) => {
+        if (response.success && response.data) {
+          const data = response.data;
+
+          // Map to activity summary
+          this.activitySummary.quotes.count = data.stats.totalQuotations.value;
+
+          // Map to targets data (mapping what we can)
+          this.targetsData[1].actual = data.stats.myLeads.value; // Deals/Leads mismatch in UI but mapping logically
+          this.targetsData[2].actual = data.stats.myLeads.value;
+
+          // Map chart trend data
+          if (data.chartData && data.chartData.labels && data.chartData.labels.length > 0) {
+            this.monthlyTrend = data.chartData.labels.map((label: string, index: number) => ({
+              month: label,
+              revenue: (data.chartData?.revenue?.[index] || 0) * 100000, // Revenue is in Lakhs in backend for charts
+              deals: data.chartData?.deals?.[index] || 0
+            }));
+          }
+
+          console.log('✅ Performance data updated from backend');
+        }
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('❌ Failed to load performance data:', error);
+        this.errorMessage = 'Showing offline/cached data. Unable to sync with server.';
+        this.loading = false;
+      }
+    });
   }
 
   getAchievementPercentage(target: number, actual: number): number {
