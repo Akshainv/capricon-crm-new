@@ -196,21 +196,9 @@ export class AuthService {
 
   getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
-    const userId = this.currentUserValue?.userId;
-    const userRole = this.currentUserValue?.role;
-
-    let headers = new HttpHeaders({
+    return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
-
-    if (userId) {
-      headers = headers.set('x-user-id', userId);
-    }
-    if (userRole) {
-      headers = headers.set('x-user-role', userRole);
-    }
-
-    return headers;
   }
 }

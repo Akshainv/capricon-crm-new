@@ -93,22 +93,11 @@ export class ProfileService {
   // ============================================
   private getHeaders(): HttpHeaders {
     const token = this.authService.getToken();
-    const userId = this.authService.currentUserValue?.userId || this.getUserIdFromStorage();
-    const userRole = this.authService.currentUserValue?.role;
 
-    let headers = new HttpHeaders({
+    return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
     });
-
-    if (userId) {
-      headers = headers.set('x-user-id', userId);
-    }
-    if (userRole) {
-      headers = headers.set('x-user-role', userRole);
-    }
-
-    return headers;
   }
 
   // ============================================

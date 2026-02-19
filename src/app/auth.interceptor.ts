@@ -39,23 +39,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (!isPublicEndpoint) {
     const token = authService.getToken();
-    const userId = authService.currentUserValue?.userId;
-    const userRole = authService.currentUserValue?.role;
 
     if (token) {
-      const headers: { [key: string]: string } = {
-        Authorization: `Bearer ${token}`
-      };
-
-      if (userId) {
-        headers['x-user-id'] = userId;
-      }
-      if (userRole) {
-        headers['x-user-role'] = userRole;
-      }
-
       authReq = req.clone({
-        setHeaders: headers
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
       });
     }
   }
