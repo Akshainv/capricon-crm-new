@@ -1,6 +1,6 @@
 <!-- src/app/features/deals/deal-detail/deal-detail.component.html -->
 <div class="deal-detail-container">
-  
+
   <!-- Loading State -->
   <div *ngIf="isLoading" class="loading-state">
     <i class="fas fa-spinner fa-spin"></i>
@@ -9,7 +9,7 @@
 
   <!-- Deal Details -->
   <div *ngIf="!isLoading && deal" class="detail-content">
-    
+
     <!-- Back Button -->
     <button class="btn-back" (click)="goBack()">
       <i class="fas fa-arrow-left"></i>
@@ -31,11 +31,7 @@
           <i class="fas fa-trash"></i>
           <span>Delete</span>
         </button>
-        <button 
-          *ngIf="getDealStatus() === 'won'" 
-          class="btn-convert"
-          (click)="convertToProject()"
-        >
+        <button *ngIf="getDealStatus() === 'won'" class="btn-convert" (click)="convertToProject()">
           <i class="fas fa-arrow-right"></i>
           <span>Convert to Project</span>
         </button>
@@ -44,7 +40,8 @@
 
     <!-- Status Badge & Amount -->
     <div class="status-amount-row">
-      <div class="status-badge" [style.background-color]="getStatusColor(getDealStatus()) + '20'" [style.color]="getStatusColor(getDealStatus())">
+      <div class="status-badge" [style.background-color]="getStatusColor(getDealStatus()) + '20'"
+        [style.color]="getStatusColor(getDealStatus())">
         <i class="fas fa-circle"></i>
         <span>{{ getStatusLabel(getDealStatus()) }}</span>
       </div>
@@ -53,10 +50,10 @@
 
     <!-- Main Content Grid -->
     <div class="content-grid">
-      
+
       <!-- Left Column - Deal Information -->
       <div class="left-column">
-        
+
         <!-- Contact Information -->
         <div class="info-card">
           <h3 class="card-title">
@@ -139,7 +136,7 @@
               <label>Assigned To</label>
               <div class="info-value">
                 <i class="fas fa-user"></i>
-                <span>{{ deal.assignedTo || 'Not Assigned' }}</span>
+                <span>{{ deal.assignedToName || getUserDisplayName(deal.assignedTo) }}</span>
               </div>
             </div>
             <div class="info-item">
@@ -183,7 +180,7 @@
             <i class="fas fa-history"></i>
             <span>Activity Timeline</span>
           </h3>
-          
+
           <div class="timeline">
             <div *ngFor="let activity of activities" class="timeline-item">
               <div class="timeline-icon" [ngClass]="activity.type">

@@ -92,7 +92,7 @@ export class DealDetailComponent implements OnInit {
     if (userId && userId.length === 24 && /^[a-f0-9]{24}$/i.test(userId)) {
       return 'Sales Executive';
     }
-    return userId || 'System';
+    return userId || 'Not Assigned';
   }
 
   loadActivities(deal: Deal): void {
@@ -117,7 +117,7 @@ export class DealDetailComponent implements OnInit {
         type: 'call',
         title: 'Qualification Call',
         description: `Discussed requirements with ${deal.contactPerson}. Customer needs ${deal.elevatorType}.`,
-        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 2) + 'T11:00:00',
+        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T11:00:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-phone'
@@ -130,7 +130,7 @@ export class DealDetailComponent implements OnInit {
         type: 'meeting',
         title: 'Site Visit',
         description: `Conducted site survey. Discussed installation requirements.`,
-        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 5) + 'T10:00:00',
+        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T10:00:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-handshake'
@@ -141,7 +141,7 @@ export class DealDetailComponent implements OnInit {
         type: 'email',
         title: 'Quotation Sent',
         description: `Sent detailed quotation for ${deal.elevatorType} with specifications and pricing breakdown.`,
-        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 7) + 'T16:45:00',
+        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T16:45:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-envelope'
@@ -154,7 +154,7 @@ export class DealDetailComponent implements OnInit {
         type: 'call',
         title: 'Negotiation Call',
         description: 'Discussed pricing, payment terms, and installation timeline. Customer requested minor adjustments.',
-        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 10) + 'T14:30:00',
+        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T14:30:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-phone'
@@ -167,7 +167,7 @@ export class DealDetailComponent implements OnInit {
         type: 'status_change',
         title: 'Deal Won',
         description: `Contract signed! Deal worth ${this.formatCurrency(deal.dealAmount)} closed successfully.`,
-        timestamp: deal.convertedDate ? new Date(deal.convertedDate).toISOString() : this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 15) + 'T11:00:00',
+        timestamp: deal.convertedDate ? new Date(deal.convertedDate).toISOString() : this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T11:00:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-trophy'
@@ -193,7 +193,7 @@ export class DealDetailComponent implements OnInit {
         type: 'status_change',
         title: 'Deal Lost',
         description: 'Customer decided to go with a competitor. Reason: Better pricing offered by competitor.',
-        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 12) + 'T16:00:00',
+        timestamp: this.addDays(deal.createdAt ? new Date(deal.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0], 0) + 'T16:00:00',
         user: deal.assignedTo,
         userName: this.getUserDisplayName(deal.assignedTo), // ✅ ADDED
         icon: 'fa-times-circle'
