@@ -92,8 +92,11 @@ export class ProfileService {
   // HELPER: Get HTTP Headers with JWT Token
   // ============================================
   private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+
     return new HttpHeaders({
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
     });
   }
 
@@ -193,7 +196,12 @@ export class ProfileService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const headers = new HttpHeaders();
+    const token = localStorage.getItem('access_token');
+    const userId = this.getUserIdFromStorage();
+
+    const headers = new HttpHeaders({
+      'Authorization': token ? `Bearer ${token}` : ''
+    });
 
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/upload-avatar`,

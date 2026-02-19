@@ -6,7 +6,6 @@ import { DashboardService } from '../services/dashboard.service';
 import { AuthService } from '../services/auth.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
-import 'chart.js/auto';
 import {
   Chart,
   CategoryScale,

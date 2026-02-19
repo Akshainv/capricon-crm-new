@@ -41,21 +41,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const token = authService.getToken();
 
     if (token) {
-      const currentUser = localStorage.getItem('currentUser');
-      let userId = '';
-      if (currentUser) {
-        try {
-          const user = JSON.parse(currentUser);
-          userId = user.userId || user._id || user.id || '';
-        } catch (e) {
-          console.error('Error parsing user for interceptor:', e);
-        }
-      }
-
       authReq = req.clone({
         setHeaders: {
-          Authorization: `Bearer ${token}`,
-          ...(userId ? { 'x-user-id': userId } : {})
+          Authorization: `Bearer ${token}`
         }
       });
     }
