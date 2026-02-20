@@ -209,13 +209,30 @@ export class SalesReportsComponent implements OnInit {
         return creatorId && String(creatorId).toLowerCase().trim() === String(this.currentUserId).toLowerCase().trim();
       });
 
+      // ✅ FIX: Calculate lead count locally to ensure it only includes "CREATED" leads as requested
+      const createdLeadsByTime = (leads || []).filter(l => {
+        if (this.analysisType === 'total') return true;
+        if (!l.createdAt) return false;
+
+        const leadDate = new Date(l.createdAt).toLocaleDateString('en-CA');
+        const todayStr = new Date().toLocaleDateString('en-CA');
+
+        if (this.analysisType === 'daily') return leadDate === todayStr;
+        if (this.analysisType === 'monthly') {
+          const thirtyAgo = new Date();
+          thirtyAgo.setDate(thirtyAgo.getDate() - 30);
+          return leadDate >= thirtyAgo.toLocaleDateString('en-CA');
+        }
+        return true;
+      });
+
       this.loading = false;
       this.cdr.detectChanges();
 
       // ✅ Process trend and update chart AFTER loading is false
-      this.processSalesReportData(stats, projects || [], myQuotes.length);
+      this.processSalesReportData(stats, projects || [], myQuotes.length, createdLeadsByTime.length);
       const completedProjects = (projects || []).filter(p => p.projectStatus?.toLowerCase() === 'completed');
-      this.processRevenueTrend(completedProjects, allMyLeads, myQuotes);
+      this.processRevenueTrend(completedProjects, leads || [], myQuotes);
       this.cdr.detectChanges();
 
       // Final force update
@@ -246,7 +263,7 @@ export class SalesReportsComponent implements OnInit {
     ];
   }
 
-  private processSalesReportData(reportStats: any, projects: Project[], localQuoteCount?: number): void {
+  private processSalesReportData(reportStats: any, projects: Project[], localQuoteCount?: number, localLeadCount?: number): void {
     // 1. Map backend summary to stats cards
     // The service now returns the unwrapped summary object
     const stats = reportStats || {};
@@ -254,10 +271,10 @@ export class SalesReportsComponent implements OnInit {
     this.stats = [
       {
         label: 'My Leads',
-        value: stats.leadsCount ?? stats.totalDeals ?? stats.totalProjects ?? 0,
+        value: localLeadCount ?? stats.leadsCount ?? stats.totalDeals ?? stats.totalProjects ?? 0,
         icon: 'fa-users',
         color: '#22d3ee',
-        subtitle: 'New opportunities',
+        subtitle: 'Created leads',
         trend: 10
       },
       {
