@@ -97,7 +97,7 @@ export class AdminQuotationComponent implements OnInit {
 
                         // Normalize status for Admin View
                         const currentStatus = (formatted as any).status?.toLowerCase();
-                        if (currentStatus === 'approved') {
+                        if (currentStatus === 'approved' || currentStatus === 'sent') {
                             (formatted as any).status = 'Approved';
                         } else if (currentStatus === 'rejected') {
                             (formatted as any).status = 'Rejected';
@@ -165,16 +165,20 @@ export class AdminQuotationComponent implements OnInit {
         // Calculate Counts based on Search Results (before status filter)
         this.pendingCount = tempQuotations.filter(q => {
             const s = (q as any).status?.toLowerCase();
-            return s !== 'approved' && s !== 'rejected';
+            return s !== 'approved' && s !== 'rejected' && s !== 'sent';
         }).length;
-        this.approvedCount = tempQuotations.filter(q => (q as any).status?.toLowerCase() === 'approved').length;
+        this.approvedCount = tempQuotations.filter(q => {
+            const s = (q as any).status?.toLowerCase();
+            return s === 'approved' || s === 'sent';
+        }).length;
         this.rejectedCount = tempQuotations.filter(q => (q as any).status?.toLowerCase() === 'rejected').length;
 
         // Apply Status Filter
         tempQuotations = tempQuotations.filter(quote => {
             if (this.selectedFilter === 'All') return true;
             const s = (quote as any).status?.toLowerCase();
-            if (this.selectedFilter === 'Pending') return s !== 'approved' && s !== 'rejected';
+            if (this.selectedFilter === 'Pending') return s !== 'approved' && s !== 'rejected' && s !== 'sent';
+            if (this.selectedFilter === 'Approved') return s === 'approved' || s === 'sent';
             return s === this.selectedFilter.toLowerCase();
         });
 
@@ -432,8 +436,9 @@ export class AdminQuotationComponent implements OnInit {
     }
 
     getStatusClass(status: string): string {
-        if (status === 'Approved') return 'status-approved';
-        if (status === 'Rejected') return 'status-rejected';
+        const s = status?.toLowerCase();
+        if (s === 'approved' || s === 'sent') return 'status-approved';
+        if (s === 'rejected') return 'status-rejected';
         return 'status-pending';
     }
 }

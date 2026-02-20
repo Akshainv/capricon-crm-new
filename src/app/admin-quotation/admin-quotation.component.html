@@ -136,14 +136,14 @@
                             <!-- Approval Actions -->
                             <div class="approval-actions">
                                 <button class="approval-btn btn-approve"
-                                    [class.active]="$any(quote).status === 'Approved'"
-                                    [disabled]="$any(quote).status === 'Approved'"
+                                    [class.active]="$any(quote).status?.toLowerCase() === 'approved' || $any(quote).status?.toLowerCase() === 'sent'"
+                                    [disabled]="$any(quote).status?.toLowerCase() === 'approved' || $any(quote).status?.toLowerCase() === 'sent'"
                                     (click)="updateStatus(quote, 'Approved')" title="Approve">
                                     <i class="fas fa-check"></i>
                                 </button>
                                 <button class="approval-btn btn-reject"
-                                    [class.active]="$any(quote).status === 'Rejected'"
-                                    [disabled]="$any(quote).status === 'Rejected'"
+                                    [class.active]="$any(quote).status?.toLowerCase() === 'rejected'"
+                                    [disabled]="$any(quote).status?.toLowerCase() === 'approved' || $any(quote).status?.toLowerCase() === 'sent' || $any(quote).status?.toLowerCase() === 'rejected'"
                                     (click)="updateStatus(quote, 'Rejected')" title="Reject">
                                     <i class="fas fa-times"></i>
                                 </button>
