@@ -192,7 +192,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: `${data.projectsWon || 0} projects completed`,
         icon: 'fa-rupee-sign',
         color: '#22c55e',
-        route: '/projects'
+        route: '/admin/projects'
       },
       {
         label: 'Total Projects',
@@ -200,7 +200,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: `${data.projectsWon || 0} won`,
         icon: 'fa-project-diagram',
         color: '#3b82f6',
-        route: '/projects'
+        route: '/admin/projects'
       },
       {
         label: 'Conversion Rate',
@@ -208,7 +208,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Overall performance',
         icon: 'fa-chart-line',
         color: '#f59e0b',
-        route: '/reports'
+        route: '/admin/reports'
       },
       {
         label: 'Avg Deal Size',
@@ -216,7 +216,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Per completed project',
         icon: 'fa-money-bill-wave',
         color: '#8b5cf6',
-        route: '/deals'
+        route: '/admin/deals'
       }
     ];
   }
@@ -315,7 +315,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Unable to load',
         icon: 'fa-rupee-sign',
         color: '#22c55e',
-        route: '/projects'
+        route: '/admin/projects'
       },
       {
         label: 'Total Projects',
@@ -323,7 +323,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Unable to load',
         icon: 'fa-project-diagram',
         color: '#3b82f6',
-        route: '/projects'
+        route: '/admin/projects'
       },
       {
         label: 'Conversion Rate',
@@ -331,7 +331,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Unable to load',
         icon: 'fa-chart-line',
         color: '#f59e0b',
-        route: '/reports'
+        route: '/admin/reports'
       },
       {
         label: 'Avg Deal Size',
@@ -339,7 +339,7 @@ export class DashboardHomeComponent implements OnInit {
         subtitle: 'Unable to load',
         icon: 'fa-money-bill-wave',
         color: '#8b5cf6',
-        route: '/deals'
+        route: '/admin/deals'
       }
     ];
 

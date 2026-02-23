@@ -243,7 +243,7 @@ export class SalesDashboardComponent implements OnInit {
         value: quotationsCount,
         change: data.stats.totalQuotations?.change || 'No data',
         trend: data.stats.totalQuotations?.trend || 'neutral',
-        route: '/sales-my-quotations'
+        route: '/quotations'
       },
       {
         icon: 'fa-users',
@@ -251,7 +251,7 @@ export class SalesDashboardComponent implements OnInit {
         value: leadsCount,
         change: data.stats.myLeads?.change || 'No data',
         trend: data.stats.myLeads?.trend || 'neutral',
-        route: '/sales-leads'
+        route: '/leads'
       },
       {
         icon: 'fa-project-diagram',
@@ -259,7 +259,7 @@ export class SalesDashboardComponent implements OnInit {
         value: projectsCount,
         change: data.stats.myProjects?.change || 'No data',
         trend: data.stats.myProjects?.trend || 'neutral',
-        route: '/sales-my-projects'
+        route: '/projects'
       }
     ];
 
@@ -334,7 +334,7 @@ export class SalesDashboardComponent implements OnInit {
         value: '0',
         change: 'Unable to load',
         trend: 'neutral',
-        route: '/sales-my-quotations'
+        route: '/quotations'
       },
       {
         icon: 'fa-users',
@@ -342,7 +342,7 @@ export class SalesDashboardComponent implements OnInit {
         value: '0',
         change: 'Unable to load',
         trend: 'neutral',
-        route: '/sales-leads'
+        route: '/leads'
       },
       {
         icon: 'fa-project-diagram',
@@ -350,7 +350,7 @@ export class SalesDashboardComponent implements OnInit {
         value: '0',
         change: 'Unable to load',
         trend: 'neutral',
-        route: '/sales-my-projects'
+        route: '/projects'
       }
     ];
 
