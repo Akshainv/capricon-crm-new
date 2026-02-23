@@ -67,10 +67,16 @@ import { SalesMyPerformanceComponent } from './sales-my-perfomance/sales-my-perf
 import { SalesReportsComponent } from './sales-reports/sales-reports.component';
 import { AdminQuotationComponent } from './admin-quotation/admin-quotation.component';
 
+// Privacy & Data Deletion Page Imports
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+import { DataDeletionComponent } from './data-deletion/data-deletion.component';
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterHereComponent },
+  { path: 'privacy-policy', component: PrivacyPolicyComponent },
+  { path: 'data-deletion', component: DataDeletionComponent },
 
   {
     path: '',
