@@ -1,13 +1,14 @@
-/* ===== Privacy Policy Page ===== */
+/* ===== Privacy Policy Page — Clean B&W ===== */
 .policy-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0c29 0%, #1a1545 40%, #24243e 100%);
-    padding: 40px 20px;
+    background: #ffffff;
+    padding: 60px 20px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
 }
 
 .policy-container {
-    max-width: 860px;
+    max-width: 780px;
     margin: 0 auto;
 }
 
@@ -15,6 +16,8 @@
 .policy-header {
     text-align: center;
     margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .logo-area {
@@ -26,34 +29,31 @@
 }
 
 .logo-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #6c63ff, #4ecdc4);
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    background: #1a1a1a;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.35);
 }
 
 .logo-text {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.5px;
+    color: #1a1a1a;
 }
 
 .policy-header h1 {
-    font-size: 2.4rem;
-    font-weight: 800;
-    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
     margin: 0 0 8px;
-    letter-spacing: -0.5px;
 }
 
 .policy-header .last-updated {
-    color: rgba(255, 255, 255, 0.5);
+    color: #888;
     font-size: 0.9rem;
     margin: 0;
 }
@@ -62,49 +62,31 @@
 .policy-content {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 36px;
 }
 
 .policy-section {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 32px;
-    backdrop-filter: blur(12px);
-    position: relative;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.policy-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(108, 99, 255, 0.12);
-    border-color: rgba(108, 99, 255, 0.2);
+    padding: 0;
 }
 
 .section-icon {
-    width: 42px;
-    height: 42px;
-    background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(78, 205, 196, 0.2));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c63ff;
-    margin-bottom: 16px;
+    display: none;
 }
 
 .policy-section h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 12px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
 }
 
 .policy-section p {
-    color: rgba(255, 255, 255, 0.72);
+    color: #444;
     font-size: 0.95rem;
-    line-height: 1.7;
-    margin: 0 0 12px;
+    line-height: 1.75;
+    margin: 0 0 10px;
 }
 
 .policy-section p:last-child {
@@ -114,56 +96,46 @@
 .policy-section ul {
     margin: 8px 0 0;
     padding: 0 0 0 20px;
-    list-style: none;
+    list-style: disc;
 }
 
 .policy-section ul li {
-    color: rgba(255, 255, 255, 0.72);
+    color: #444;
     font-size: 0.95rem;
-    line-height: 1.7;
-    padding: 6px 0;
-    position: relative;
-    padding-left: 16px;
+    line-height: 1.75;
+    padding: 3px 0;
 }
 
 .policy-section ul li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 14px;
-    width: 6px;
-    height: 6px;
-    background: linear-gradient(135deg, #6c63ff, #4ecdc4);
-    border-radius: 50%;
+    display: none;
 }
 
 .policy-section ul li strong {
-    color: rgba(255, 255, 255, 0.9);
+    color: #1a1a1a;
 }
 
 .policy-section a {
-    color: #6c63ff;
-    text-decoration: none;
+    color: #1a1a1a;
+    text-decoration: underline;
     font-weight: 500;
-    transition: color 0.2s ease;
 }
 
 .policy-section a:hover {
-    color: #4ecdc4;
-    text-decoration: underline;
+    color: #555;
 }
 
 /* Contact Card */
 .contact-card {
-    background: rgba(108, 99, 255, 0.08);
-    border: 1px solid rgba(108, 99, 255, 0.15);
-    border-radius: 12px;
-    padding: 20px 24px;
+    background: #f7f7f7;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 16px 20px;
     margin-top: 8px;
 }
 
 .contact-card p {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
+    font-size: 0.93rem;
 }
 
 .contact-card p:last-child {
@@ -175,11 +147,11 @@
     text-align: center;
     margin-top: 48px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid #e5e5e5;
 }
 
 .policy-footer p {
-    color: rgba(255, 255, 255, 0.35);
+    color: #aaa;
     font-size: 0.85rem;
     margin: 0;
 }
@@ -187,14 +159,10 @@
 /* Responsive */
 @media (max-width: 640px) {
     .policy-page {
-        padding: 24px 16px;
+        padding: 32px 16px;
     }
 
     .policy-header h1 {
-        font-size: 1.8rem;
-    }
-
-    .policy-section {
-        padding: 24px 20px;
+        font-size: 1.6rem;
     }
 }
