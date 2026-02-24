@@ -25,11 +25,11 @@ export class RegisterHereComponent implements OnInit {
   password: string = '';
   confirmPassword: string = '';
   agreedToTerms: boolean = false;
-  
+
   // Password visibility toggles
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
-  
+
   // Photo upload
   photoPreview: string | null = null;
   selectedFile: File | null = null;
@@ -40,7 +40,7 @@ export class RegisterHereComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Initialize AOS animations with delay to ensure library is loaded
@@ -90,7 +90,7 @@ export class RegisterHereComponent implements OnInit {
         this.photoPreview = e.target.result;
       };
       reader.readAsDataURL(file);
-      
+
       this.showToast('Photo selected successfully!', 'success');
     }
   }
@@ -166,16 +166,16 @@ export class RegisterHereComponent implements OnInit {
       next: (response) => {
         console.log('Registration successful:', response);
         this.isLoading = false;
-        
+
         this.showToast('Registration successful! Your account is pending admin approval.', 'success');
-        
+
         // Clear form
         this.resetForm();
 
         // Redirect to login after 2 seconds
         setTimeout(() => {
-          this.router.navigate(['/login'], { 
-            queryParams: { registered: 'true' } 
+          this.router.navigate(['/login'], {
+            queryParams: { registered: 'true' }
           });
         }, 2000);
       },
@@ -185,7 +185,7 @@ export class RegisterHereComponent implements OnInit {
 
         // Handle different error scenarios
         let errorMsg = 'An error occurred during registration. Please try again.';
-        
+
         if (error.status === 400) {
           errorMsg = error.error?.message || 'Email already in use or invalid data';
         } else if (error.status === 0) {
@@ -193,7 +193,7 @@ export class RegisterHereComponent implements OnInit {
         } else if (error.error?.message) {
           errorMsg = error.error.message;
         }
-        
+
         this.showToast(errorMsg, 'error');
       }
     });
@@ -216,10 +216,10 @@ export class RegisterHereComponent implements OnInit {
   // Toastify notification method
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
     if (typeof Toastify !== 'undefined') {
-      const backgroundColor = 
+      const backgroundColor =
         type === 'success' ? 'linear-gradient(to right, #00b09b, #96c93d)' :
-        type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
-        'linear-gradient(to right, #667eea, #764ba2)';
+          type === 'error' ? 'linear-gradient(to right, #ff5f6d, #ffc371)' :
+            'linear-gradient(to right, #667eea, #764ba2)';
 
       Toastify({
         text: message,

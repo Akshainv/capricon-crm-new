@@ -297,8 +297,8 @@ export class SalesMyQuotationsComponent implements OnInit {
 
   sendToClient(quote: Quotation): void {
     const email = quote.customerEmail;
-    if (!email) {
-      this.showToast('Customer email is missing.', 'error');
+    if (!email || !this.isValidEmailFormat(email)) {
+      this.showToast('Invalid or missing customer email address.', 'error');
       return;
     }
 
@@ -311,6 +311,12 @@ export class SalesMyQuotationsComponent implements OnInit {
     this.loading = true;
     const quotationId = (quote._id || quote.id) as string;
     const email = quote.customerEmail;
+
+    if (!email || !this.isValidEmailFormat(email)) {
+      this.loading = false;
+      this.showToast('Invalid customer email address.', 'error');
+      return;
+    }
 
     // Use existing buildPreview logic as it matches the PDF data structure
     const quotationData = this.buildPreviewFromQuotation(quote);
@@ -333,6 +339,11 @@ export class SalesMyQuotationsComponent implements OnInit {
         this.showToast('Failed to send email. Please try again.', 'error');
       }
     });
+  }
+
+  private isValidEmailFormat(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {

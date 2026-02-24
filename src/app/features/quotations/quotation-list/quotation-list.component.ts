@@ -144,6 +144,11 @@ export class QuotationListComponent implements OnInit {
   }
 
   sendQuotation(quote: any): void {
+    if (!quote.email || !this.isValidEmailFormat(quote.email)) {
+      this.toastr.error('Invalid email address. Please correct the client email.');
+      return;
+    }
+
     if (confirm(`Send quotation ${quote.quoteNumber} to ${quote.email}?`)) {
       this.isLoading = true;
 
@@ -193,6 +198,10 @@ export class QuotationListComponent implements OnInit {
     }
   }
 
+  private isValidEmailFormat(email: string): boolean {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
 
   getStatusClass(status: string): string {
     return `status-${status}`;

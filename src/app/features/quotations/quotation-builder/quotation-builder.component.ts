@@ -186,7 +186,7 @@ export class QuotationBuilderComponent implements OnInit {
 
       // Step 1: Customer Details
       customerName: ['', Validators.required],
-      customerEmail: ['', [Validators.required, Validators.email]],
+      customerEmail: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
       customerPhone: ['', Validators.required],
       customerCompany: [''],
       customerAddress: [''],
@@ -348,6 +348,14 @@ export class QuotationBuilderComponent implements OnInit {
       }
 
       // Validate that validUntil is after quoteDate
+      const quoteEmail = this.quotationForm.get('customerEmail')?.value;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+      if (quoteEmail && !emailRegex.test(quoteEmail)) {
+        this.toastr.warning('Please enter a valid email address format');
+        return;
+      }
+
       const quoteDate = new Date(this.quotationForm.get('quoteDate')?.value);
       const validUntil = new Date(this.quotationForm.get('validUntil')?.value);
 

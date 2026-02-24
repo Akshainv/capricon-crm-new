@@ -35,11 +35,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   // Subscriptions
   private subscriptions: Subscription[] = [];
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: ProfileService) { }
 
   ngOnInit(): void {
     this.loadProfileData();
-    
+
     // Subscribe to loading state
     this.subscriptions.push(
       this.profileService.loading$.subscribe(loading => {
@@ -119,32 +119,32 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       this.profileService.uploadAvatar(file).subscribe({
         next: (response) => {
           console.log('✅ Avatar upload response:', response);
-          
+
           // Update profile image immediately
           if (response.profileImage) {
             this.user.profileImage = response.profileImage;
           }
-          
+
           this.successMessage = 'Profile picture updated successfully!';
           this.loading = false;
-          
+
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);
         },
         error: (error: Error) => {
           console.error('❌ Avatar upload failed:', error);
-          
+
           // Fallback: Display image locally if backend upload fails
           const reader = new FileReader();
           reader.onload = (e: any) => {
             this.user.profileImage = e.target.result;
           };
           reader.readAsDataURL(file);
-          
+
           this.errorMessage = error.message || 'Failed to upload image';
           this.loading = false;
-          
+
           setTimeout(() => {
             this.errorMessage = '';
           }, 3000);
@@ -190,7 +190,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.successMessage = response.message || 'Profile updated successfully!';
           this.loading = false;
-          
+
           // Update local user data
           if (response.user) {
             this.user = {
@@ -209,7 +209,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         error: (error: Error) => {
           this.errorMessage = error.message;
           this.loading = false;
-          
+
           setTimeout(() => {
             this.errorMessage = '';
           }, 3000);
