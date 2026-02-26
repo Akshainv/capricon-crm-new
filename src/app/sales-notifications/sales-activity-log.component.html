@@ -24,27 +24,15 @@
 
   <!-- Filters -->
   <div class="notifications-filters">
-    <button 
-      class="filter-btn" 
-      [class.active]="activeFilter === 'all'"
-      (click)="setFilter('all')"
-    >
+    <button class="filter-btn" [class.active]="activeFilter === 'all'" (click)="setFilter('all')">
       <i class="fas fa-list"></i>
       All ({{ getAllCount() }})
     </button>
-    <button 
-      class="filter-btn" 
-      [class.active]="activeFilter === 'unread'"
-      (click)="setFilter('unread')"
-    >
+    <button class="filter-btn" [class.active]="activeFilter === 'unread'" (click)="setFilter('unread')">
       <i class="fas fa-envelope"></i>
       Unread ({{ getUnreadCount() }})
     </button>
-    <button 
-      class="filter-btn" 
-      [class.active]="activeFilter === 'read'"
-      (click)="setFilter('read')"
-    >
+    <button class="filter-btn" [class.active]="activeFilter === 'read'" (click)="setFilter('read')">
       <i class="fas fa-envelope-open"></i>
       Read ({{ getReadCount() }})
     </button>
@@ -52,17 +40,12 @@
 
   <!-- Notifications List -->
   <div class="notifications-list">
-    <div 
-      *ngFor="let notification of filteredNotifications" 
-      class="notification-card"
-      [class.unread]="!notification.isRead"
-      [class]="notification.type"
-      (click)="handleNotificationClick(notification)"
-    >
+    <div *ngFor="let notification of filteredNotifications" class="notification-card"
+      [class.unread]="!notification.isRead" [class]="notification.type" (click)="handleNotificationClick(notification)">
       <div class="notification-icon-wrapper" [class]="notification.type">
         <i class="fas {{ notification.icon }}"></i>
       </div>
-      
+
       <div class="notification-content">
         <div class="notification-header">
           <h3 class="notification-title">{{ notification.title }}</h3>
@@ -72,27 +55,18 @@
           </span>
         </div>
         <p class="notification-message">{{ notification.message }}</p>
-        
+
         <div class="notification-actions">
-          <button 
-            *ngIf="!notification.isRead"
-            class="action-btn mark-read"
-            (click)="markAsRead(notification); $event.stopPropagation()"
-          >
+          <button *ngIf="!notification.isRead" class="action-btn mark-read"
+            (click)="markAsRead(notification._id); $event.stopPropagation()">
             <i class="fas fa-check"></i>
             Mark as read
           </button>
-          <button 
-            *ngIf="notification.actionLink"
-            class="action-btn view-details"
-          >
+          <button *ngIf="notification.actionLink" class="action-btn view-details">
             <i class="fas fa-external-link-alt"></i>
             View Details
           </button>
-          <button 
-            class="action-btn delete"
-            (click)="deleteNotification(notification.id, $event)"
-          >
+          <button class="action-btn delete" (click)="deleteNotification(notification._id, $event)">
             <i class="fas fa-trash-alt"></i>
             Delete
           </button>

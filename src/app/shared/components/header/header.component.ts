@@ -30,6 +30,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe(theme => {
         this.currentTheme = theme;
       });
+
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        console.log('🔔 HeaderComponent: Unread count updated:', count);
+      });
+
+    this.notificationService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notifications => {
+        console.log('🔔 HeaderComponent: Notifications list updated:', notifications.length);
+      });
   }
 
   ngOnDestroy(): void {

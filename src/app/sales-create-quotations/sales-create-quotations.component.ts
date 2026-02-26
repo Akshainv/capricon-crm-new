@@ -143,9 +143,12 @@ export class SalesCreateQuotationComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.generateQuoteNumber();
-    this.quoteDate = this.today;
-    this.validUntil = this.defaultValidUntil;
+    const restored = this.restoreFormState();
+    if (!restored) {
+      this.generateQuoteNumber();
+      this.quoteDate = this.today;
+      this.validUntil = this.defaultValidUntil;
+    }
     this.loadLeadsFromAPI();
   }
 
@@ -418,6 +421,7 @@ export class SalesCreateQuotationComponent implements OnInit {
       next: (response) => {
         this.loading = false;
         if (response.statusCode === 201) {
+          this.clearFormState();
           this.showToast('Quotation added successfully!', 'success');
           this.router.navigate(['/quotations']);
         }
@@ -434,6 +438,7 @@ export class SalesCreateQuotationComponent implements OnInit {
 
   preview(): void {
     if (this.validateForm()) {
+      this.saveFormState();
       const quotationData = this.getQuotationData();
       localStorage.setItem('quotationPreview', JSON.stringify(quotationData));
       this.router.navigate(['/quotations/preview']);
@@ -491,6 +496,7 @@ export class SalesCreateQuotationComponent implements OnInit {
   }
 
   navigateToQuotations(): void {
+    this.clearFormState();
     this.router.navigate(['/quotations']);
   }
 
@@ -549,6 +555,7 @@ export class SalesCreateQuotationComponent implements OnInit {
       confirmBtn.style.fontSize = '13px';
       confirmBtn.addEventListener('click', () => {
         toast.hideToast();
+        this.clearFormState();
         this.router.navigate(['/quotations']);
       });
 
@@ -569,6 +576,7 @@ export class SalesCreateQuotationComponent implements OnInit {
       container.appendChild(btnContainer);
     } else {
       if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+        this.clearFormState();
         this.router.navigate(['/quotations']);
       } else {
         this.toastr.info('Action cancelled');
@@ -653,6 +661,102 @@ export class SalesCreateQuotationComponent implements OnInit {
     this.paymentTerms.forEach((term, index) => {
       term.slNo = index + 1;
     });
+  }
+
+  private saveFormState(): void {
+    const state = {
+      selectedLeadId: this.selectedLeadId,
+      leadSearchTerm: this.leadSearchTerm,
+      customerName: this.customerName,
+      customerEmail: this.customerEmail,
+      customerPhone: this.customerPhone,
+      customerAddress: this.customerAddress,
+      customerCompany: this.customerCompany,
+      quoteNumber: this.quoteNumber,
+      quoteDate: this.quoteDate,
+      validUntil: this.validUntil,
+      gstRate: this.gstRate,
+      model: this.model,
+      quantity: this.quantity,
+      noOfStops: this.noOfStops,
+      elevatorType: this.elevatorType,
+      ratedLoad: this.ratedLoad,
+      maximumSpeed: this.maximumSpeed,
+      travelHeight: this.travelHeight,
+      driveSystem: this.driveSystem,
+      controlSystem: this.controlSystem,
+      cabinWalls: this.cabinWalls,
+      cabinDoors: this.cabinDoors,
+      doorType: this.doorType,
+      doorOpening: this.doorOpening,
+      copLopScreen: this.copLopScreen,
+      cabinCeiling: this.cabinCeiling,
+      cabinFloor: this.cabinFloor,
+      handrails: this.handrails,
+      pricingItems: this.pricingItems,
+      quotationItems: this.quotationItems,
+      termsAndConditions: this.termsAndConditions,
+      notes: this.notes,
+      bankDetails: this.bankDetails,
+      paymentTerms: this.paymentTerms
+    };
+    try {
+      sessionStorage.setItem('createQuotationFormState', JSON.stringify(state));
+    } catch (e) {
+      console.error('Error saving form state:', e);
+    }
+  }
+
+  private restoreFormState(): boolean {
+    try {
+      const saved = sessionStorage.getItem('createQuotationFormState');
+      if (!saved) return false;
+      const state = JSON.parse(saved);
+      this.selectedLeadId = state.selectedLeadId || '';
+      this.leadSearchTerm = state.leadSearchTerm || '';
+      this.customerName = state.customerName || '';
+      this.customerEmail = state.customerEmail || '';
+      this.customerPhone = state.customerPhone || '';
+      this.customerAddress = state.customerAddress || '';
+      this.customerCompany = state.customerCompany || '';
+      this.quoteNumber = state.quoteNumber || '';
+      this.quoteDate = state.quoteDate || this.today;
+      this.validUntil = state.validUntil || this.defaultValidUntil;
+      this.gstRate = state.gstRate ?? 18;
+      this.model = state.model || '';
+      this.quantity = state.quantity ?? 1;
+      this.noOfStops = state.noOfStops ?? 2;
+      this.elevatorType = state.elevatorType || '';
+      this.ratedLoad = state.ratedLoad || '';
+      this.maximumSpeed = state.maximumSpeed || '';
+      this.travelHeight = state.travelHeight || '';
+      this.driveSystem = state.driveSystem || '';
+      this.controlSystem = state.controlSystem || '';
+      this.cabinWalls = state.cabinWalls || '';
+      this.cabinDoors = state.cabinDoors || '';
+      this.doorType = state.doorType || '';
+      this.doorOpening = state.doorOpening || '';
+      this.copLopScreen = state.copLopScreen || '';
+      this.cabinCeiling = state.cabinCeiling || '';
+      this.cabinFloor = state.cabinFloor || '';
+      this.handrails = state.handrails ?? 1;
+      if (Array.isArray(state.pricingItems)) this.pricingItems = state.pricingItems;
+      if (Array.isArray(state.quotationItems)) this.quotationItems = state.quotationItems;
+      if (state.termsAndConditions !== undefined) this.termsAndConditions = state.termsAndConditions;
+      if (state.notes !== undefined) this.notes = state.notes;
+      if (state.bankDetails) this.bankDetails = state.bankDetails;
+      if (Array.isArray(state.paymentTerms)) this.paymentTerms = state.paymentTerms;
+      // Clear after restoring so it doesn't persist across fresh visits
+      sessionStorage.removeItem('createQuotationFormState');
+      return true;
+    } catch (e) {
+      console.error('Error restoring form state:', e);
+      return false;
+    }
+  }
+
+  private clearFormState(): void {
+    sessionStorage.removeItem('createQuotationFormState');
   }
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {

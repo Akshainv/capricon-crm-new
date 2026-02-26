@@ -496,6 +496,9 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
   close(): void {
     if (this.router.url.includes('/admin/')) {
       this.router.navigate(['/admin/admin-quotations']);
+    } else if (sessionStorage.getItem('createQuotationFormState')) {
+      // Preview was opened from create form, go back to it
+      this.router.navigate(['/quotations/create']);
     } else {
       this.router.navigate(['/quotations']);
     }

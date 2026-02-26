@@ -44,6 +44,18 @@ export class SalesHeaderComponent implements OnInit, OnDestroy {
       .subscribe(theme => {
         this.currentTheme = theme as 'dark' | 'light';
       });
+
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        console.log('🔔 SalesHeaderComponent: Unread count updated:', count);
+      });
+
+    this.notificationService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notifications => {
+        console.log('🔔 SalesHeaderComponent: Notifications list updated:', notifications.length);
+      });
   }
 
   ngOnDestroy(): void {

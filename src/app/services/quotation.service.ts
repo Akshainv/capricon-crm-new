@@ -126,6 +126,7 @@ export interface Quotation {
   createdAt?: Date;
   createdDate?: Date;
   createdBy?: string;
+  createdBySalesName?: string;
   items?: QuotationItem[];
   termsAndConditions?: string;
   notes?: string;
@@ -390,6 +391,7 @@ export class QuotationService {
       createdAt: backendData.createdAt,
       createdDate: backendData.createdAt ? new Date(backendData.createdAt) : new Date(),
       createdBy: backendData.createdBy,
+      createdBySalesName: backendData.createdBySalesName,
       items: backendData.items,
       termsAndConditions: backendData.internalNotes,
       notes: backendData.specialRequirements,

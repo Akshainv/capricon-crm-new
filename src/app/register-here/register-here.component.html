@@ -24,51 +24,11 @@
 
   <!-- Register Container -->
   <div class="register-container">
-    
-    <!-- Left Side - Branding -->
-    <div class="register-left" data-aos="fade-right">
-      <div class="brand-content">
-        <div class="logo-container" data-aos="zoom-in" data-aos-delay="200">
-          <div class="logo-icon">
-            <img src="assets/images/logo1.png" alt="Logo" class="title-logo">
-          </div>
-        </div>
-        
-        <h1 data-aos="fade-up" data-aos-delay="400">Join Capricorn CRM</h1>
-        <p class="tagline" data-aos="fade-up" data-aos-delay="600">
-          Start Your Journey to Success
-        </p>
-        
-        <div class="features" data-aos="fade-up" data-aos-delay="800">
-          <div class="feature-item">
-            <span class="feature-icon"><i class="fas fa-check"></i></span>
-            <span>Streamlined Lead Management</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon"><i class="fas fa-check"></i></span>
-            <span>Real-time Deal Tracking</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon"><i class="fas fa-check"></i></span>
-            <span>Instant Quotation Generation</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon"><i class="fas fa-check"></i></span>
-            <span>Comprehensive Analytics</span>
-          </div>
-        </div>
 
-        <div class="company-info" data-aos="fade-up" data-aos-delay="1000">
-          <p>Powered by <strong>Inspite Technologies</strong></p>
-          <p class="location"><i class="fas fa-map-marker-alt"></i> Infopark, Kochi, Kerala</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Side - Register Form -->
+    <!-- Register Form -->
     <div class="register-right" data-aos="fade-left">
       <div class="register-box">
-        
+
         <!-- Header -->
         <div class="register-header" data-aos="fade-down" data-aos-delay="200">
           <h2>Register</h2>
@@ -76,8 +36,8 @@
         </div>
 
         <!-- Register Form -->
-        <form (ngSubmit)="onSubmit()" data-aos="fade-up" data-aos-delay="400">
-          
+        <form (ngSubmit)="onSubmit()" data-aos="fade-up" data-aos-delay="400" autocomplete="off">
+
           <!-- Photo Upload - REQUIRED -->
           <div class="form-group photo-upload-group">
             <label class="photo-label">
@@ -95,16 +55,8 @@
                 <i class="fas fa-user-circle"></i>
                 <p>Click to Upload</p>
               </div>
-              <input 
-                type="file" 
-                #fileInput
-                id="photo"
-                accept="image/*"
-                (change)="onFileSelected($event)"
-                [disabled]="isLoading"
-                style="display: none;"
-                required
-              />
+              <input type="file" #fileInput id="photo" accept="image/*" (change)="onFileSelected($event)"
+                [disabled]="isLoading" style="display: none;" required />
             </div>
           </div>
 
@@ -114,15 +66,8 @@
               <i class="fas fa-user label-icon"></i>
               Full Name <span class="required-star">*</span>
             </label>
-            <input 
-              type="text" 
-              id="fullName"
-              [(ngModel)]="fullName" 
-              name="fullName"
-              placeholder="Enter your full name"
-              [disabled]="isLoading"
-              required
-            />
+            <input type="text" id="fullName" [(ngModel)]="fullName" name="fullName" placeholder="Enter your full name"
+              [disabled]="isLoading" required />
           </div>
 
           <!-- Email -->
@@ -131,15 +76,8 @@
               <i class="fas fa-envelope label-icon"></i>
               Email Address <span class="required-star">*</span>
             </label>
-            <input 
-              type="email" 
-              id="email"
-              [(ngModel)]="email" 
-              name="email"
-              placeholder="your.email@example.com"
-              [disabled]="isLoading"
-              required
-            />
+            <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="your.email@example.com"
+              [disabled]="isLoading" required autocomplete="off" />
           </div>
 
           <!-- Phone Number -->
@@ -148,15 +86,8 @@
               <i class="fas fa-phone label-icon"></i>
               Phone Number <span class="required-star">*</span>
             </label>
-            <input 
-              type="tel" 
-              id="phoneNumber"
-              [(ngModel)]="phoneNumber" 
-              name="phoneNumber"
-              placeholder="+91 1234567890"
-              [disabled]="isLoading"
-              required
-            />
+            <input type="tel" id="phoneNumber" [(ngModel)]="phoneNumber" name="phoneNumber" placeholder="+91 1234567890"
+              [disabled]="isLoading" required />
           </div>
 
           <!-- Password -->
@@ -166,21 +97,10 @@
               Password <span class="required-star">*</span>
             </label>
             <div class="password-input">
-              <input 
-                [type]="showPassword ? 'text' : 'password'" 
-                id="password"
-                [(ngModel)]="password" 
-                name="password"
-                placeholder="Create a strong password (min 6 characters)"
-                [disabled]="isLoading"
-                required
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                (click)="togglePassword()"
-                [disabled]="isLoading"
-              >
+              <input [type]="showPassword ? 'text' : 'password'" id="password" [(ngModel)]="password" name="password"
+                placeholder="Create a strong password (min 6 characters)" [disabled]="isLoading" required
+                autocomplete="new-password" />
+              <button type="button" class="toggle-password" (click)="togglePassword()" [disabled]="isLoading">
                 <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
@@ -193,21 +113,10 @@
               Confirm Password <span class="required-star">*</span>
             </label>
             <div class="password-input">
-              <input 
-                [type]="showConfirmPassword ? 'text' : 'password'" 
-                id="confirmPassword"
-                [(ngModel)]="confirmPassword" 
-                name="confirmPassword"
-                placeholder="Re-enter your password"
-                [disabled]="isLoading"
-                required
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                (click)="toggleConfirmPassword()"
-                [disabled]="isLoading"
-              >
+              <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword"
+                [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Re-enter your password"
+                [disabled]="isLoading" required autocomplete="new-password" />
+              <button type="button" class="toggle-password" (click)="toggleConfirmPassword()" [disabled]="isLoading">
                 <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
@@ -216,13 +125,7 @@
           <!-- Terms and Conditions -->
           <div class="form-options">
             <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="agreedToTerms"
-                name="agreedToTerms"
-                [disabled]="isLoading"
-                required
-              />
+              <input type="checkbox" [(ngModel)]="agreedToTerms" name="agreedToTerms" [disabled]="isLoading" required />
               <span class="checkbox-text">
                 I agree to the <a href="#" class="terms-link">Terms & Conditions</a>
               </span>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, timer } from 'rxjs';
-import { map, switchMap, catchError, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, timer, interval } from 'rxjs';
+import { map, switchMap, catchError, tap, startWith } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -50,18 +50,18 @@ export class NotificationService {
     startPolling() {
         if (this.pollingSubscription) return;
 
-        // Poll every 30 seconds
-        this.pollingSubscription = timer(0, 30000).pipe(
+        // Poll every 5 seconds
+        this.pollingSubscription = interval(5000).pipe( // 🚀 Reduced to 5 seconds for real-time feel
+            startWith(0),
             switchMap(() => this.getUnreadNotifications()),
-            tap(notifications => {
-                this.notificationsSubject.next(notifications);
-                this.unreadCountSubject.next(notifications.length);
-            }),
             catchError(err => {
-                console.error('Error polling notifications:', err);
-                return [];
+                console.error('Error in notification polling:', err);
+                return []; // Prevent subscription from dying
             })
-        ).subscribe();
+        ).subscribe(notifications => {
+            this.notificationsSubject.next(notifications);
+            this.unreadCountSubject.next(notifications.length);
+        });
     }
 
     stopPolling() {
@@ -77,7 +77,9 @@ export class NotificationService {
         const user = this.authService.currentUserValue;
         if (!user) return new Observable(obs => obs.next([]));
 
-        return this.http.get<any>(`${this.apiUrl}/user/${user.userId}/unread`).pipe(
+        const timestamp = new Date().getTime();
+        return this.http.get<any>(`${this.apiUrl}/user/${user.userId}/unread?t=${timestamp}`).pipe(
+            tap(res => console.log('🔔 Frontend: Received notifications response:', res)),
             map(res => res.data || [])
         );
     }

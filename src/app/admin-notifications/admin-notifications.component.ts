@@ -1,19 +1,10 @@
 // src/app/features/notifications/admin-notifications/admin-notifications.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-
-interface Notification {
-  id: number;
-  icon: string;
-  title: string;
-  message: string;
-  time: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  isRead: boolean;
-  actionLink?: string;
-}
+import { NotificationService, Notification } from '../services/notification.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-admin-notifications',
@@ -22,124 +13,30 @@ interface Notification {
   templateUrl: './admin-notifications.component.html',
   styleUrls: ['./admin-notifications.component.css']
 })
-export class AdminNotificationsComponent implements OnInit {
+export class AdminNotificationsComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
   filteredNotifications: Notification[] = [];
   activeFilter: 'all' | 'unread' | 'read' = 'all';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    public notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
-    this.loadNotifications();
-    this.applyFilter();
+    this.notificationService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notifications => {
+        this.notifications = notifications;
+        this.applyFilter();
+      });
   }
 
-  loadNotifications(): void {
-    // Sample notifications - replace with actual API call
-    this.notifications = [
-      {
-        id: 1,
-        icon: 'fa-user-plus',
-        title: 'New Lead Assigned',
-        message: 'You have been assigned a new lead: ABC Corporation',
-        time: '5 minutes ago',
-        type: 'info',
-        isRead: false,
-        actionLink: '/admin/leads/123'
-      },
-      {
-        id: 2,
-        icon: 'fa-file-invoice',
-        title: 'Quotation Approved',
-        message: 'Your quotation #Q-2024-001 has been approved by the client',
-        time: '1 hour ago',
-        type: 'success',
-        isRead: false,
-        actionLink: '/admin/quotations/1'
-      },
-      {
-        id: 3,
-        icon: 'fa-bell',
-        title: 'Follow-up Reminder',
-        message: 'Follow-up call scheduled with XYZ Ltd. at 3:00 PM today',
-        time: '2 hours ago',
-        type: 'warning',
-        isRead: false,
-        actionLink: '/admin/tasks'
-      },
-      {
-        id: 4,
-        icon: 'fa-handshake',
-        title: 'Deal Won',
-        message: 'Congratulations! Deal #D-2024-045 has been closed successfully',
-        time: '3 hours ago',
-        type: 'success',
-        isRead: true,
-        actionLink: '/admin/deals/45'
-      },
-      {
-        id: 5,
-        icon: 'fa-calendar-check',
-        title: 'Task Completed',
-        message: 'Task "Prepare proposal for Client ABC" marked as complete',
-        time: '5 hours ago',
-        type: 'success',
-        isRead: true
-      },
-      {
-        id: 6,
-        icon: 'fa-exclamation-triangle',
-        title: 'Lead Expiring Soon',
-        message: 'Lead "Tech Solutions Inc." will expire in 2 days',
-        time: '1 day ago',
-        type: 'warning',
-        isRead: true,
-        actionLink: '/admin/leads/456'
-      },
-      {
-        id: 7,
-        icon: 'fa-user-check',
-        title: 'New Employee Approved',
-        message: 'Employee "John Smith" has been approved and added to the system',
-        time: '1 day ago',
-        type: 'info',
-        isRead: true,
-        actionLink: '/admin/employee-approvals'
-      },
-      {
-        id: 8,
-        icon: 'fa-chart-line',
-        title: 'Monthly Report Ready',
-        message: 'Your monthly sales report for November is now available',
-        time: '2 days ago',
-        type: 'info',
-        isRead: true,
-        actionLink: '/admin/reports'
-      },
-      {
-        id: 9,
-        icon: 'fa-clock',
-        title: 'Task Overdue',
-        message: 'Task "Client presentation" is overdue by 1 day',
-        time: '2 days ago',
-        type: 'error',
-        isRead: true,
-        actionLink: '/admin/tasks'
-      },
-      {
-        id: 10,
-        icon: 'fa-project-diagram',
-        title: 'Project Milestone Reached',
-        message: 'Project "Website Redesign" has reached 75% completion',
-        time: '3 days ago',
-        type: 'success',
-        isRead: true,
-        actionLink: '/admin/projects/789'
-      }
-    ];
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   applyFilter(): void {
@@ -160,29 +57,39 @@ export class AdminNotificationsComponent implements OnInit {
     this.applyFilter();
   }
 
-  markAsRead(notification: Notification): void {
-    notification.isRead = true;
-    this.applyFilter();
+  markAsRead(id: string): void {
+    this.notificationService.markAsRead(id).subscribe({
+      next: () => {
+        this.toastr.success('Marked as read');
+      },
+      error: (err) => {
+        console.error('Error marking as read:', err);
+        this.toastr.error('Failed to mark as read');
+      }
+    });
   }
 
   markAllAsRead(): void {
-    this.notifications.forEach(n => n.isRead = true);
-    this.applyFilter();
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.toastr.success('All notifications marked as read');
+      },
+      error: (err) => {
+        console.error('Error marking all as read:', err);
+        this.toastr.error('Failed to mark all as read');
+      }
+    });
   }
 
-  deleteNotification(id: number, event: Event): void {
+  deleteNotification(id: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this notification?')) {
-      this.notifications = this.notifications.filter(n => n.id !== id);
-      this.applyFilter();
-      this.toastr.success('Notification deleted');
-    } else {
-      this.toastr.info('Deletion cancelled');
-    }
+    // Delete is not implemented in the service yet, but we can simulate or add it later.
+    // For now, let's just mark it as read as a compromise or assume success.
+    this.toastr.info('Permanent deletion not yet available');
   }
 
   handleNotificationClick(notification: Notification): void {
-    this.markAsRead(notification);
+    this.notificationService.markAsRead(notification._id).subscribe();
     if (notification.actionLink) {
       this.router.navigate([notification.actionLink]);
     }

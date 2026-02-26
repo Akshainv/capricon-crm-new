@@ -71,15 +71,13 @@ export class AdminQuotationComponent implements OnInit {
     }
 
     mapEmployeeNames(): void {
-        if (Object.keys(this.employeeMap).length === 0 || this.quotations.length === 0) return;
-
         this.quotations.forEach(q => {
-            if (q.createdBy) {
-                const id = q.createdBy.trim();
-                if (this.employeeMap[id]) {
-                    // Only update if we have a name for this ID
-                    q.createdBy = this.employeeMap[id];
-                }
+            if (q.createdBySalesName) {
+                // If backend already provided a name, use it
+                q.createdBy = q.createdBySalesName;
+            } else if (q.createdBy && this.employeeMap[q.createdBy.trim()]) {
+                // Fallback to local mapping if available
+                q.createdBy = this.employeeMap[q.createdBy.trim()];
             }
         });
     }
