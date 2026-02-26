@@ -1,0 +1,103 @@
+<div class="sales-leads-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <h1>Website Leads (WordPress)</h1>
+            <p>Manage leads submitted via the promotional landing page</p>
+        </div>
+    </div>
+
+    <!-- Filters & Search Section -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by name, email, phone..." [(ngModel)]="searchTerm"
+                (keyup)="onSearch()" />
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading leads...</p>
+    </div>
+
+    <!-- Table View -->
+    <div *ngIf="!isLoading" class="table-card">
+        <div class="table-header">
+            <h3>
+                <i class="fas fa-globe"></i>
+                Landing Page Form Submissions
+                <span class="count-badge">{{ filteredLeads.length }}</span>
+            </h3>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredLeads.length === 0" class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No website leads found</h3>
+            <p>There are currently no submissions from the landing page.</p>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container" *ngIf="filteredLeads.length > 0">
+            <table class="leads-table">
+                <thead>
+                    <tr>
+                        <th>Date Submitted</th>
+                        <th>Name</th>
+                        <th>Contact Info</th>
+                        <th>Elevator Type</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let lead of filteredLeads; let i = index" class="table-row">
+                        <td>
+                            <div class="text-muted"><i class="far fa-calendar-alt"></i> {{ lead.createdAt |
+                                date:'shortDate' }}</div>
+                            <div class="text-xs" style="font-size: 11px; opacity: 0.7;">{{ lead.createdAt |
+                                date:'shortTime' }}</div>
+                        </td>
+                        <td>
+                            <div class="lead-info-cell">
+                                <div class="lead-avatar" style="background-color: var(--accent-gold); color: #000;">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div>
+                                    <strong class="lead-name">{{ lead.name }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contact-cell">
+                                <div><i class="fas fa-envelope"></i> <a [href]="'mailto:' + lead.email">{{ lead.email
+                                        }}</a></div>
+                                <div class="text-muted"><i class="fas fa-phone"></i> <a [href]="'tel:' + lead.phone">{{
+                                        lead.phone }}</a></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="source-badge">
+                                <i class="fas fa-building"></i> {{ lead.elevatorType || 'Not specified' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="text-truncate d-inline-block" style="max-width: 250px; font-size: 13px;"
+                                [title]="lead.message">
+                                {{ lead.message || 'No message provided' }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge"
+                                [ngClass]="{'seeded-lead': lead.status === 'New', 'qualified': lead.status === 'Converted'}">
+                                {{ lead.status }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

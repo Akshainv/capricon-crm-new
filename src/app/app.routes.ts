@@ -14,6 +14,7 @@ import { EmployeeApprovalsComponent } from './employee-approvals/employee-approv
 // Profile & Settings Imports
 import { UserProfileComponent } from './features/profile/user-profile/user-profile.component';
 import { SalesProfileComponent } from './sales-profile/sales-profile.component';
+import { AdminWebsiteLeadsComponent } from './admin-website-leads/admin-website-leads.component';
 import { AccountSettingsComponent } from './features/profile/account-settings/account-settings.component';
 import { SalesSettingsComponent } from './sales-settings/sales-settings.component';
 
@@ -151,6 +152,7 @@ export const routes: Routes = [
       { path: 'admin/leads', component: LeadsListComponent },
       { path: 'admin/leads/add', component: LeadFormComponent },
       { path: 'admin/leads/meta', component: MetaLeadsComponent },
+      { path: 'admin/website-leads', component: AdminWebsiteLeadsComponent },
       { path: 'admin/leads/import', component: ImportLeadsComponent },
 
       { path: 'admin/leads/assign', component: LeadAssignmentComponent },

@@ -49,6 +49,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       title: 'Sales',
       items: [
         { icon: 'fa-users', label: 'Leads', route: '/admin/leads' },
+        { icon: 'fa-globe', label: 'Website Leads', route: '/admin/website-leads' },
         { icon: 'fa-user-plus', label: 'Assign Leads', route: '/admin/leads/assign' },
         { icon: 'fab fa-facebook-f', label: 'Meta Leads', route: '/admin/leads/meta' },
         { icon: 'fa-file-invoice', label: 'Quotation', route: '/admin/admin-quotations' },

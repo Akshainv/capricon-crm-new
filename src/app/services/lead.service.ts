@@ -287,6 +287,12 @@ export class LeadsService {
     );
   }
 
+  // ✅ NEW: Fetch leads from WordPress landing page
+  getWebsiteLeads(): Observable<any> {
+    const headers = this.authService.getAuthHeaders();
+    return this.http.get<any>(`${environment.apiBaseUrl}/website-leads`, { headers });
+  }
+
   getLeadsByAssignedTo(salesPersonId: string): Observable<Lead[]> {
     return this.getAllLeads().pipe(
       map(leads => leads.filter(lead => lead.assignedTo === salesPersonId))

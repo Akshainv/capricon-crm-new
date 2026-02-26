@@ -376,7 +376,7 @@
         </thead>
         <tbody>
           <!-- 11 Items Mapping -->
-          <tr *ngFor="let item of quotationData?.pricingItems">
+          <tr *ngFor="let item of quotationData.pricingItems">
             <td class="text-left">{{item.description || item.label}}</td>
             <td class="text-right">{{item.isNA ? '-' : formatCurrency(item.standard)}}</td>
             <td class="text-right" [class.p9-complimentary]="item.isComplimentary">
@@ -386,20 +386,20 @@
           <!-- Row 12: Total -->
           <tr class="p9-row-total">
             <td class="text-left">Total</td>
-            <td class="text-right">{{formatCurrency(quotationData?.standardSubtotal)}}</td>
-            <td class="text-right">{{formatCurrency(quotationData?.launchSubtotal)}}</td>
+            <td class="text-right">{{formatCurrency(quotationData.standardSubtotal)}}</td>
+            <td class="text-right">{{formatCurrency(quotationData.launchSubtotal)}}</td>
           </tr>
           <!-- Row 13: GST -->
           <tr class="p9-row-total">
-            <td class="text-left">GST ({{quotationData?.gstRate || 18}}%)</td>
-            <td class="text-right">{{formatCurrency(quotationData?.standardTax)}}</td>
-            <td class="text-right">{{formatCurrency(quotationData?.launchTax)}}</td>
+            <td class="text-left">GST ({{quotationData.gstRate || 18}}%)</td>
+            <td class="text-right">{{formatCurrency(quotationData.standardTax)}}</td>
+            <td class="text-right">{{formatCurrency(quotationData.launchTax)}}</td>
           </tr>
           <!-- Row 14: Grand Total -->
           <tr class="p9-row-grand">
             <td class="text-left"><strong>Grand Total</strong></td>
-            <td class="text-right"><strong>{{formatCurrency(quotationData?.standardGrandTotal)}}</strong></td>
-            <td class="text-right"><strong>{{formatCurrency(quotationData?.launchGrandTotal)}}</strong></td>
+            <td class="text-right"><strong>{{formatCurrency(quotationData.standardGrandTotal)}}</strong></td>
+            <td class="text-right"><strong>{{formatCurrency(quotationData.launchGrandTotal)}}</strong></td>
           </tr>
         </tbody>
       </table>
@@ -407,9 +407,9 @@
 
     <!-- Total Value Section -->
     <div class="p9-value-section">
-      <p class="p9-value-words"><strong>Total Value of Project: {{quotationData?.launchGrandTotalInWords}}</strong>
+      <p class="p9-value-words"><strong>Total Value of Project: {{quotationData.launchGrandTotalInWords}}</strong>
       </p>
-      <p class="p9-validity">The Above price is valid till {{formatDate(quotationData?.validUntil || '')}}</p>
+      <p class="p9-validity">The Above price is valid till {{formatDate(quotationData.validUntil || '')}}</p>
     </div>
 
     <!-- Payment Terms Section -->
@@ -424,7 +424,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let term of quotationData?.paymentTerms">
+          <tr *ngFor="let term of quotationData.paymentTerms">
             <td class="text-center">{{term.slNo}}</td>
             <td>{{term.description}}</td>
             <td class="text-center">{{term.rate}}</td>
@@ -440,9 +440,9 @@
       <div class="p9-bank-container">
         <div class="p9-bank-box">
           <div class="p9-bank-row"><span class="p9-lbl">Account No.</span><span
-              class="p9-val">{{quotationData?.bankDetails?.accountNo}}</span></div>
+              class="p9-val">{{quotationData.bankDetails?.accountNo}}</span></div>
           <div class="p9-bank-row"><span class="p9-lbl">IFSC</span><span
-              class="p9-val">{{quotationData?.bankDetails?.ifsc}}</span></div>
+              class="p9-val">{{quotationData.bankDetails?.ifsc}}</span></div>
           <div class="p9-bank-row"><span class="p9-lbl">BANK</span><span
               class="p9-val">{{quotationData.bankDetails?.bank}}</span></div>
           <div class="p9-bank-row"><span class="p9-lbl">GSTIN</span><span
