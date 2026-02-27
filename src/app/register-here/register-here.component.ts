@@ -95,13 +95,15 @@ export class RegisterHereComponent implements OnInit {
     }
   }
 
-  removePhoto() {
+  removePhoto(showNotification: boolean = true) {
     this.photoPreview = null;
     this.selectedFile = null;
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
-    this.showToast('Photo removed', 'info');
+    if (showNotification) {
+      this.showToast('Photo removed', 'info');
+    }
   }
 
   onSubmit() {
@@ -206,7 +208,7 @@ export class RegisterHereComponent implements OnInit {
     this.password = '';
     this.confirmPassword = '';
     this.agreedToTerms = false;
-    this.removePhoto();
+    this.removePhoto(false);
   }
 
   navigateToLogin() {
