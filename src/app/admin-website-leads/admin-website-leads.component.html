@@ -116,7 +116,7 @@
                     <select id="employeeSelect" [(ngModel)]="selectedEmployeeId" class="form-control">
                         <option value="">-- Select Employee --</option>
                         <option *ngFor="let emp of employees" [value]="emp._id">
-                            {{ emp.fullName }} ({{ emp.email }})
+                            {{ emp.fullName }}
                         </option>
                     </select>
                 </div>
