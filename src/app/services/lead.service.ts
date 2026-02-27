@@ -273,6 +273,14 @@ export class LeadsService {
     );
   }
 
+  assignWebsiteLead(leadId: string, employeeId: string): Observable<any> {
+    const url = `${this.apiUrl}/website-assign/${leadId}`;
+    return this.http.post<any>(url, { employeeId }, this.getHeaders()).pipe(
+      tap(() => this.leadsUpdated.next()),
+      catchError(this.handleError)
+    );
+  }
+
   getAllAssignments(): Observable<AssignLead[]> {
     return this.http.get<ApiResponse<AssignLead[]>>(`${this.apiUrl}/assign`, this.getHeaders()).pipe(
       map(response => response.data!),

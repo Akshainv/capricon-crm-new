@@ -48,8 +48,8 @@
                         <th>Name</th>
                         <th>Contact Info</th>
                         <th>Elevator Type</th>
-                        <th>Message</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,20 +84,50 @@
                             </span>
                         </td>
                         <td>
-                            <div class="text-truncate d-inline-block" style="max-width: 250px; font-size: 13px;"
-                                [title]="lead.message">
-                                {{ lead.message || 'No message provided' }}
-                            </div>
-                        </td>
-                        <td>
                             <span class="status-badge"
                                 [ngClass]="{'seeded-lead': lead.status === 'New', 'qualified': lead.status === 'Converted'}">
                                 {{ lead.status }}
                             </span>
                         </td>
+                        <td>
+                            <button class="btn-assign" (click)="openAssignModal(lead)">
+                                <i class="fas fa-user-plus"></i> Assign
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div class="modal-overlay" *ngIf="showAssignModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-check"></i> Assign Website Lead</h3>
+                <button class="close-btn" (click)="closeAssignModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Assigning <strong>{{ selectedLead?.name }}</strong> to a sales employee. This will move the lead to
+                    the main leads list.</p>
+
+                <div class="form-group">
+                    <label for="employeeSelect">Select Sales Person</label>
+                    <select id="employeeSelect" [(ngModel)]="selectedEmployeeId" class="form-control">
+                        <option value="">-- Select Employee --</option>
+                        <option *ngFor="let emp of employees" [value]="emp._id">
+                            {{ emp.fullName }} ({{ emp.email }})
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="closeAssignModal()">Cancel</button>
+                <button class="btn-primary" [disabled]="!selectedEmployeeId || isAssigning" (click)="onAssign()">
+                    <span *ngIf="!isAssigning">Assign Now</span>
+                    <span *ngIf="isAssigning"><i class="fas fa-spinner fa-spin"></i> Assigning...</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
