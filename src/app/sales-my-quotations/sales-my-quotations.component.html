@@ -113,7 +113,7 @@
             <th>Valid Until</th>
             <th>Elevator Type</th>
             <th class="text-center">Status</th>
-            <th *ngIf="selectedStatus === 'Approved'" class="text-center">Send to Client</th>
+            <th *ngIf="selectedStatus === 'Approved'" class="text-center">Download</th>
             <th class="text-center">Actions</th>
           </tr>
         </thead>
@@ -155,10 +155,10 @@
               </div>
             </td>
             <td *ngIf="selectedStatus === 'Approved'" class="text-center">
-              <!-- Send Button only for Approved -->
+              <!-- Download PDF Button only for Approved -->
               <button class="btn-send-client" *ngIf="$any(quote).status?.toLowerCase() === 'approved'"
-                (click)="sendToClient(quote)" title="Send to Client" style="margin: 0 auto;">
-                <i class="fas fa-paper-plane"></i> Send
+                (click)="downloadPdf(quote)" title="Download PDF" style="margin: 0 auto;">
+                <i class="fas fa-file-pdf"></i> PDF
               </button>
             </td>
             <td class="text-center">
@@ -167,8 +167,8 @@
                   <i class="fas fa-eye"></i>
                 </button>
 
-                <!-- Convert to Deal Button only for Sent status -->
-                <button class="action-btn btn-deal" *ngIf="$any(quote).status?.toLowerCase() === 'sent'"
+                <!-- Convert to Deal Button only for Approved status -->
+                <button class="action-btn btn-deal" *ngIf="$any(quote).status?.toLowerCase() === 'approved'"
                   (click)="convertToDeal(getQuotationId(quote))" title="Convert to Deal">
                   <i class="fas fa-handshake"></i>
                 </button>

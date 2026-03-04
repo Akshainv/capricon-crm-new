@@ -145,6 +145,7 @@ export class DealPipelineComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         console.error('Error converting deal to project:', error);
+        console.error('Error response body:', error.error);
         this.showToast('Failed to convert deal to project. Please try again.', 'error');
       }
     });

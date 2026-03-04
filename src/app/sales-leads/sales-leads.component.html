@@ -62,11 +62,12 @@
     <div class="filter-controls">
       <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()" class="filter-select">
         <option value="all">All Status</option>
+        <option value="New Lead">New Lead</option>
         <option value="Seeded Lead">Seeded Lead</option>
-        <option value="Qualified">Qualified</option>
         <option value="Meeting Fixed">Meeting Fixed</option>
         <option value="Meeting Completed">Meeting Completed</option>
-        <option value="Junk Lead">Junk Lead</option>
+        <option value="CS Executed">CS Executed</option>
+        <option value="Lost">Lost</option>
       </select>
 
       <select [(ngModel)]="selectedLeadType" (change)="onLeadTypeChange()" class="filter-select my-leads-filter">
@@ -146,11 +147,12 @@
               <select (click)="$event.stopPropagation()"
                 (change)="updateLeadStatus(lead, $any($event.target).value, $event)" [value]="lead.status"
                 class="status-dropdown" [ngClass]="getStatusClass(lead.status)">
+                <option value="New Lead">New Lead</option>
                 <option value="Seeded Lead">Seeded Lead</option>
-                <option value="Qualified">Qualified</option>
                 <option value="Meeting Fixed">Meeting Fixed</option>
                 <option value="Meeting Completed">Meeting Completed</option>
-                <option value="Junk Lead">Junk Lead</option>
+                <option value="CS Executed">CS Executed</option>
+                <option value="Lost">Lost</option>
               </select>
             </td>
             <td>
@@ -282,6 +284,42 @@
       <button class="btn-primary" (click)="editLead(selectedLead, $event); closeViewModal()">
         <i class="fas fa-edit"></i>
         Edit Lead
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Note Modal -->
+<div *ngIf="showNoteModal" class="modal-overlay" (click)="closeNoteModal()">
+  <div class="modal-content modal-note" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-sticky-note"></i>
+        Add Note for Status Update
+      </h2>
+      <button class="modal-close" (click)="closeNoteModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="note-context">
+        Updating <strong>{{ pendingStatusLead?.fullName }}</strong> status to
+        <span class="status-badge" [ngClass]="getStatusClass(pendingStatusValue)">{{ pendingStatusValue }}</span>
+      </p>
+      <div class="form-group">
+        <label for="statusNote">Note (optional)</label>
+        <textarea id="statusNote" [(ngModel)]="statusNoteText" placeholder="Add a note about this status update..."
+          rows="4" class="note-textarea"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeNoteModal()">
+        <i class="fas fa-times"></i>
+        Cancel
+      </button>
+      <button class="btn-primary" (click)="submitStatusWithNote()">
+        <i class="fas fa-check"></i>
+        Update Status
       </button>
     </div>
   </div>

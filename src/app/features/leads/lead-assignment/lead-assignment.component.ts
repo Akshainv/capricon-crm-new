@@ -69,7 +69,7 @@ export class LeadAssignmentComponent implements OnInit {
       next: (allLeads: Lead[]) => {
         const unassignedLeads = allLeads.filter(lead => {
           const isUnassigned = !lead.assignedTo || lead.assignedTo === '' || lead.assignedTo === null;
-          const isNew = lead.status === 'Seeded Lead';
+          const isNew = lead.status === 'New Lead';
           const notConverted = !lead.isConverted;
 
           return isNew && isUnassigned && notConverted;

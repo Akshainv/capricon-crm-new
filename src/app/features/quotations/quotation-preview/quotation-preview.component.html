@@ -6,12 +6,7 @@
     <h1 class="page-title">Quotation Preview</h1>
 
     <div class="header-actions">
-      <button class="btn-action btn-send" (click)="sendToClient()"
-        *ngIf="!isAdmin && quotationData?.quoteNumber !== 'Draft'">
-        <i class="fas fa-paper-plane"></i>
-        <span>Send to Client</span>
-      </button>
-      <button class="btn-action btn-official" (click)="downloadOfficialPDF()" *ngIf="!isAdmin">
+      <button class="btn-action btn-official" (click)="downloadOfficialPDF()">
         <i class="fas fa-file-pdf"></i>
         <span>Download Official PDF</span>
       </button>

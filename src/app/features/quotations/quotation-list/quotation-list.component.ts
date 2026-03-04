@@ -211,6 +211,7 @@ export class QuotationListComponent implements OnInit {
     const labels: { [key: string]: string } = {
       'draft': 'Draft',
       'sent': 'Sent',
+      'approved': 'Approved',
       'accepted': 'Accepted',
       'rejected': 'Rejected'
     };

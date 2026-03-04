@@ -32,16 +32,23 @@ export class NotificationService {
     public notifications$ = this.notificationsSubject.asObservable();
 
     private pollingSubscription: any;
+    private currentPollingUserId: string | null = null;
 
     constructor(
         private http: HttpClient,
         private authService: AuthService
     ) {
-        // Start/Stop polling based on login status
+        // Start/Stop/Restart polling based on login status and user identity
         this.authService.currentUser.subscribe(user => {
-            if (user) {
-                this.startPolling();
+            if (user && user.userId) {
+                // If user changed (different userId), restart polling with new identity
+                if (this.currentPollingUserId !== user.userId) {
+                    this.stopPolling();
+                    this.currentPollingUserId = user.userId;
+                    this.startPolling();
+                }
             } else {
+                this.currentPollingUserId = null;
                 this.stopPolling();
             }
         });
@@ -51,7 +58,7 @@ export class NotificationService {
         if (this.pollingSubscription) return;
 
         // Poll every 5 seconds
-        this.pollingSubscription = interval(5000).pipe( // 🚀 Reduced to 5 seconds for real-time feel
+        this.pollingSubscription = interval(5000).pipe(
             startWith(0),
             switchMap(() => this.getUnreadNotifications()),
             catchError(err => {

@@ -55,6 +55,10 @@ export class LeadsListComponent implements OnInit, OnDestroy {
   private leadsMap: Map<string, Lead> = new Map(); // Store full lead objects
   private leadsSubscription?: Subscription;
 
+  // Note display
+  showNoteDisplay: boolean = false;
+  displayedNote: string = '';
+
   constructor(
     private router: Router,
     private leadsService: LeadsService,
@@ -374,11 +378,14 @@ export class LeadsListComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     const statusClasses: { [key: string]: string } = {
+      'New Lead': 'status-new',
       'Seeded Lead': 'status-seeded',
       'CS Executive Assigned': 'status-assigned',
       'Qualified': 'status-qualified',
       'Meeting Fixed': 'status-fixed',
       'Meeting Completed': 'status-completed',
+      'CS Executed': 'status-executed',
+      'Lost': 'status-lost',
       'Junk Lead': 'status-junk'
     };
     return statusClasses[status] || '';
@@ -386,11 +393,14 @@ export class LeadsListComponent implements OnInit, OnDestroy {
 
   getStatusIcon(status: string): string {
     const statusIcons: { [key: string]: string } = {
+      'New Lead': 'fa-star',
       'Seeded Lead': 'fa-seedling',
       'CS Executive Assigned': 'fa-user-tag',
       'Qualified': 'fa-check-double',
       'Meeting Fixed': 'fa-calendar-plus',
       'Meeting Completed': 'fa-calendar-check',
+      'CS Executed': 'fa-check-circle',
+      'Lost': 'fa-times-circle',
       'Junk Lead': 'fa-trash-alt'
     };
     return statusIcons[status] || 'fa-circle';
@@ -403,5 +413,25 @@ export class LeadsListComponent implements OnInit, OnDestroy {
       month: 'short',
       year: 'numeric'
     });
+  }
+
+  // Status note methods for admin
+  getLeadStatusNote(leadId: string): string {
+    const lead = this.leadsMap.get(leadId);
+    return lead?.statusNote || '';
+  }
+
+  showStatusNote(leadId: string, event: Event): void {
+    event.stopPropagation();
+    const note = this.getLeadStatusNote(leadId);
+    if (note) {
+      this.displayedNote = note;
+      this.showNoteDisplay = true;
+    }
+  }
+
+  closeNoteDisplay(): void {
+    this.showNoteDisplay = false;
+    this.displayedNote = '';
   }
 }

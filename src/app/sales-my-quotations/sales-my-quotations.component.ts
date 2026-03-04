@@ -486,6 +486,18 @@ export class SalesMyQuotationsComponent implements OnInit {
     });
   }
 
+  downloadPdf(quote: Quotation): void {
+    const id = this.getQuotationId(quote);
+    if (!id) {
+      this.showToast('Invalid quotation ID', 'error');
+      return;
+    }
+    // Navigate to preview page which has the Download PDF capability
+    const previewData = this.buildPreviewFromQuotation(quote);
+    try { localStorage.setItem('quotationPreview', JSON.stringify(previewData)); } catch (e) { }
+    this.router.navigate(['/quotations/preview'], { state: { quotationData: previewData } });
+  }
+
   convertToDeal(id: string | undefined): void {
     if (!id) {
       this.showToast('Invalid quotation ID', 'error');
@@ -522,15 +534,25 @@ export class SalesMyQuotationsComponent implements OnInit {
 
       this.dealService.createDealFromQuotation(quotationData).subscribe({
         next: (deal) => {
-          this.loading = false;
           console.log('Deal created successfully:', deal);
 
           const dealTitle = deal.title || deal.dealTitle || 'New Deal';
           const dealAmount = this.formatCurrency(deal.dealAmount || quotation.totalAmount);
-          this.showToast(`✓ Deal created: ${dealTitle} (${dealAmount})`, 'success');
 
-          // Stay on the current page and refresh the list
-          this.loadQuotations();
+          // Update quotation status to 'sent' so it moves from Approved to Deal filter
+          const quotationId = (quotation._id || quotation.id) as string;
+          this.quotationService.updateQuotationStatus(quotationId, 'sent').subscribe({
+            next: () => {
+              this.loading = false;
+              this.showToast(`✓ Deal created: ${dealTitle} (${dealAmount})`, 'success');
+              this.loadQuotations();
+            },
+            error: () => {
+              this.loading = false;
+              this.showToast(`✓ Deal created: ${dealTitle} (${dealAmount})`, 'success');
+              this.loadQuotations();
+            }
+          });
         },
         error: (error) => {
           this.loading = false;

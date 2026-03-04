@@ -52,6 +52,12 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
   showViewModal: boolean = false;
   parsedNotes: { [key: string]: string } = {};
 
+  // Status Note Modal
+  showNoteModal: boolean = false;
+  pendingStatusLead: Lead | null = null;
+  pendingStatusValue: string = '';
+  statusNoteText: string = '';
+
   constructor(
     private router: Router,
     private leadsService: LeadsService,
@@ -271,11 +277,10 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ FIXED: Use dedicated updateLeadStatus method for proper persistence
-  updateLeadStatus(lead: Lead, newStatus: string, event: Event): void {
+  // ✅ STEP 1: When employee changes status dropdown, show note modal first
+  onStatusChange(lead: Lead, newStatus: string, event: Event): void {
     event.stopPropagation();
 
-    // Basic validation
     if (!lead || !lead._id) {
       console.error('❌ Cannot update: Lead or Lead ID is missing!');
       this.toastr.error('Invalid lead data. Please refresh the page.');
@@ -287,54 +292,61 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Store pending status and show note modal
+    this.pendingStatusLead = lead;
+    this.pendingStatusValue = newStatus;
+    this.statusNoteText = '';
+    this.showNoteModal = true;
+  }
+
+  // ✅ STEP 2: Submit status update with note
+  submitStatusWithNote(): void {
+    if (!this.pendingStatusLead || !this.pendingStatusValue) return;
+
+    const lead = this.pendingStatusLead;
+    const newStatus = this.pendingStatusValue;
+    const note = this.statusNoteText.trim();
+
     console.log('==============================================');
-    console.log('🔄 Updating lead status via PATCH');
+    console.log('🔄 Updating lead status via PATCH with note');
     console.log('Lead ID:', lead._id);
-    console.log('Lead Name:', lead.fullName);
-    console.log('Old Status:', lead.status);
     console.log('New Status:', newStatus);
+    console.log('Note:', note);
     console.log('==============================================');
 
-    // ✅ FIXED: Use dedicated updateLeadStatus method (PATCH request)
-    this.leadsService.updateLeadStatus(lead._id, newStatus).subscribe({
+    this.leadsService.updateLeadStatus(lead._id, newStatus, note || undefined).subscribe({
       next: (updatedLead) => {
-        console.log('==============================================');
         console.log('✅ Status PERSISTED to database successfully!');
-        console.log('Backend returned:', updatedLead);
-        console.log('Confirmed new status:', updatedLead?.status || newStatus);
-        console.log('==============================================');
-
-        // Update local lead object immediately
         lead.status = newStatus as any;
+        if (note) {
+          lead.statusNote = note;
+        }
         this.toastr.success(`Status updated to "${newStatus}" successfully!`);
-
-        // Refresh leads list after a short delay to ensure backend sync
-        setTimeout(() => {
-          this.loadLeads();
-        }, 500);
+        this.closeNoteModal();
+        setTimeout(() => { this.loadLeads(); }, 500);
       },
       error: (error) => {
-        console.error('==============================================');
         console.error('❌ Error updating lead status:', error);
-        console.error('Full error object:', error);
-        console.error('==============================================');
-
         let errorMsg = 'Failed to update status. ';
-        if (error.status === 403) {
-          errorMsg += 'You do not have permission to update this lead.';
-        } else if (error.status === 404) {
-          errorMsg += 'Lead not found in database.';
-        } else if (error.status === 400) {
-          errorMsg += 'Invalid status value.';
-        } else if (error.status === 0) {
-          errorMsg += 'Network error. Check your connection.';
-        } else {
-          errorMsg += 'Please try again or contact support.';
-        }
-
+        if (error.status === 400) errorMsg += 'Invalid status value.';
+        else if (error.status === 404) errorMsg += 'Lead not found.';
+        else errorMsg += 'Please try again.';
         this.toastr.error(errorMsg);
+        this.closeNoteModal();
       }
     });
+  }
+
+  closeNoteModal(): void {
+    this.showNoteModal = false;
+    this.pendingStatusLead = null;
+    this.pendingStatusValue = '';
+    this.statusNoteText = '';
+  }
+
+  // ✅ Keep old method for backward compatibility
+  updateLeadStatus(lead: Lead, newStatus: string, event: Event): void {
+    this.onStatusChange(lead, newStatus, event);
   }
 
   createNewLead(): void {
@@ -343,11 +355,14 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     const statusClasses: { [key: string]: string } = {
+      'New Lead': 'status-new',
       'Seeded Lead': 'status-seeded',
       'CS Executive Assigned': 'status-assigned',
       'Qualified': 'status-qualified',
       'Meeting Fixed': 'status-fixed',
       'Meeting Completed': 'status-completed',
+      'CS Executed': 'status-executed',
+      'Lost': 'status-lost',
       'Junk Lead': 'status-junk'
     };
     return statusClasses[status] || '';
@@ -355,11 +370,14 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
 
   getStatusIcon(status: string): string {
     const statusIcons: { [key: string]: string } = {
+      'New Lead': 'fa-star',
       'Seeded Lead': 'fa-seedling',
       'CS Executive Assigned': 'fa-user-tag',
       'Qualified': 'fa-check-double',
       'Meeting Fixed': 'fa-calendar-plus',
       'Meeting Completed': 'fa-calendar-check',
+      'CS Executed': 'fa-check-circle',
+      'Lost': 'fa-times-circle',
       'Junk Lead': 'fa-trash-alt'
     };
     return statusIcons[status] || 'fa-circle';

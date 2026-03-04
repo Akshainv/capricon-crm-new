@@ -36,11 +36,12 @@
 
       <select [(ngModel)]="statusFilter" (change)="applyFiltersAndSort()" class="filter-select">
         <option value="">All Status</option>
+        <option value="New Lead">New Lead</option>
         <option value="Seeded Lead">Seeded Lead</option>
-        <option value="Qualified">Qualified</option>
         <option value="Meeting Fixed">Meeting Fixed</option>
         <option value="Meeting Completed">Meeting Completed</option>
-        <option value="Junk Lead">Junk Lead</option>
+        <option value="CS Executed">CS Executed</option>
+        <option value="Lost">Lost</option>
       </select>
 
       <div class="date-filter-group" style="display: flex; align-items: center; gap: 8px;">
@@ -119,19 +120,23 @@
               <select (click)="$event.stopPropagation()"
                 (change)="updateLeadStatus(lead, $any($event.target).value, $event)" [value]="lead.status"
                 class="status-dropdown" [ngClass]="getStatusClass(lead.status)">
+                <option value="New Lead">New Lead</option>
                 <option value="Seeded Lead">Seeded Lead</option>
-                <option value="Qualified">Qualified</option>
                 <option value="Meeting Fixed">Meeting Fixed</option>
                 <option value="Meeting Completed">Meeting Completed</option>
-                <option value="Junk Lead">Junk Lead</option>
-                <!-- Allow viewing other statuses but not selecting them if they aren't in the list? -->
-                <!-- If the current status is NOT one of the above, we should show it as an option so it's visible -->
+                <option value="CS Executed">CS Executed</option>
+                <option value="Lost">Lost</option>
+                <!-- If the current status is NOT one of the above, show it so it's visible -->
                 <option
-                  *ngIf="!['Seeded Lead', 'Qualified', 'Meeting Fixed', 'Meeting Completed', 'Junk Lead'].includes(lead.status)"
+                  *ngIf="!['New Lead', 'Seeded Lead', 'Meeting Fixed', 'Meeting Completed', 'CS Executed', 'Lost'].includes(lead.status)"
                   [value]="lead.status">
                   {{ lead.status }}
                 </option>
               </select>
+              <button *ngIf="getLeadStatusNote(lead.id)" class="note-btn" (click)="showStatusNote(lead.id, $event)"
+                title="View Note">
+                <i class="fas fa-sticky-note"></i> Note
+              </button>
             </td>
             <td>
               <div class="salesperson-cell">
@@ -262,6 +267,32 @@
 
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeViewModal()">
+        <i class="fas fa-times"></i>
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Note Display Modal -->
+<div *ngIf="showNoteDisplay" class="modal-overlay" (click)="closeNoteDisplay()">
+  <div class="modal-content modal-note" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-sticky-note"></i>
+        Status Note
+      </h2>
+      <button class="modal-close" (click)="closeNoteDisplay()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="note-display-content">
+        <p>{{ displayedNote }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeNoteDisplay()">
         <i class="fas fa-times"></i>
         Close
       </button>

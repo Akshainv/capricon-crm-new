@@ -1103,3 +1103,50 @@
     page-break-inside: avoid;
   }
 }
+
+/* Note Button */
+.note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  background: rgba(212, 179, 71, 0.15);
+  color: #d4b347;
+  border: 1px solid rgba(212, 179, 71, 0.3);
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.note-btn:hover {
+  background: rgba(212, 179, 71, 0.25);
+  border-color: #d4b347;
+  transform: translateY(-1px);
+}
+
+.note-btn i {
+  font-size: 0.7rem;
+}
+
+/* Note Modal */
+.modal-note {
+  max-width: 500px;
+}
+
+.note-display-content {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 179, 71, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.note-display-content p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}

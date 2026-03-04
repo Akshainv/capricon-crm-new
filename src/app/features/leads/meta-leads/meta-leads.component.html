@@ -1,117 +1,129 @@
-<div class="meta-leads-container">
-    <div class="header-section">
-        <div class="title-meta">
-            <h1><i class="fab fa-facebook-square"></i> Meta Lead Ads</h1>
-            <p>Manage leads coming from Facebook and Instagram campaigns</p>
-        </div>
-
-        <div class="actions-bar">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearch()"
-                    placeholder="Search by name, email or phone...">
-            </div>
-            <button class="btn-assign" (click)="goToAssignLeads()">
-                <i class="fas fa-user-plus"></i> Assign Leads
-            </button>
-            <button class="btn-refresh" (click)="loadMetaLeads()" [disabled]="isLoading">
-                <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
-            </button>
+<div class="sales-leads-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <h1>Meta leads (Facebook/Instagram)</h1>
+            <p>Manage leads submitted via Meta Lead Ads & Webhooks</p>
         </div>
     </div>
 
-    <div class="stats-overview" *ngIf="!isLoading">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-users"></i></div>
-            <div class="stat-info">
-                <h3>{{leads.length}}</h3>
-                <p>Total Meta Leads</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon icon-today"><i class="fas fa-calendar-day"></i></div>
-            <div class="stat-info">
-                <h3>{{displayedLeads.length}}</h3>
-                <p>Filtered Leads</p>
-            </div>
+    <!-- Filters & Search Section -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search by name, email, phone..." [(ngModel)]="searchTerm"
+                (keyup)="onSearch()" />
         </div>
     </div>
 
-    <div class="table-container shadow-sm">
-        <table class="table" *ngIf="!isLoading && paginatedLeads.length > 0">
-            <thead>
-                <tr>
-                    <th>Name & Contact</th>
-                    <th>Lead Details</th>
-                    <th>Meta Source info</th>
-                    <th>Date Received</th>
-                    <th>Status</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let lead of paginatedLeads" (click)="viewDetails(lead)" class="clickable-row">
-                    <td>
-                        <div class="lead-name">{{lead.fullName}}</div>
-                        <div class="lead-email"><i class="far fa-envelope"></i> {{lead.email}}</div>
-                        <div class="lead-phone"><i class="fas fa-phone-alt"></i> {{lead.phoneNumber}}</div>
-                    </td>
-                    <td>
-                        <div class="lead-company">{{lead.companyName || 'N/A'}}</div>
-                        <div class="lead-priority" [class]="'priority-' + (lead.priority || 'medium')">
-                            {{lead.priority || 'medium' | titlecase}}
-                        </div>
-                    </td>
-                    <td>
-                        <ng-container *ngIf="getMetaInfo(lead.notes) as meta">
-                            <div class="meta-campaign" *ngIf="meta['Campaign']">
-                                <strong>Campaign:</strong> {{meta['Campaign']}}
-                            </div>
-                            <div class="meta-platform" *ngIf="meta['Platform']">
-                                <strong>Platform:</strong> {{meta['Platform']}}
-                            </div>
-                            <div class="meta-id" *ngIf="meta['Meta Leadgen ID']">
-                                <small>ID: {{meta['Meta Leadgen ID']}}</small>
-                            </div>
-                        </ng-container>
-                    </td>
-                    <td>{{formatDate(lead.createdAt)}}</td>
-                    <td>
-                        <span class="status-badge" [class]="'status-' + lead.status.toLowerCase().replace(' ', '-')">
-                            {{lead.status}}
-                        </span>
-                    </td>
-                    <td class="text-center actions-cell">
-                        <button class="btn-view" (click)="$event.stopPropagation(); viewDetails(lead)">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-edit" (click)="$event.stopPropagation(); editLead(lead)">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading leads...</p>
+    </div>
 
-        <div class="no-leads" *ngIf="!isLoading && paginatedLeads.length === 0">
+    <!-- Table View -->
+    <div *ngIf="!isLoading" class="table-card">
+        <div class="table-header">
+            <h3>
+                <i class="fab fa-facebook"></i>
+                Meta Ads Lead Submissions
+                <span class="count-badge">{{ filteredLeads.length }}</span>
+            </h3>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredLeads.length === 0" class="empty-state">
             <i class="fas fa-inbox"></i>
-            <p>No Meta leads found matching your criteria.</p>
+            <h3>No meta leads found</h3>
+            <p>There are currently no submissions from Meta Lead ads.</p>
         </div>
 
-        <div class="loading-state" *ngIf="isLoading">
-            <div class="spinner"></div>
-            <p>Fetching Meta leads...</p>
+        <!-- Data Table -->
+        <div class="table-container" *ngIf="filteredLeads.length > 0">
+            <table class="leads-table">
+                <thead>
+                    <tr>
+                        <th>Date Submitted</th>
+                        <th>Name</th>
+                        <th>Contact Info</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let lead of filteredLeads; let i = index" class="table-row">
+                        <td>
+                            <div class="text-muted"><i class="far fa-calendar-alt"></i> {{ lead.createdAt |
+                                date:'shortDate' }}</div>
+                            <div class="text-xs" style="font-size: 11px; opacity: 0.7;">{{ lead.createdAt |
+                                date:'shortTime' }}</div>
+                        </td>
+                        <td>
+                            <div class="lead-info-cell">
+                                <div class="lead-avatar" style="background-color: #1877F2; color: #fff;">
+                                    <i class="fab fa-facebook-f"></i>
+                                </div>
+                                <div>
+                                    <strong class="lead-name">{{ lead.fullName }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contact-cell">
+                                <div><i class="fas fa-envelope"></i> <a [href]="'mailto:' + lead.email">{{ lead.email
+                                        }}</a></div>
+                                <div class="text-muted"><i class="fas fa-phone"></i> <a
+                                        [href]="'tel:' + lead.phoneNumber">{{
+                                        lead.phoneNumber }}</a></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge"
+                                [ngClass]="{'seeded-lead': lead.status === 'New Lead', 'qualified': lead.status === 'Qualified'}">
+                                {{ lead.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-assign" (click)="openAssignModal(lead)">
+                                <i class="fas fa-user-plus"></i> Assign
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination-container" *ngIf="totalPages > 1">
-        <button class="btn-page" [disabled]="currentPage === 1" (click)="prevPage()">
-            <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <span class="page-info">Page {{currentPage}} of {{totalPages}}</span>
-        <button class="btn-page" [disabled]="currentPage === totalPages" (click)="nextPage()">
-            Next <i class="fas fa-chevron-right"></i>
-        </button>
+    <!-- Assignment Modal -->
+    <div class="modal-overlay" *ngIf="showAssignModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-check"></i> Assign Meta Lead</h3>
+                <button class="close-btn" (click)="$event.stopPropagation(); closeAssignModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Assigning <strong>{{ selectedLead?.fullName }}</strong> to a sales employee. This will move the lead
+                    to
+                    the main leads list.</p>
+
+                <div class="form-group">
+                    <label for="employeeSelect">Select Sales Person</label>
+                    <select id="employeeSelect" [(ngModel)]="selectedEmployeeId" class="form-control">
+                        <option value="">-- Select Employee --</option>
+                        <option *ngFor="let emp of employees" [value]="emp._id">
+                            {{ emp.fullName }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="closeAssignModal()">Cancel</button>
+                <button class="btn-primary" [disabled]="!selectedEmployeeId || isAssigning" (click)="onAssign()">
+                    <span *ngIf="!isAssigning">Assign Now</span>
+                    <span *ngIf="isAssigning"><i class="fas fa-spinner fa-spin"></i> Assigning...</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>

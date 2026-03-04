@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LeadsService, Lead } from '../../../lead.service';
+import { EmployeeService, Employee } from '../../../../employee/employee.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 
@@ -15,28 +16,30 @@ import { Subscription } from 'rxjs';
 })
 export class MetaLeadsComponent implements OnInit, OnDestroy {
     leads: Lead[] = [];
-    displayedLeads: Lead[] = [];
-    paginatedLeads: Lead[] = [];
-
+    filteredLeads: Lead[] = [];
     isLoading: boolean = false;
-    searchQuery: string = '';
+    searchTerm: string = '';
 
-    currentPage: number = 1;
-    pageSize: number = 10;
-    totalPages: number = 0;
+    // Assignment Modal State
+    showAssignModal = false;
+    selectedLead: any = null;
+    employees: Employee[] = [];
+    selectedEmployeeId = '';
+    isAssigning = false;
 
     private leadsSubscription?: Subscription;
 
     constructor(
         private leadsService: LeadsService,
+        private employeeService: EmployeeService,
         private router: Router,
         private toastr: ToastrService
     ) { }
 
     ngOnInit(): void {
-        this.loadMetaLeads();
+        this.fetchMetaLeads();
         this.leadsSubscription = this.leadsService.leadsUpdated$.subscribe(() => {
-            this.loadMetaLeads();
+            this.fetchMetaLeads();
         });
     }
 
@@ -46,80 +49,86 @@ export class MetaLeadsComponent implements OnInit, OnDestroy {
         }
     }
 
-    loadMetaLeads(): void {
+    fetchMetaLeads(): void {
         this.isLoading = true;
         this.leadsService.getMetaLeads().subscribe({
             next: (leads) => {
                 this.leads = leads;
-                this.applyFilters();
+                this.onSearch();
                 this.isLoading = false;
             },
             error: (error) => {
-                console.error('Error loading meta leads:', error);
+                console.error('❌ [MetaLeadsComponent] Error loading meta leads:', error);
                 this.toastr.error('Failed to load Meta leads');
                 this.isLoading = false;
             }
         });
     }
 
-    applyFilters(): void {
-        let filtered = [...this.leads];
-
-        if (this.searchQuery.trim()) {
-            const query = this.searchQuery.toLowerCase();
-            filtered = filtered.filter(l =>
-                l.fullName.toLowerCase().includes(query) ||
-                l.email.toLowerCase().includes(query) ||
-                l.phoneNumber.includes(query)
-            );
-        }
-
-        // Sort newest first
-        filtered.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return dateB - dateA;
-        });
-
-        this.displayedLeads = filtered;
-        this.totalPages = Math.ceil(this.displayedLeads.length / this.pageSize);
-        this.updatePaginatedLeads();
-    }
-
-    updatePaginatedLeads(): void {
-        const startIndex = (this.currentPage - 1) * this.pageSize;
-        this.paginatedLeads = this.displayedLeads.slice(startIndex, startIndex + this.pageSize);
-    }
-
     onSearch(): void {
-        this.currentPage = 1;
-        this.applyFilters();
+        if (!this.searchTerm.trim()) {
+            this.filteredLeads = [...this.leads];
+            return;
+        }
+
+        const query = this.searchTerm.toLowerCase();
+        this.filteredLeads = this.leads.filter(l =>
+            l.fullName.toLowerCase().includes(query) ||
+            l.email.toLowerCase().includes(query) ||
+            l.phoneNumber.includes(query)
+        );
     }
 
-    prevPage(): void {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.updatePaginatedLeads();
+    // --- Assignment Logic (Mirrors WebsiteLeads) ---
+
+    openAssignModal(lead: any) {
+        this.selectedLead = lead;
+        this.showAssignModal = true;
+        this.selectedEmployeeId = '';
+
+        if (this.employees.length === 0) {
+            this.fetchEmployees();
         }
     }
 
-    nextPage(): void {
-        if (this.currentPage < this.totalPages) {
-            this.currentPage++;
-            this.updatePaginatedLeads();
+    closeAssignModal() {
+        this.showAssignModal = false;
+        this.selectedLead = null;
+        this.selectedEmployeeId = '';
+    }
+
+    fetchEmployees() {
+        this.employeeService.getEmployeesByStatus('accept').subscribe({
+            next: (data: Employee[]) => {
+                this.employees = data;
+            },
+            error: (err: any) => {
+                console.error('Error fetching employees:', err);
+                this.toastr.error('Failed to load sales team');
+            }
+        });
+    }
+
+    onAssign() {
+        if (!this.selectedEmployeeId) {
+            this.toastr.warning('Please select an employee');
+            return;
         }
-    }
 
-    viewDetails(lead: Lead): void {
-        this.router.navigate(['/admin/leads', lead._id]);
-    }
-
-    goToAssignLeads(): void {
-        this.router.navigate(['/admin/leads/assign']);
-    }
-
-    editLead(lead: Lead): void {
-        this.router.navigate(['/leads/edit', lead._id]);
+        this.isAssigning = true;
+        this.leadsService.assignMetLead(this.selectedLead._id, this.selectedEmployeeId).subscribe({
+            next: (response: any) => {
+                this.toastr.success('Lead migrated and assigned successfully');
+                this.isAssigning = false;
+                this.closeAssignModal();
+                this.fetchMetaLeads(); // Refresh list (lead should be gone)
+            },
+            error: (err: any) => {
+                console.error('Error assigning lead:', err);
+                this.toastr.error('Failed to assign lead');
+                this.isAssigning = false;
+            }
+        });
     }
 
     formatDate(date?: Date | string): string {
@@ -129,16 +138,5 @@ export class MetaLeadsComponent implements OnInit, OnDestroy {
             month: 'short',
             year: 'numeric'
         });
-    }
-
-    getMetaInfo(notes: string | undefined): any {
-        if (!notes) return {};
-        const info: any = {};
-        const parts = notes.split(' | ');
-        parts.forEach(p => {
-            const [key, val] = p.split(': ');
-            if (key && val) info[key.trim()] = val.trim();
-        });
-        return info;
     }
 }

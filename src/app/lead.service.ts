@@ -13,15 +13,19 @@ export interface Lead {
   phoneNumber: string;
   companyName?: string;
   leadSource: 'Walk-in' | 'Website' | 'Reference' | 'Phone Call' | 'Email' | 'Social Media' | 'Other';
-  status: 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Junk Lead';
+  status: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead';
   priority?: 'low' | 'medium' | 'high';
   assignedTo: string;
   createdBy: string;
   createdBySalesName?: string;
   notes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  statusNote?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   isConverted?: boolean;
+  isFacebookLead?: boolean;
+  facebookLeadId?: string;
+  facebookFormId?: string;
 }
 
 export interface CreateLead {
@@ -42,7 +46,7 @@ export interface UpdateLead {
   phoneNumber?: string;
   companyName?: string;
   leadSource?: 'Walk-in' | 'Website' | 'Reference' | 'Phone Call' | 'Email' | 'Social Media' | 'Other';
-  status?: 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Junk Lead';
+  status?: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead';
   assignedTo?: string;
   createdBy?: string;
   notes?: string;
@@ -228,7 +232,7 @@ export class LeadsService {
     return this.getAllLeads().pipe(
       map(leads => leads.filter(lead =>
         !lead.isConverted &&
-        lead.status === 'Seeded Lead' &&
+        lead.status === 'New Lead' &&
         (!lead.assignedTo || lead.assignedTo === '')
       ))
     );
@@ -255,10 +259,15 @@ export class LeadsService {
    * ✅ DEDICATED STATUS UPDATE: Use PATCH for efficient status-only updates
    * Fulfils the requirement for a dedicated status update API
    */
-  updateLeadStatus(id: string, newStatus: string): Observable<Lead> {
-    console.log('📤 Updating lead status (PATCH):', id, '→', newStatus);
+  updateLeadStatus(id: string, newStatus: string, note?: string): Observable<Lead> {
+    console.log('📤 Updating lead status (PATCH):', id, '→', newStatus, 'note:', note);
 
-    return this.http.patch<ApiResponse<Lead>>(`${this.apiUrl}/${id}/status`, { status: newStatus }, this.getHeaders()).pipe(
+    const body: any = { status: newStatus };
+    if (note !== undefined) {
+      body.note = note;
+    }
+
+    return this.http.patch<ApiResponse<Lead>>(`${this.apiUrl}/${id}/status`, body, this.getHeaders()).pipe(
       tap(response => console.log('📥 Status update response:', response)),
       map(response => response.data!),
       tap(() => {
@@ -287,6 +296,14 @@ export class LeadsService {
 
   assignWebsiteLead(leadId: string, employeeId: string): Observable<any> {
     const url = `${this.apiUrl}/website-assign/${leadId}`;
+    return this.http.post<any>(url, { employeeId }, this.getHeaders()).pipe(
+      tap(() => this.leadsUpdated.next()),
+      catchError(this.handleError)
+    );
+  }
+
+  assignMetLead(leadId: string, employeeId: string): Observable<any> {
+    const url = `${environment.apiBaseUrl}/met-leads/assign/${leadId}`;
     return this.http.post<any>(url, { employeeId }, this.getHeaders()).pipe(
       tap(() => this.leadsUpdated.next()),
       catchError(this.handleError)
@@ -326,22 +343,69 @@ export class LeadsService {
   }
 
   getNewLeads(): Observable<Lead[]> {
-    return this.getLeadsByStatus('Seeded Lead');
+    return this.getLeadsByStatus('New Lead' as any);
   }
 
   getUnassignedLeads(): Observable<Lead[]> {
     return this.getAllLeads().pipe(
       map(leads => leads.filter(lead =>
-        lead.status === 'Seeded Lead' && (!lead.assignedTo || lead.assignedTo === '')
+        lead.status === 'New Lead' && (!lead.assignedTo || lead.assignedTo === '')
       ))
     );
   }
 
   getMetaLeads(): Observable<Lead[]> {
-    return this.getAllLeads().pipe(
-      map(leads => leads.filter(lead =>
-        lead.leadSource === 'Social Media' || (lead.notes && lead.notes.includes('Meta Leadgen ID'))
-      ))
+    const metLeadsUrl = `${environment.apiBaseUrl}/met-leads`;
+
+    return forkJoin({
+      standardLeads: this.getAllLeads(),
+      specialMetLeads: this.http.get<ApiResponse<any[]>>(metLeadsUrl, this.getHeaders()).pipe(
+        map(response => response.data || []),
+        catchError(err => {
+          console.error('❌ Failed to fetch special metleads:', err);
+          return of([]);
+        })
+      )
+    }).pipe(
+      map(({ standardLeads, specialMetLeads }) => {
+        // 1. Filter standard leads
+        const metaFromStandard = standardLeads.filter(lead =>
+          lead.leadSource === 'Social Media' ||
+          lead.isFacebookLead === true ||
+          (lead.notes && (
+            lead.notes.includes('Meta Leadgen ID') ||
+            lead.notes.includes('Platform: Facebook') ||
+            lead.notes.includes('Platform: Instagram')
+          ))
+        );
+
+        // 2. Map and normalize special metleads
+        const mappedMetLeads: Lead[] = specialMetLeads.map(ml => ({
+          _id: ml._id,
+          fullName: ml.name || 'Meta Lead',
+          email: ml.email || 'N/A',
+          phoneNumber: ml.phone || 'N/A',
+          leadSource: 'Social Media',
+          status: (ml.status === 'New' ? 'New Lead' : ml.status) as any,
+          companyName: ml.companyName || 'Meta Lead Ad',
+          notes: ml.notes || `Source: ${ml.source || 'Meta Collection'}`,
+          createdAt: ml.createdAt,
+          updatedAt: ml.updatedAt,
+          createdBy: 'system',
+          assignedTo: ml.assignedTo || ''
+        }));
+
+        const merged = [...metaFromStandard, ...mappedMetLeads];
+
+        // 3. De-duplicate by _id
+        const uniqueMap = new Map<string, Lead>();
+        merged.forEach(l => {
+          if (l && l._id) uniqueMap.set(l._id.toString(), l);
+        });
+
+        const finalResults = Array.from(uniqueMap.values());
+        return finalResults;
+      })
     );
   }
 
