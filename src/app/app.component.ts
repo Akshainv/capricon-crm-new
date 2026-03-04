@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
+import { SessionTimeoutService } from './services/session-timeout.service';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,10 @@ import { ThemeService } from './core/services/theme.service';
 export class AppComponent implements OnInit {
   title = 'capricorn-crm';
 
-  constructor(private themeService: ThemeService) {
+  constructor(
+    private themeService: ThemeService,
+    private sessionTimeoutService: SessionTimeoutService
+  ) {
     // Theme service will automatically initialize and load saved theme
     console.log('🎨 Theme Service Initialized');
   }
@@ -21,7 +25,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     // Log current theme on app initialization
     console.log('Current Theme:', this.themeService.getCurrentTheme());
-    
+
     // Subscribe to theme changes (optional - for debugging)
     this.themeService.theme$.subscribe(theme => {
       console.log('Theme changed to:', theme);

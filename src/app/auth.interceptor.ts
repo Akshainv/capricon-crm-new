@@ -57,6 +57,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         case 401:
           // Unauthorized - Invalid or expired token
           console.error('Unauthorized access - Token invalid or expired');
+          toastr.warning('Session expired. Please log in again.', 'Session Expired');
           authService.logout();
           router.navigate(['/login'], {
             queryParams: { returnUrl: router.url },
