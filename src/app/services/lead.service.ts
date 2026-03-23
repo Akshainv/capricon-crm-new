@@ -22,7 +22,8 @@ export type LeadStatus =
   | 'Lost'
   | 'Pending'
   | 'Follow-Up'
-  | 'Junk Lead';
+  | 'Junk Lead'
+  | 'Overdue';
 
 export interface Lead {
   _id: string;

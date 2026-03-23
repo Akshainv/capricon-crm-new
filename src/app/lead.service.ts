@@ -13,7 +13,7 @@ export interface Lead {
   phoneNumber: string;
   companyName?: string;
   leadSource: 'Walk-in' | 'Website' | 'Reference' | 'Phone Call' | 'Email' | 'Social Media' | 'Other';
-  status: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead';
+  status: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead' | 'Overdue';
   priority?: 'low' | 'medium' | 'high';
   assignedTo: string;
   createdBy: string;
@@ -46,7 +46,7 @@ export interface UpdateLead {
   phoneNumber?: string;
   companyName?: string;
   leadSource?: 'Walk-in' | 'Website' | 'Reference' | 'Phone Call' | 'Email' | 'Social Media' | 'Other';
-  status?: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead';
+  status?: 'New Lead' | 'Seeded Lead' | 'Qualified' | 'Meeting Fixed' | 'Meeting Completed' | 'CS Executive Assigned' | 'CS Executed' | 'Lost' | 'Junk Lead' | 'Overdue';
   assignedTo?: string;
   createdBy?: string;
   notes?: string;

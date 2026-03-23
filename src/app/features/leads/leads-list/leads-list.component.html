@@ -42,6 +42,7 @@
         <option value="Meeting Completed">Meeting Completed</option>
         <option value="CS Executed">CS Executed</option>
         <option value="Lost">Lost</option>
+        <option value="Overdue">Overdue</option>
       </select>
 
       <div class="date-filter-group" style="display: flex; align-items: center; gap: 8px;">
@@ -126,9 +127,10 @@
                 <option value="Meeting Completed">Meeting Completed</option>
                 <option value="CS Executed">CS Executed</option>
                 <option value="Lost">Lost</option>
+                <option value="Overdue">Overdue</option>
                 <!-- If the current status is NOT one of the above, show it so it's visible -->
                 <option
-                  *ngIf="!['New Lead', 'Seeded Lead', 'Meeting Fixed', 'Meeting Completed', 'CS Executed', 'Lost'].includes(lead.status)"
+                  *ngIf="!['New Lead', 'Seeded Lead', 'Meeting Fixed', 'Meeting Completed', 'CS Executed', 'Lost', 'Overdue'].includes(lead.status)"
                   [value]="lead.status">
                   {{ lead.status }}
                 </option>

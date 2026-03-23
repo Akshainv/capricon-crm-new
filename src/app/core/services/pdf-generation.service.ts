@@ -27,6 +27,43 @@ export class PdfGenerationService {
             const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
             const { height } = pages[0].getSize();
 
+            let offset = 0;
+            // --- OPTIONAL: INSERT EXTRA PAGES FROM extra.pdf ---
+            try {
+                // Support both exact name and common hidden-extension double-naming
+                const possiblePaths = ['assets/templates/extra.pdf', 'assets/templates/extra.pdf.pdf'];
+                let extraResponse;
+                
+                for (const path of possiblePaths) {
+                    try {
+                        const res = await fetch(path);
+                        if (res.ok) {
+                            extraResponse = res;
+                            break;
+                        }
+                    } catch (e) { }
+                }
+
+                if (extraResponse && extraResponse.ok) {
+                    const extraPdfBytes = await extraResponse.arrayBuffer();
+                    const extraPdfDoc = await PDFDocument.load(extraPdfBytes);
+                    const extraPages = extraPdfDoc.getPages();
+                    offset = extraPages.length;
+
+                    // Copy the extra pages into our main document
+                    const copiedPages = await pdfDoc.copyPages(extraPdfDoc, extraPages.map((_, i) => i));
+
+                    // Insert them sequentially after Page 2 (index 1), so starting at index 2
+                    copiedPages.forEach((page, index) => {
+                        pdfDoc.insertPage(2 + index, page);
+                    });
+                    console.log(`Successfully merged ${offset} extra pages after Page 2`);
+                }
+            } catch (e) {
+                // Fails silently if extra.pdf doesn't exist, which is expected behavior
+                console.log('No extra.pdf provided or failed to load. Proceeding with standard template.');
+            }
+
             // --- PAGE 1: COVER PAGE (TEXT INJECTION) ---
             if (pages.length >= 1) {
                 const page1 = pages[0];
@@ -85,6 +122,18 @@ export class PdfGenerationService {
                 } else {
                     this.drawPage9Manually(page9, data, font, boldFont, height);
                 }
+            }
+
+            // --- REORDER PAGES: Move Pricing immediately after Technical Specifications ---
+            if (pdfDoc.getPageCount() > (8 + offset)) {
+                const currentPricingIndex = 8 + offset;
+                const insertAfterTechSpecIndex = 4 + offset;
+
+                // Remove the Pricing page from its current shifted location
+                pdfDoc.removePage(currentPricingIndex);
+                // Insert it right after the Technical Specifications (shifted location)
+                pdfDoc.insertPage(insertAfterTechSpecIndex, pages[8]);
+                console.log('Successfully moved Pricing page right after Technical Specifications');
             }
 
             // 3. Save the PDF and return bytes

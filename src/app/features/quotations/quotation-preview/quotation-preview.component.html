@@ -6,7 +6,10 @@
     <h1 class="page-title">Quotation Preview</h1>
 
     <div class="header-actions">
-      <button class="btn-action btn-official" (click)="downloadOfficialPDF()">
+      <button class="btn-action btn-official" (click)="downloadOfficialPDF()"
+              [disabled]="!isAdmin && quotationData.status?.toLowerCase() !== 'approved' && quotationData.status?.toLowerCase() !== 'sent'"
+              [title]="(!isAdmin && quotationData.status?.toLowerCase() !== 'approved' && quotationData.status?.toLowerCase() !== 'sent') ? 'Wait for Admin approval to download' : 'Download Official PDF'"
+              [class.btn-disabled]="!isAdmin && quotationData.status?.toLowerCase() !== 'approved' && quotationData.status?.toLowerCase() !== 'sent'">
         <i class="fas fa-file-pdf"></i>
         <span>Download Official PDF</span>
       </button>
@@ -366,7 +369,7 @@
           <tr>
             <th class="text-left">Item</th>
             <th class="text-right">Standard Price</th>
-            <th class="text-right">Launch Offer Price</th>
+            <th class="text-right">Special Offer Price</th>
           </tr>
         </thead>
         <tbody>

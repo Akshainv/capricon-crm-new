@@ -175,8 +175,14 @@
           <div class="form-row">
             <div class="form-group full-width">
               <label>Model <span class="required">*</span></label>
-              <input type="text" [(ngModel)]="model" placeholder="e.g., Capricorn Grandeur Signature"
-                class="form-input" />
+              <select [(ngModel)]="model" class="form-input">
+                <option value="Capricorn Classic">Capricorn Classic</option>
+                <option value="Capricorn Grandeur">Capricorn Grandeur</option>
+                <option value="Capricorn Grandeur Signature">Capricorn Grandeur Signature</option>
+                <option value="Capricorn Royale">Capricorn Royale</option>
+                <option value="Capricorn Vertex">Capricorn Vertex</option>
+                <option value="Capricorn Presidential">Capricorn Presidential</option>
+              </select>
             </div>
           </div>
 
@@ -354,7 +360,7 @@
                 <tr>
                   <th>Item</th>
                   <th>Standard Price (₹)</th>
-                  <th>Launch Offer Price (₹)</th>
+                  <th>Special Offer Price (₹)</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -536,7 +542,7 @@
             </div>
 
             <div class="summary-col launch">
-              <div class="column-title">Launch Offer</div>
+              <div class="column-title">Special Offer</div>
               <div class="summary-row">
                 <span class="summary-label">Subtotal:</span>
                 <span class="summary-value">{{ formatCurrency(launchSubtotal) }}</span>

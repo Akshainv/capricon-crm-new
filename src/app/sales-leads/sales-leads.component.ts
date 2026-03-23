@@ -363,7 +363,8 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
       'Meeting Completed': 'status-completed',
       'CS Executed': 'status-executed',
       'Lost': 'status-lost',
-      'Junk Lead': 'status-junk'
+      'Junk Lead': 'status-junk',
+      'Overdue': 'status-overdue'
     };
     return statusClasses[status] || '';
   }
@@ -378,7 +379,8 @@ export class SalesLeadsComponent implements OnInit, OnDestroy {
       'Meeting Completed': 'fa-calendar-check',
       'CS Executed': 'fa-check-circle',
       'Lost': 'fa-times-circle',
-      'Junk Lead': 'fa-trash-alt'
+      'Junk Lead': 'fa-trash-alt',
+      'Overdue': 'fa-calendar-times'
     };
     return statusIcons[status] || 'fa-circle';
   }

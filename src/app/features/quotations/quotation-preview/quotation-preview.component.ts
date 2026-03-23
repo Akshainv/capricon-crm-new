@@ -87,6 +87,7 @@ interface QuotationData {
   }[];
   gstRate?: number;
   elevatorTypeImage?: string;
+  status?: string;
 }
 
 @Component({
@@ -385,6 +386,7 @@ export class QuotationPreviewComponent implements OnInit, OnDestroy {
       ],
       gstRate: gstRate,
       elevatorTypeImage: q.elevatorTypeImage || '',
+      status: q.status || 'draft'
     };
   }
 

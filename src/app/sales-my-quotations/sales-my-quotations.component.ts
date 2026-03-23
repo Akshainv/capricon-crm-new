@@ -291,7 +291,8 @@ export class SalesMyQuotationsComponent implements OnInit {
       launchTax: (q as any).launchTax || 0,
       standardGrandTotal: (q as any).standardGrandTotal || q.totalAmount || 0,
       launchGrandTotal: (q as any).launchGrandTotal || q.totalAmount || 0,
-      launchGrandTotalInWords: (q as any).launchGrandTotalInWords || ''
+      launchGrandTotalInWords: (q as any).launchGrandTotalInWords || '',
+      status: (q as any).status || 'draft'
     };
   }
 
