@@ -35,8 +35,17 @@ export class ProjectsListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadEmployees();
-    this.loadProjects();
+    this.employeeService.getAllEmployees().subscribe({
+      next: (employees) => {
+        this.employees = employees;
+        console.log('✅ Employees loaded:', employees);
+        this.loadProjects();
+      },
+      error: (error) => {
+        console.error('Error loading employees:', error);
+        this.loadProjects();
+      }
+    });
 
     this.route.queryParams.subscribe(params => {
       if (params['newProject'] && params['highlight'] === 'true') {

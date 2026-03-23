@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
     providedIn: 'root'
 })
 export class SessionTimeoutService implements OnDestroy {
-    private timeoutMs = 30 * 60 * 1000; // 30 minutes
+    private timeoutMs = 4 * 60 * 60 * 1000; // 4 hours
     private timeoutId: any = null;
     private readonly activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
 

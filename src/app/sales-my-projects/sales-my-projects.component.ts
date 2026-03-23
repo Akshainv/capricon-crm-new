@@ -67,12 +67,22 @@ export class SalesMyProjectsComponent implements OnInit, OnDestroy {
       this.currentUserId = currentUser.userId || '';
     }
 
-    this.loadEmployees();
-    this.loadMyProjects();
+    this.employeeService.getAllEmployees().subscribe({
+      next: (employees) => {
+        this.employees = employees;
+        console.log('✅ Employees loaded:', employees);
+        
+        this.loadMyProjects();
 
-    // Auto-refresh every 30 seconds
-    this.refreshSubscription = interval(30000).subscribe(() => {
-      this.loadMyProjects(true); // Silent refresh
+        // Auto-refresh every 30 seconds
+        this.refreshSubscription = interval(30000).subscribe(() => {
+          this.loadMyProjects(true); // Silent refresh
+        });
+      },
+      error: (error) => {
+        console.error('Error loading employees:', error);
+        this.loadMyProjects();
+      }
     });
   }
 
