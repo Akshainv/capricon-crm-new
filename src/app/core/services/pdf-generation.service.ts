@@ -38,30 +38,42 @@ export class PdfGenerationService {
                     try {
                         const res = await fetch(path);
                         if (res.ok) {
-                            extraResponse = res;
-                            break;
+                            // Verify it's actually a PDF and not an SPA redirect (index.html)
+                            const contentType = res.headers.get('Content-Type');
+                            if (contentType && contentType.includes('application/pdf')) {
+                                extraResponse = res;
+                                break;
+                            } else {
+                                console.log(`Path ${path} returned non-PDF content (${contentType}). Skipping.`);
+                            }
                         }
-                    } catch (e) { }
+                    } catch (e) {
+                        console.error(`Error fetching ${path}:`, e);
+                    }
                 }
 
                 if (extraResponse && extraResponse.ok) {
                     const extraPdfBytes = await extraResponse.arrayBuffer();
-                    const extraPdfDoc = await PDFDocument.load(extraPdfBytes);
-                    const extraPages = extraPdfDoc.getPages();
-                    offset = extraPages.length;
+                    try {
+                        const extraPdfDoc = await PDFDocument.load(extraPdfBytes);
+                        const extraPages = extraPdfDoc.getPages();
+                        offset = extraPages.length;
 
-                    // Copy the extra pages into our main document
-                    const copiedPages = await pdfDoc.copyPages(extraPdfDoc, extraPages.map((_, i) => i));
+                        // Copy the extra pages into our main document
+                        const copiedPages = await pdfDoc.copyPages(extraPdfDoc, extraPages.map((_, i) => i));
 
-                    // Insert them sequentially after Page 2 (index 1), so starting at index 2
-                    copiedPages.forEach((page, index) => {
-                        pdfDoc.insertPage(2 + index, page);
-                    });
-                    console.log(`Successfully merged ${offset} extra pages after Page 2`);
+                        // Insert them sequentially after Page 2 (index 1), so starting at index 2
+                        copiedPages.forEach((page, index) => {
+                            pdfDoc.insertPage(2 + index, page);
+                        });
+                        console.log(`Successfully merged ${offset} extra pages after Page 2`);
+                    } catch (loadError) {
+                        console.error('Failed to parse extra PDF document:', loadError);
+                    }
                 }
             } catch (e) {
-                // Fails silently if extra.pdf doesn't exist, which is expected behavior
-                console.log('No extra.pdf provided or failed to load. Proceeding with standard template.');
+                // Outer catch for unexpected errors
+                console.error('Error in extra PDF processing:', e);
             }
 
             // --- PAGE 1: COVER PAGE (TEXT INJECTION) ---
