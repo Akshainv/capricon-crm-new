@@ -84,6 +84,17 @@ export class SalesCreateQuotationComponent implements OnInit {
   noOfStops: number = 2;
   elevatorType: string = 'MRL Gearless - Rope Driven';
   ratedLoad: string = '408 kg / 6 Pax';
+  ratedLoadOptions: string[] = [
+    '68 kg / 1 Pax',
+    '136 kg / 2 Pax',
+    '204 kg / 3 Pax',
+    '272 kg / 4 Pax',
+    '340 kg / 5 Pax',
+    '408 kg / 6 Pax',
+    '476 kg / 7 Pax',
+    '544 kg / 8 Pax',
+    'Others'
+  ];
   maximumSpeed: string = 'Upto 1 m/s';
   travelHeight: string = '3000 mm';
   driveSystem: string = 'AC VVVF (Variable Voltage Variable Frequency)';

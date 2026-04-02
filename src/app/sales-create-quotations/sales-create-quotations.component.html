@@ -210,7 +210,9 @@
             </div>
             <div class="form-group">
               <label>Rated Load</label>
-              <input type="text" [(ngModel)]="ratedLoad" placeholder="e.g., 408 kg / 6 Pax" class="form-input" />
+              <select [(ngModel)]="ratedLoad" class="form-input">
+                <option *ngFor="let option of ratedLoadOptions" [value]="option">{{ option }}</option>
+              </select>
             </div>
           </div>
 
